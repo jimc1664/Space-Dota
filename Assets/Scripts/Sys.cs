@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public class Sys : MonoBehaviour {
 
     public List<Team> Teams = new List<Team>();
+
+    public Material BaseColMat;
     //public int ActiveTeams = 2;
    // public int TeamInteractMask = 0;
 

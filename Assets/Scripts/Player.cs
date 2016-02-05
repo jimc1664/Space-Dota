@@ -27,8 +27,40 @@ public class Player : NetworkBehaviour {
     [ServerCallback]
     void Start() {
 
+        Sys s = Sys.get();
+
+
+        int ti = Random.Range(0, s.Teams.Count );
+        for(int i = 0; i < s.Teams.Count; i++)
+            if(s.Teams[i].Members.Count < s.Teams[ti].Members.Count)
+                ti = i;
+
+        Team t = s.Teams[ti];
+        t.Members.Add(this);
+        int colI = (t.ColPoolI++)%t.ColorPool.Count;
+        Col = t.ColorPool[colI];
+
+        Rpc_setup((byte)(uint)ti, (byte)(uint)colI );
+
+
         GameObject c = (GameObject)Instantiate(Cmmdr, Vector3.zero, Quaternion.identity );
         NetworkServer.Spawn(c);
+        c.GetComponent<Unit>().fixCol(Col);
+    }
+
+
+
+
+
+    public Color Col;
+  //  public Material Mat;
+    public Team Tm;
+
+     
+    [ClientRpc]
+    void Rpc_setup( byte teamI, byte colI ) {
+        Tm = Sys.get().Teams[teamI];
+        Col = Tm.ColorPool[colI];
     }
 
     void Update() {
@@ -54,10 +86,7 @@ public class Player : NetworkBehaviour {
         }
 
     }
-
-
-    
-
+ 
     [Command]
     public void Cmd_MoveUnit(GameObject u, Vector3 p) {
         u.GetComponent<Unit>().DesPos = p;

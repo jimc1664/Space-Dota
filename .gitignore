@@ -2,3 +2,6 @@
 /Temp
 /obj
 /out
+/*.csproj
+/*.sln
+/*.suo
