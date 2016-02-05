@@ -61,6 +61,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void Cmd_MoveUnit(GameObject u, Vector3 p) {
         u.GetComponent<Unit>().DesPos = p;
+        u.GetComponent<Unit>().PathActive = true;
         Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
