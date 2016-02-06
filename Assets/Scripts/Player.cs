@@ -45,7 +45,7 @@ public class Player : NetworkBehaviour {
 
         GameObject c = (GameObject)Instantiate(Cmmdr, Vector3.zero, Quaternion.identity );
         NetworkServer.Spawn(c);
-        c.GetComponent<Unit>().fixCol(Col);
+        c.GetComponent<Carrier>().Rpc_init( this.gameObject );
     }
 
 

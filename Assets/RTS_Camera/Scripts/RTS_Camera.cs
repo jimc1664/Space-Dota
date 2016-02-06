@@ -168,6 +168,10 @@ namespace RTS_Cam
         private void Start()
         {
             m_Transform = transform;
+
+            float distanceToGround = DistanceToGround();
+            zoomPos = (distanceToGround - minHeight) / (maxHeight - minHeight);
+            zoomPos = Mathf.Clamp01(zoomPos);
         }
 
         private void Update()
@@ -208,17 +212,21 @@ namespace RTS_Cam
         {
             if (useKeyboardInput)
             {
-                Vector3 desiredMove = new Vector3(KeyboardInput.x, 0, KeyboardInput.y);
+                Vector3 desiredMove = new Vector3(KeyboardInput.x, KeyboardInput.y, 0 );
 
                 desiredMove *= keyboardMovementSpeed;
                 desiredMove *= Time.deltaTime;
-                desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
-                desiredMove = m_Transform.InverseTransformDirection(desiredMove);
 
-                m_Transform.Translate(desiredMove, Space.Self);
+                Vector3 xAx = m_Transform.right, yAx = Vector3.Cross(xAx, Vector3.forward);
+//                desiredMove = Quaternion.Euler(new Vector3(0f, 0, -transform.eulerAngles.z)) * desiredMove;
+ //               desiredMove = m_Transform.InverseTransformDirection(desiredMove);
+
+                desiredMove = xAx * desiredMove.x + yAx * desiredMove.y;
+                desiredMove.z = 0;
+                m_Transform.Translate(desiredMove, Space.World);
             }
 
-            if (useScreenEdgeInput)
+            if (useScreenEdgeInput)  //todo... this is flat
             {
                 Vector3 desiredMove = new Vector3();
 
@@ -228,26 +236,32 @@ namespace RTS_Cam
                 Rect downRect = new Rect(0, 0, Screen.width, screenEdgeBorder);
 
                 desiredMove.x = leftRect.Contains(MouseInput) ? -1 : rightRect.Contains(MouseInput) ? 1 : 0;
-                desiredMove.z = upRect.Contains(MouseInput) ? 1 : downRect.Contains(MouseInput) ? -1 : 0;
+                desiredMove.y = upRect.Contains(MouseInput) ? 1 : downRect.Contains(MouseInput) ? -1 : 0;
 
                 desiredMove *= screenEdgeMovementSpeed;
                 desiredMove *= Time.deltaTime;
-                desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
-                desiredMove = m_Transform.InverseTransformDirection(desiredMove);
+                Vector3 xAx = m_Transform.right, yAx = Vector3.Cross(xAx, Vector3.forward);
+                //                desiredMove = Quaternion.Euler(new Vector3(0f, 0, -transform.eulerAngles.z)) * desiredMove;
+                //               desiredMove = m_Transform.InverseTransformDirection(desiredMove);
 
-                m_Transform.Translate(desiredMove, Space.Self);
+                desiredMove = xAx * desiredMove.x + yAx * desiredMove.y;
+                desiredMove.z = 0;
+                m_Transform.Translate(desiredMove, Space.World);
             }       
         
             if(usePanning && Input.GetKey(panningKey) && MouseAxis != Vector2.zero)
             {
-                Vector3 desiredMove = new Vector3(-MouseAxis.x, 0, -MouseAxis.y);
+                Vector3 desiredMove = new Vector3(-MouseAxis.x, -MouseAxis.y, 0);
 
                 desiredMove *= panningSpeed;
                 desiredMove *= Time.deltaTime;
-                desiredMove = Quaternion.Euler(new Vector3(0f, transform.eulerAngles.y, 0f)) * desiredMove;
-                desiredMove = m_Transform.InverseTransformDirection(desiredMove);
+                Vector3 xAx = m_Transform.right, yAx = Vector3.Cross(xAx, Vector3.forward);
+                //                desiredMove = Quaternion.Euler(new Vector3(0f, 0, -transform.eulerAngles.z)) * desiredMove;
+                //               desiredMove = m_Transform.InverseTransformDirection(desiredMove);
 
-                m_Transform.Translate(desiredMove, Space.Self);
+                desiredMove = xAx * desiredMove.x + yAx * desiredMove.y;
+                desiredMove.z = 0;
+                m_Transform.Translate(desiredMove, Space.World);
             }
         }
 
@@ -270,8 +284,8 @@ namespace RTS_Cam
             if(distanceToGround != targetHeight)
                 difference = targetHeight - distanceToGround;
 
-            m_Transform.position = Vector3.Lerp(m_Transform.position, 
-                new Vector3(m_Transform.position.x, targetHeight + difference, m_Transform.position.z), Time.deltaTime * heightDampening);
+            m_Transform.position = Vector3.Lerp(m_Transform.position,
+                new Vector3(m_Transform.position.x, m_Transform.position.y, targetHeight + difference ), Time.deltaTime * heightDampening);
         }
 
         /// <summary>
@@ -279,11 +293,13 @@ namespace RTS_Cam
         /// </summary>
         private void Rotation()
         {
+            
             if(useKeyboardRotation)
-                transform.Rotate(Vector3.up, RotationDirection * Time.deltaTime * rotationSped, Space.World);
+                transform.Rotate(Vector3.back, RotationDirection * Time.deltaTime * rotationSped, Space.World);
 
             if (useMouseRotation && Input.GetKey(mouseRotationKey))
-                m_Transform.Rotate(Vector3.up, -MouseAxis.x * Time.deltaTime * mouseRotationSpeed, Space.World);
+                m_Transform.Rotate(Vector3.back, -MouseAxis.x * Time.deltaTime * mouseRotationSpeed, Space.World);
+   
         }
 
         /// <summary>
@@ -302,10 +318,11 @@ namespace RTS_Cam
         {
             if (!limitMap)
                 return;
-                
-            m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, -limitX, limitX),
+               //broke..
+/*            m_Transform.position = new Vector3(Mathf.Clamp(m_Transform.position.x, -limitX, limitX),
                 m_Transform.position.y,
                 Mathf.Clamp(m_Transform.position.z, -limitY, limitY));
+ * */
         }
 
         /// <summary>
@@ -331,7 +348,7 @@ namespace RTS_Cam
         /// <returns></returns>
         private float DistanceToGround()
         {
-            Ray ray = new Ray(m_Transform.position, Vector3.down);
+            Ray ray = new Ray(m_Transform.position, Vector3.back);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, groundMask.value))
                 return (hit.point - m_Transform.position).magnitude;

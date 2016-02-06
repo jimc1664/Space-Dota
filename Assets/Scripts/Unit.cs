@@ -15,11 +15,22 @@ public class Unit : NetworkBehaviour {
     [HideInInspector]
     public bool PathActive = false;
 
+    [HideInInspector]
     public Transform Trnsfrm;
+    [HideInInspector]
+    public Rigidbody2D Body;
+    [HideInInspector]
+    public Player Owner;
+
+    public GameObject VisDat;
+
     public float MaxSpeed = 5;
+    public float TurnSpeed = 10;
+    public float Acceleration = 2;
 
     void Awake() {
         Trnsfrm = transform;
+        Body = GetComponent<Rigidbody2D>();
         DesPos = transform.position;
     }
     void Start() {
@@ -27,8 +38,8 @@ public class Unit : NetworkBehaviour {
     }
 
     public void fixCol( Color c ) {
-        if(isServer) Rpc_fixCol(c);
-        foreach(var mr in GetComponentsInChildren<MeshRenderer>()) {
+
+        foreach(var mr in VisDat.GetComponentsInChildren<MeshRenderer>()) {
             foreach(Material mat in mr.materials) {
                // Debug.Log("fix?");
                 if(mat.name == Sys.get().BaseColMat.name + " (Instance)" ) {
@@ -40,8 +51,20 @@ public class Unit : NetworkBehaviour {
         }
     }
 
+    public void init(Player o) {
+
+        Owner = o;
+        fixCol(o.Col);
+
+    }
+    /* public void init(Player o) {  NOTE:  --- it appears   Server's local client also gets Rpc function called.. which is bit weird...it's kind of handy so will tolerate it
+        if(isServer) Rpc_init(o.gameObject);  //always do network bit first, slightly better
+
+        _int_init(o);
+    } */
     [ClientRpc]
-    void Rpc_fixCol( Color c ) { fixCol(c); }
+    public void Rpc_init(GameObject oo) { init(oo.GetComponent<Player>()); }
+
    // [ServerCallback]
     void FixedUpdate() {
 
@@ -56,10 +79,11 @@ public class Unit : NetworkBehaviour {
                 var ry = Trnsfrm.eulerAngles.z;
                 var dy = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
                 //Debug.Log(" ang = " + ry + "  des " + dy);
-                float rotSpeed = (  1.0f- Mathf.Abs( 0.5f - Mathf.Pow(speed / MaxSpeed, 2)  ) )  * 10;  
+                float rotSpeed = (1.0f - Mathf.Abs(0.5f - Mathf.Pow(speed / MaxSpeed, 2))) * TurnSpeed;  
                 ry = Mathf.LerpAngle(ry, Mathf.MoveTowardsAngle(ry, dy, 600 * Time.deltaTime), rotSpeed * Time.deltaTime);
                 ///Trnsfrm.RotateAround(  
-                Trnsfrm.eulerAngles = new Vector3(0, 0, ry);
+                //Trnsfrm.eulerAngles = new Vector3(0, 0, ry);
+                Body.MoveRotation( ry );
                 fwd = Trnsfrm.up;
                 desSpeed = Mathf.Clamp(Vector3.Dot( fwd, vec), -MaxSpeed /2 , MaxSpeed );
 
@@ -79,11 +103,11 @@ public class Unit : NetworkBehaviour {
               //      desSpeed = -desSpeed;
             } else PathActive = false;
         }
-        float acc = 2;
+        float acc = Acceleration;
         if( Mathf.Abs(desSpeed) < Mathf.Abs(speed) ) acc *= 3;
         speed = Mathf.Lerp(speed, desSpeed, acc * Time.deltaTime);
         //        var pos = Trnsfrm.position; pos.y = 0; Trnsfrm.position = pos;
-        GetComponent<Rigidbody2D>().velocity = fwd * speed;
+        Body.velocity = Vector2.Lerp(fwd * speed, Body.velocity, 20 * Time.deltaTime);
     }
 
     void OnDrawGizmos() {
