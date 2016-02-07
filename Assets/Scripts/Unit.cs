@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public class Unit : NetworkBehaviour {
+public class Unit : NetBehaviour {
 
     [SyncVar(hook = "Hook_DesPos")]
     public Vector2 DesPos;
@@ -36,6 +37,11 @@ public class Unit : NetworkBehaviour {
     void Start() {
         DesPos = transform.position;
     }
+
+    /*
+    public override void OnStartClient() {
+       // Debug.Log("OnStartClient  "+name);
+    } */
 
     public void fixCol( Color c ) {
 
@@ -114,5 +120,11 @@ public class Unit : NetworkBehaviour {
         Trnsfrm = transform;
         Gizmos.color = Color.black;
         Gizmos.DrawLine(Trnsfrm.position, DesPos);
+    }
+
+
+
+    public override void appendForSync( List<string>  msg ) {
+        msg.Add(name);
     }
 }

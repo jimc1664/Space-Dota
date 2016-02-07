@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public class Player : NetworkBehaviour {
+public class Player : NetBehaviour {
 
 
     public GameObject Cmmdr;
@@ -92,6 +93,10 @@ public class Player : NetworkBehaviour {
         u.GetComponent<Unit>().DesPos = p;
         u.GetComponent<Unit>().PathActive = true;
         Debug.Log("move unit " + u.name + "  to - " + p);
+    }
+
+    public override void appendForSync(List<string> msg) {
+        msg.Add(name);
     }
 
 }

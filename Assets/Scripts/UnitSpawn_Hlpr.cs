@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.Networking;
 
 
 //todo.. requires unit... forgot sysntax and intellisense is pooped
-public class UnitSpawn_Hlpr : NetworkBehaviour {
+public class UnitSpawn_Hlpr : NetBehaviour {
 
     Transform Prev, Next;
     float D;
@@ -98,5 +99,9 @@ public class UnitSpawn_Hlpr : NetworkBehaviour {
             return;
         } 
 
+    }
+
+    public override void appendForSync(List<string> msg) {
+        msg.Add("spwn "+name);
     }
 }

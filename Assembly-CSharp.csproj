@@ -49,6 +49,8 @@
      <Compile Include="Assets\RTS_Camera\Demo\TargetSelector.cs" />
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
      <Compile Include="Assets\Scripts\Carrier.cs" />
+     <Compile Include="Assets\Scripts\Net\NetBehaviour.cs" />
+     <Compile Include="Assets\Scripts\Net\NetMan.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
      <Compile Include="Assets\Scripts\Sys.cs" />
      <Compile Include="Assets\Scripts\Team.cs" />
@@ -131,6 +133,10 @@
  <Reference Include="UnityEngine.Networking">
  <HintPath>D:/Program Files/Unity5/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
  </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
+      <Project>{4DB0D425-C90E-E650-7BFC-38356E23362D}</Project>      <Name>Assembly-CSharp-firstpass</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
