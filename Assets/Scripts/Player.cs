@@ -69,24 +69,33 @@ public class Player : NetBehaviour {
     void Update() {
         if (!isLocalPlayer)  return;
 
-        if(Input.GetMouseButtonUp(0)) {
-            Selected = null;
-            RaycastHit hit;
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) {
-                Debug.Log(" hit "+hit.collider.name);
-                Selected = hit.collider.gameObject.GetComponentInParent<Unit>();
-            }
+		if (isLocalPlayer) {
 
-        }
-        if(Selected == null) return;
-        if(Input.GetMouseButtonUp(1)) {
-            RaycastHit hit;
-            if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
+			if (gameObject.tag == "Player") {
 
-                Cmd_MoveUnit(Selected.gameObject, hit.point);
-            }
+				if(Input.GetMouseButtonUp(0)) {
+					Selected = null;
+					RaycastHit hit;
+					if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) {
+						Debug.Log(" hit "+hit.collider.name);
+						Selected = hit.collider.gameObject.GetComponentInParent<Unit>();
+					}
 
-        }
+				}
+				if(Selected == null) return;
+				if(Input.GetMouseButtonUp(1)) {
+					RaycastHit hit;
+					if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
+
+						Cmd_MoveUnit(Selected.gameObject, hit.point);
+					}
+
+				}
+			
+			}
+		}
+
+      
 
     }
  

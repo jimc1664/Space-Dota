@@ -12,17 +12,18 @@ public class Carrier : Unit {
 
     float BuildTimer = 1;
     void Update() {
-        BuildTimer -= Time.deltaTime;
-        if( BuildTimer > 0 ) return;
-        if(Input.GetKeyUp( KeyCode.Alpha1 )) {
-            createFrom(Unit1);
-            BuildTimer = 0.5f;
-        }
-        if(Input.GetKeyUp(KeyCode.Alpha2)) {
-            createFrom(Unit2);
-            BuildTimer = 1.0f;
-        }
 
+			BuildTimer -= Time.deltaTime;
+			if( BuildTimer > 0 ) return;
+			if(Input.GetKeyUp( KeyCode.Alpha1 )) {
+				createFrom(Unit1);
+				BuildTimer = 0.5f;
+			}
+			if(Input.GetKeyUp(KeyCode.Alpha2)) {
+				BuildTimer = 1.0f;
+			}
+
+       
     }
 
     void createFrom(GameObject fab) {

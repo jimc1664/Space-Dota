@@ -97,8 +97,11 @@ public class Unit : NetBehaviour {
    // [ServerCallback]
     void FixedUpdate() {
 
-        Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
-        Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this);
+		if (Owner.isLocalPlayer) {
+			Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
+			Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this);
+		}
+        
     }
 
     void OnDrawGizmos() {
