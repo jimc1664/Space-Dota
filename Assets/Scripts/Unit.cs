@@ -99,6 +99,14 @@ public class Unit : NetBehaviour {
 
         Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
         Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this);
+
+
+        //if(isClient) {
+            Body.MovePosition( Vector2.Lerp( Body.position, SyncO.Body.position, 10.0f *Time.deltaTime  )  );
+            Body.velocity =  Vector2.Lerp( Body.velocity, SyncO.Body.velocity, 10.0f *Time.deltaTime );
+            Body.MoveRotation( Mathf.LerpAngle( Body.rotation, SyncO.Body.rotation, 10.0f *Time.deltaTime  ) );
+
+        //}
     }
 
     void OnDrawGizmos() {

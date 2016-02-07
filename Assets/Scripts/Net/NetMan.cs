@@ -49,14 +49,21 @@ public class NetMan : NetworkManager {
 
             
         };
-        public UnitDat[] Objs;  
+        public UnitDat[] Objs;
+
+        public int Frame;
 
         public const int Id = MsgType.Highest + 1;
         public short getId() { return Id; }
     };
+
+    int SynDat_Frame = 0;
     void recv(Msg_SyncDat msg ) {
         Debug.Log("recv syncdat !!");
+        if( msg.Frame < SynDat_Frame  && msg.Frame+100000 > SynDat_Frame ) return;
 
+        //if(!WeIsHosting )
+        SynDat_Frame = msg.Frame;
 
         foreach(var ud in msg.Objs) {
             if(ud.Uo == null) continue; //possible cos we send this unreliable
@@ -225,6 +232,7 @@ public class NetMan : NetworkManager {
             //FIRE EVERYTHING   -- todo not fireing everything
             var us = FindObjectsOfType<Unit>();
             var msg = new Msg_SyncDat();
+            msg.Frame = SynDat_Frame++;
             msg.Objs = new Msg_SyncDat.UnitDat[us.GetLength(0)];
             for( int i = us.GetLength(0); i-- > 0; ) {
                 msg.Objs[i] = new Msg_SyncDat.UnitDat(us[i]);
