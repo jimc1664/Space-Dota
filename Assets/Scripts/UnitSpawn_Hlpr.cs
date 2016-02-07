@@ -7,8 +7,11 @@ using UnityEngine.Networking;
 //todo.. requires unit... forgot sysntax and intellisense is pooped
 public class UnitSpawn_Hlpr : NetBehaviour {
 
-    Transform Prev, Next;
-    float D;
+
+    [HideInInspector] public Transform Prev, Next;
+    [HideInInspector] public float D;
+
+
     Unit U;
     void Awake() {
         U = GetComponent<Unit>();
@@ -22,6 +25,15 @@ public class UnitSpawn_Hlpr : NetBehaviour {
       //  U.Body.
     //    enabled = false;
       //  gameObject.SetActive(false);
+    }
+
+    public void activate() {
+        U.VisDat.SetActive(true);
+
+        foreach(Collider2D c2 in GetComponentsInChildren<Collider2D>()) {
+            c2.enabled = true;
+        }
+
     }
 
     float Timer = 0;
@@ -51,11 +63,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
         Timer = 1;
         //enabled = true;
         // gameObject.SetActive(true);
-        U.VisDat.SetActive(true);
-
-        foreach(Collider2D c2 in GetComponentsInChildren<Collider2D>()) {
-            c2.enabled = true;
-        }
+        activate();
 
         var j = gameObject.AddComponent<DistanceJoint2D>();  //disble inter collision by magic
         j.connectedBody = c.Body;
@@ -101,7 +109,5 @@ public class UnitSpawn_Hlpr : NetBehaviour {
 
     }
 
-    public override void appendForSync(List<string> msg) {
-        msg.Add("spwn "+name);
-    }
+
 }

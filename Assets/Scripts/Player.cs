@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 public class Player : NetBehaviour {
 
 
+    [SyncVar]  ///lazy!
     public GameObject Cmmdr;
 
     public Unit Selected;
@@ -37,11 +38,10 @@ public class Player : NetBehaviour {
                 ti = i;
 
         Team t = s.Teams[ti];
-        t.Members.Add(this);
         int colI = (t.ColPoolI++)%t.ColorPool.Count;
         Col = t.ColorPool[colI];
 
-        Rpc_setup((byte)(uint)ti, (byte)(uint)colI );
+        Rpc_init((byte)(uint)ti, (byte)(uint)colI );
 
 
         GameObject c = (GameObject)Instantiate(Cmmdr, Vector3.zero, Quaternion.identity );
@@ -57,12 +57,14 @@ public class Player : NetBehaviour {
   //  public Material Mat;
     public Team Tm;
 
-     
-    [ClientRpc]
-    void Rpc_setup( byte teamI, byte colI ) {
+    public void init(byte teamI, byte colI) {
         Tm = Sys.get().Teams[teamI];
         Col = Tm.ColorPool[colI];
+        Tm.Members.Add(this);
     }
+     
+    [ClientRpc]
+    void Rpc_init(byte teamI, byte colI) { init(teamI, colI); }
 
     void Update() {
         if (!isLocalPlayer)  return;
@@ -95,8 +97,6 @@ public class Player : NetBehaviour {
         Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
-    public override void appendForSync(List<string> msg) {
-        msg.Add(name);
-    }
+
 
 }

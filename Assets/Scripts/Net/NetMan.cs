@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine.Networking;
 
 public class NetMan : NetworkManager {
@@ -8,26 +9,137 @@ public class NetMan : NetworkManager {
 
     public override void OnServerConnect(NetworkConnection conn) { //someone connected to our game
         base.OnServerConnect(conn);
-      //  Debug.Log(" OnServerConnect "+conn);
+        //  Debug.Log(" OnServerConnect "+conn);
+    }
+    public override void OnServerDisconnect(NetworkConnection conn) { //someone dis-connected to our game
+
+
+        //!!!   do not destroy player object --- incase rejoins... ???
+
+        //base.OnServerDisconnect(conn);
+        //  Debug.Log(" OnServerConnect "+conn);
     }
 
-    //sends scene data --- ie syncs clients scene
-    class Msg_Scene : MessageBase {  //this is actually bit more complicated due hlapi  -- somethinsg are auto synced somethings not so much...
-        //todo -- client should be dead and incapable until it gets this message...
-        public Msg_Scene() { }
-        public Msg_Scene(List<string> o) {
-            Objs = o.ToArray();
-        }
-        public string[] Objs;
-       // public List<string> Objs; 
-
+    interface IMsg {
+        short getId();
     };
-    const int Msg_SceneId = MsgType.Highest + 1;
-    void recv(Msg_Scene scn) {
 
-        foreach(string s in scn.Objs) {
-            Debug.Log("recv " + s);
+    
+    
+    class Msg_SyncDat : MessageBase, IMsg {  
+        public Msg_SyncDat() { }
+  
+        public class UnitDat {  ///todo  - class??
+                                ///
+            public UnitDat() {
+            }
+            public UnitDat(Unit u) {
+                Uo = u.gameObject;
+                Pos = u.Body.position;
+                Ang = u.Body.rotation;
+                Vel = u.Body.velocity;
+            }
+            public GameObject Uo; //todo  short id
+
+            // todo -- not floats..
+            public Vector2 Pos;
+            public float Ang;
+            public Vector2 Vel;
+
+
+            
+        };
+        public UnitDat[] Objs;  
+
+        public const int Id = MsgType.Highest + 1;
+        public short getId() { return Id; }
+    };
+    void recv(Msg_SyncDat msg ) {
+        Debug.Log("recv syncdat !!");
+
+
+        foreach(var ud in msg.Objs) {
+            if(ud.Uo == null) continue; //possible cos we send this unreliable
+            var us = ud.Uo.GetComponent<Unit>().SyncO;
+            if( us == null ) continue;
+            us.Body.position = ud.Pos;
+            us.Body.rotation = ud.Ang;
+            us.Body.velocity = ud.Vel;
         }
+    }
+
+    class Msg_Player : MessageBase, IMsg {
+        public Msg_Player() { }
+        public Msg_Player( Player p ) {
+            Po = p.gameObject;
+            Team = (byte)Sys.get().Teams.IndexOf(p.Tm);
+            ColorI = (byte)p.Tm.ColorPool.IndexOf(p.Col);            
+        }
+        public GameObject Po;
+        public byte Team, ColorI;
+
+        public const int Id = MsgType.Highest + 2;
+        public short getId() { return Id; }
+    };
+    void recv(Msg_Player m) {
+        Player p = m.Po.GetComponent<Player>();
+        p.init(m.Team, m.ColorI);
+    }
+
+    class Msg_Unit : MessageBase, IMsg {
+        public Msg_Unit() { }
+        public Msg_Unit( Unit u ) {
+            Uo =u.gameObject;
+            OwnerObj = u.Owner.gameObject;
+            Ang = u.Body.rotation;
+            Pathing = u.PathActive ? (byte)1 : (byte)0;
+
+            Vel = u.Body.velocity;
+            AngVel = u.Body.angularVelocity;
+        }
+        public GameObject Uo;
+        public GameObject OwnerObj;
+        public float Ang;
+        public byte Pathing;
+
+        public Vector2 Vel;
+        public float AngVel;
+
+        public const int Id = Msg_Player.Id+1;
+        public short getId() { return Id; }
+    };
+    void recv(Msg_Unit m) {
+        Unit u = m.Uo.GetComponent<Unit>();
+        u.init( m.OwnerObj.GetComponent<Player>() );
+        u.Body.MoveRotation( m.Ang );
+        u.Body.velocity = m.Vel;
+        u.Body.angularVelocity = m.AngVel;
+        u.PathActive = m.Pathing != 0;
+
+        var sp = u.GetComponent<UnitSpawn_Hlpr>();
+        if(sp != null) {
+            sp.activate();
+            u.enabled = true;
+            Destroy(sp);
+        }
+    }
+
+
+    class Msg_UnitSpawn_Hlpr : MessageBase, IMsg {
+        public Msg_UnitSpawn_Hlpr() { }
+        public Msg_UnitSpawn_Hlpr( UnitSpawn_Hlpr u ) {
+            Uo = u.gameObject;
+
+        }
+        public GameObject Uo;
+       // public byte Team, ColorI;
+
+        public const int Id = MsgType.Highest + 2;
+        public short getId() { return Id; }
+    };
+    void recv(Msg_UnitSpawn_Hlpr m) {
+        UnitSpawn_Hlpr p = m.Uo.GetComponent<UnitSpawn_Hlpr>();
+   //     p.init(m.Team, m.ColorI);
     }
 
     public override void OnServerReady(NetworkConnection conn) {  //someone is ready
@@ -36,7 +148,7 @@ public class NetMan : NetworkManager {
 
         if(conn.hostId < 0) return; //Is actually server ... or wtf
 
-
+        /*
         List<string> msg = new List<string>();
         var nbs = FindObjectsOfType<NetBehaviour>();   //things we need to sync --   todo - not sure how this list is built, could be horrendously slow - easy to maintain our own
         foreach(var nb in nbs) {
@@ -44,26 +156,54 @@ public class NetMan : NetworkManager {
             nb.appendForSync(msg);
 
         }
-        conn.Send(Msg_SceneId, new Msg_Scene(msg ) );
+        conn.Send(Msg_Scene.Id, new Msg_Scene(msg));
+        */
+
+        foreach(var p in FindObjectsOfType<Player>()) {
+            conn.Send(Msg_Player.Id, new Msg_Player(p));
+        }
+        foreach(var u in FindObjectsOfType<Unit>()) {
+            conn.Send(Msg_Unit.Id, new Msg_Unit(u));
+        }
     }
 
     T recvMsg<T>(NetworkMessage msg) where T : MessageBase, new() {
         T m = msg.ReadMessage<T>();
         Debug.Log("Client ::recvMsg " + typeof(T));
-        return m;
+        return m;    
     }
+
+    //this may do unnesscary wrapping for each message - may optimise away may not...??
+    void regMsgHandle<T>(NetworkClient c, System.Action<T> recv ) where T : MessageBase, IMsg, new() {  c.RegisterHandler((new T()).getId(), (NetworkMessage msg) => {   recv( recvMsg<T>(msg) );    });  }
+
+
     public override void OnStartClient(NetworkClient c) {
         base.OnStartClient(c);
-        c.RegisterHandler( Msg_SceneId, (NetworkMessage msg) => { recv(recvMsg<Msg_Scene>(msg) ); });
-
+        regMsgHandle<Msg_SyncDat>(c, recv);
+        regMsgHandle<Msg_Player>(c, recv);
+        regMsgHandle<Msg_Unit>(c, recv);
         Debug.Log(" OnStartClient " + c);
     }
-    public override void OnStartHost() {
-        base.OnStartHost();
-      //  c.RegisterHandler( Msg_SceneId, (NetworkMessage msg) => { recv(recvMsg<Msg_Scene>(msg) ); });
 
+    bool WeIsHosting = false;
+    public override void OnStartHost() {
         Debug.Log(" OnStartHost " );
-    }   
+        //reset stuff...
+
+        var sys = Sys.get();
+        foreach(var t in sys.Teams)
+            t.Members.Clear();
+
+        base.OnStartHost();
+
+        WeIsHosting = true;
+    }
+    public override void OnStopHost() {
+
+        base.OnStopHost();
+
+        WeIsHosting = false;
+    }
     public override void OnClientConnect(NetworkConnection conn) {  //we connected to someones game
          base.OnClientConnect(conn);
 
@@ -71,6 +211,33 @@ public class NetMan : NetworkManager {
          //Debug.Log(" OnClientConnect " + conn);
     }
 
+
+    float SyncTimer = 0.0f;
+  //  [ServerCallback]  sort of
+    void Update() {
+        if(!WeIsHosting) return;
+
+        float rate = 0.1f;
+        if((SyncTimer += Time.deltaTime) > rate) {
+            SyncTimer -= rate;
+
+
+            //FIRE EVERYTHING   -- todo not fireing everything
+            var us = FindObjectsOfType<Unit>();
+            var msg = new Msg_SyncDat();
+            msg.Objs = new Msg_SyncDat.UnitDat[us.GetLength(0)];
+            for( int i = us.GetLength(0); i-- > 0; ) {
+                msg.Objs[i] = new Msg_SyncDat.UnitDat(us[i]);
+            }
+            //todo compress..
+
+            foreach(var conn in NetworkServer.connections) {
+                if(conn == null) continue; ///todo investigate why i need this
+                if( conn.hostId >= 0 )
+                    conn.SendUnreliable(Msg_SyncDat.Id, msg);
+            }
+        }
+    }
 
    /*// called when a client disconnects
     public virtual void OnServerDisconnect(NetworkConnection conn)  {

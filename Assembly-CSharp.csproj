@@ -49,6 +49,7 @@
      <Compile Include="Assets\RTS_Camera\Demo\TargetSelector.cs" />
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
      <Compile Include="Assets\Scripts\Carrier.cs" />
+     <Compile Include="Assets\Scripts\Mv_Wheeled.cs" />
      <Compile Include="Assets\Scripts\Net\NetBehaviour.cs" />
      <Compile Include="Assets\Scripts\Net\NetMan.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
@@ -56,6 +57,7 @@
      <Compile Include="Assets\Scripts\Team.cs" />
      <Compile Include="Assets\Scripts\Unit.cs" />
      <Compile Include="Assets\Scripts\UnitSpawn_Hlpr.cs" />
+     <Compile Include="Assets\Scripts\UnitSync_Hlpr.cs" />
      <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
