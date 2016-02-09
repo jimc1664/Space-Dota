@@ -78,12 +78,22 @@ public class Player : NetBehaviour {
             }
 
         }
-        if(Selected == null) return;
+        //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
             RaycastHit hit;
             if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
 
-                Cmd_moveUnit(Selected.gameObject, hit.point);
+                if(Selected) {
+                    var s = Selected.GetComponent<Selectable>();
+                    if( s != null && s.selected == false )
+                        Cmd_moveUnit(Selected.gameObject, hit.point);
+                }
+
+                //todo -- this is unbelievably wrong
+                foreach(var s in FindObjectsOfType<Selectable>()) {
+                    if( s.selected && s.U.Owner == this )
+                        Cmd_moveUnit(s.gameObject, hit.point);
+                }
             }
 
         }

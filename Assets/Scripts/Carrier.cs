@@ -17,7 +17,6 @@ public class Carrier : Unit {
 
     float BuildTimer = 0.5f; //initial delay
     void Update() {
-        
 
         if(Owner == null || !Owner.isLocalPlayer) return;
 

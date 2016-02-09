@@ -90,6 +90,10 @@ public class Unit : NetBehaviour {
 
     public void init(Player o) {
         Owner = o;
+        if(!Owner.isLocalPlayer) {
+            var s = GetComponent<Selectable>();
+            if(s!=null) Destroy(s);
+        }
         fixCol(o.Col);
     }
     /* public void init(Player o) {  NOTE:  --- it appears   Server's local client also gets Rpc function called.. which is bit weird...it's kind of handy so will tolerate it
@@ -129,6 +133,7 @@ public class Unit : NetBehaviour {
 
         //}
     }
+
 
     void OnDrawGizmos() {
         Trnsfrm = transform;
