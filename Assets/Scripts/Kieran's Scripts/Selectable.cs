@@ -20,6 +20,8 @@ public class Selectable : MonoBehaviour {
 
     void Update () {
 
+        if(U.Owner == null) return;
+
         if ( Input.GetMouseButtonUp(0))
         {
             Vector3 camPos = Camera.main.WorldToScreenPoint(transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
