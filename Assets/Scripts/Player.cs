@@ -83,7 +83,7 @@ public class Player : NetBehaviour {
             RaycastHit hit;
             if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
 
-                Cmd_MoveUnit(Selected.gameObject, hit.point);
+                Cmd_moveUnit(Selected.gameObject, hit.point);
             }
 
         }
@@ -91,12 +91,23 @@ public class Player : NetBehaviour {
     }
  
     [Command]
-    public void Cmd_MoveUnit(GameObject u, Vector3 p) {
+    public void Cmd_moveUnit(GameObject u, Vector3 p) {
         u.GetComponent<Unit>().DesPos = p;
         u.GetComponent<Unit>().PathActive = true;
         Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
 
+    [Command]
+    public void Cmd_createFrom(byte i, GameObject muhCarrier ) {
+        if(muhCarrier == null) return;  // it died mayhaps?
+        var c = muhCarrier.GetComponent<Carrier>();
+        if(c== null || c.Owner != this) return; //todo - zomg cheater .. ban-hammer  or possibly error..
+        Debug.Log("Cmd_createFrom");
+        GameObject go = (GameObject)Instantiate(c.SpawnDat[i].Fab, Vector3.zero, Quaternion.identity);
 
+        NetworkServer.Spawn(go);
+        //todo -- SpawnPoints.Count  >= 256 == err
+        go.GetComponent<UnitSpawn_Hlpr>().Rpc_init(muhCarrier, (byte)Random.Range(0, c.SpawnPoints.Count));
+    }
 }

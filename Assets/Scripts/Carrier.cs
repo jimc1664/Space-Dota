@@ -5,39 +5,48 @@ using UnityEngine.Networking;
 
 public class Carrier : Unit {
 
-    public GameObject Unit1;
-    public GameObject Unit2;
+    [System.Serializable]
+    public class SpawnData {
+        public GameObject Fab;
+        public KeyCode Key;
+        public float Cost = 1;  //"cost"  - delay before can build summit else 
+    };
+    public List<SpawnData> SpawnDat;
 
     public List<GameObject> SpawnPoints;
 
-    float BuildTimer = 1;
+    float BuildTimer = 0.5f; //initial delay
     void Update() {
+        
+
+        if(Owner == null || !Owner.isLocalPlayer) return;
+
         BuildTimer -= Time.deltaTime;
         if( BuildTimer > 0 ) return;
-        if(Input.GetKeyUp( KeyCode.Alpha1 )) {
-            createFrom(Unit1);
-            BuildTimer = 0.5f;
-        }
-        if(Input.GetKeyUp(KeyCode.Alpha2)) {
-            createFrom(Unit2);
-            BuildTimer = 1.0f;
-        }
 
+        for(int i = SpawnDat.Count; i-- > 0;  ) {
+            SpawnData sd = SpawnDat[i];
+            if(Input.GetKeyUp(sd.Key)) {  //todo getkeyup should be reference to real ui
+                Owner.Cmd_createFrom((byte) i, gameObject );  //more than 256 ?? nah
+                BuildTimer = sd.Cost;
+                Debug.Log("Cmd_createFrom please??");
+            }
+        }
     }
 
-    void createFrom(GameObject fab) {
-
-
-        GameObject c = (GameObject)Instantiate(fab, Vector3.zero, Quaternion.identity);
+    [Command]
+    void Cmd_createFrom( byte i) {
+        Debug.Log("Cmd_createFrom");
+        GameObject c = (GameObject)Instantiate(SpawnDat[i].Fab, Vector3.zero, Quaternion.identity);
 
 
         NetworkServer.Spawn(c);
 
         //todo -- SpawnPoints.Count  >= 256 == err
-        c.GetComponent<UnitSpawn_Hlpr>().Rpc_init( gameObject, (byte)Random.Range(0, SpawnPoints.Count));
-
-
+        c.GetComponent<UnitSpawn_Hlpr>().Rpc_init(gameObject, (byte)Random.Range(0, SpawnPoints.Count));
     }
+
+
 
 
 }

@@ -21,7 +21,9 @@ public class Unit : NetBehaviour {
     public Transform Trnsfrm;
     [HideInInspector]
     public Rigidbody2D Body;
-    [HideInInspector]
+    //[HideInInspector]
+    
+    //todo - [don't serialize this please, bitch]
     public Player Owner;
 
     public GameObject VisDat;
@@ -29,6 +31,10 @@ public class Unit : NetBehaviour {
     public float MaxSpeed = 5;
     public float TurnSpeed = 10;
     public float Acceleration = 2;
+
+    //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
+    public float OffsetSyncMax = 0.5f;
+   
 
     void Awake() {
         Trnsfrm = transform;
@@ -94,26 +100,44 @@ public class Unit : NetBehaviour {
     [ClientRpc]
     public void Rpc_init(GameObject oo) { init(oo.GetComponent<Player>()); }
 
-   // [ServerCallback]
     void FixedUpdate() {
 
         Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
         Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this);
 
+        
+        //if(isClient) {  //todo -- leave for testing 
+        float lerp = 10.0f *Time.deltaTime ;
+        float off = (Body.position - SyncO.Body.position).magnitude;
 
-        //if(isClient) {
-            Body.MovePosition( Vector2.Lerp( Body.position, SyncO.Body.position, 10.0f *Time.deltaTime  )  );
-            Body.velocity =  Vector2.Lerp( Body.velocity, SyncO.Body.velocity, 10.0f *Time.deltaTime );
-            Body.MoveRotation( Mathf.LerpAngle( Body.rotation, SyncO.Body.rotation, 10.0f *Time.deltaTime  ) );
+        if(off > OffsetSyncMax) {
+            if(off > OffsetSyncMax * 2) {
+                lerp = 1;
+            } else {
+                lerp = Mathf.Max( lerp, 1.0f  - OffsetSyncMax / off );
+            }
+        }
+       // Debug.Log(lerp);
+        Body.MovePosition(Vector2.Lerp(Body.position, SyncO.Body.position, lerp));
+        Body.MoveRotation(Mathf.LerpAngle(Body.rotation, SyncO.Body.rotation, lerp));
+        Body.velocity = Vector2.Lerp(Body.velocity, SyncO.Body.velocity, lerp);
+        float angV = Mathf.Lerp(Body.angularVelocity, SyncO.Body.angularVelocity, lerp);
+        //Debug.Log(" angV  " + angV);
+        if(!float.IsNaN(angV)) angV = 0; //not sure why we need this... todo..?
+        Body.angularVelocity = angV;
+
 
         //}
     }
 
     void OnDrawGizmos() {
-       // Trnsfrm = transform;
+        Trnsfrm = transform;
         Gizmos.color = Color.black;
         if(SyncO != null) 
             Gizmos.DrawLine(Trnsfrm.position, SyncO.Trnsfrm.position);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(Trnsfrm.position, OffsetSyncMax);
     }
 
 
