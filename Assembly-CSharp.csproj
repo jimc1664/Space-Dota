@@ -49,6 +49,8 @@
      <Compile Include="Assets\RTS_Camera\Demo\TargetSelector.cs" />
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
      <Compile Include="Assets\Scripts\Carrier.cs" />
+     <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\BoxSelector.cs" />
+     <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Selectable.cs" />
      <Compile Include="Assets\Scripts\Mv_Wheeled.cs" />
      <Compile Include="Assets\Scripts\Net\NetBehaviour.cs" />
      <Compile Include="Assets\Scripts\Net\NetMan.cs" />
