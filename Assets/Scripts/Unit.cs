@@ -33,8 +33,10 @@ public class Unit : NetBehaviour {
     public float Acceleration = 2;
 
     //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
-    public float OffsetSyncMax = 0.5f;
-   
+    public float OffsetSyncMax = 0.5f, RoughRadius = 1;
+
+
+    public List<Transform> HitTargets;  //todo - very optimisable..
 
     void Awake() {
         Trnsfrm = transform;
@@ -48,6 +50,8 @@ public class Unit : NetBehaviour {
     [HideInInspector]
     public Unit_SyncHelper SyncO;  //todo client only
     void OnEnable() {
+
+       
 
         var go = new GameObject();
         go.name = name + "  syncO";
@@ -94,6 +98,11 @@ public class Unit : NetBehaviour {
             var s = GetComponent<Selectable>();
             if(s!=null) Destroy(s);
         }
+
+        foreach(var c in GetComponentsInChildren<Collider2D>()) {
+            c.gameObject.layer = o.Layer;
+        }
+
         fixCol(o.Col);
     }
     /* public void init(Player o) {  NOTE:  --- it appears   Server's local client also gets Rpc function called.. which is bit weird...it's kind of handy so will tolerate it
@@ -143,6 +152,8 @@ public class Unit : NetBehaviour {
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(Trnsfrm.position, OffsetSyncMax);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(Trnsfrm.position, RoughRadius );
     }
 
 

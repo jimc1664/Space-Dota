@@ -66,4 +66,8 @@ public class Util  {
         return (T)o;
     }
 
+    public static float pow2(float a) {  //todo - generic ..
+        return a * a;
+    }
+
 }

@@ -57,10 +57,20 @@ public class Player : NetBehaviour {
   //  public Material Mat;
     public Team Tm;
 
+    public int Layer = 0;
+    public LayerMask EnemyMask;  //AllyMask
+
+
+    const int Team1i = 10, TeamC = 8;
     public void init(byte teamI, byte colI) {
         Tm = Sys.get().Teams[teamI];
         Col = Tm.ColorPool[colI];
         Tm.Members.Add(this);
+
+        Layer = teamI + Team1i;
+        EnemyMask = (((1 << TeamC) - 1) ^ (1 << teamI)) << Team1i;    //playing with ma bits -- (hashtag) real programmerz
+
+
     }
      
     [ClientRpc]
@@ -72,7 +82,7 @@ public class Player : NetBehaviour {
         if(Input.GetMouseButtonUp(0)) {
             Selected = null;
             RaycastHit hit;
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) {
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) { //todo - layer mask me
                 Debug.Log(" hit "+hit.collider.name);
                 Selected = hit.collider.gameObject.GetComponentInParent<Unit>();
             }
