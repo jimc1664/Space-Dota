@@ -149,14 +149,15 @@ public class Unit : NetBehaviour {
     public float MaxHealth = 1337.0f;
     public float Armor = 3;
 
+    [SyncVar] //todo - lazy 
     float Health = 1;
+
     public Slider HealthBar;
     public Transform Canvas;
 
     protected void Update() {
-
         Canvas.rotation = Quaternion.LookRotation( -Camera.main.transform.forward, Vector3.forward);
-        
+        HealthBar.value = 1 - Health;
     }
     public void damage(float dmg, float ap) {
         float effArmor = Mathf.Max(0, Armor - ap) * (1 + Random.Range(0.0f, 0.5f));
@@ -166,9 +167,11 @@ public class Unit : NetBehaviour {
 
         Health -= (  dmg) / MaxHealth;
 
-        Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
+       // Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
 
         HealthBar.value = 1- Health;
+
+        if(Health < 0) Destroy(gameObject);
     }
 
     void OnDrawGizmos() {
