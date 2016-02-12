@@ -7,5 +7,3 @@
 /*.suo
 /*.ffs_db
 
-# include meta files
-!*.*.meta
