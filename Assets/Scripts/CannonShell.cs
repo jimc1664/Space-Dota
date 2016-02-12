@@ -3,9 +3,9 @@ using System.Collections;
 
 public class CannonShell : MonoBehaviour {
 
-
+    public GameObject MichealBay;
     public Transform Tail;
-    public float Speed = 20, Dmg = 1337;
+    public float Speed = 20;
 
     Transform Target;
     Vector3 Start, TargetP, TargetLO;
@@ -27,13 +27,15 @@ public class CannonShell : MonoBehaviour {
         Vector3 vec = TargetP - Trnsfrm.position;
         float mag = vec.magnitude, spd = Speed * Time.deltaTime;
         if(spd >= mag) {
+            if( MichealBay != null ) Instantiate(MichealBay, Trnsfrm.position, Quaternion.identity);
             Destroy(gameObject);
             return;
         }
 
         Trnsfrm.position += vec * spd / mag;
         Delta += spd;
-
+        
+        
         Tail.localScale = new Vector3(1, Delta * 0.8f + 0.1f, 1);
 
 	}

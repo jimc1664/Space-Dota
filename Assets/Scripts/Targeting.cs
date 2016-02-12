@@ -8,12 +8,33 @@ public class Targeting : NetBehaviour {
     [HideInInspector] public Unit U;
     public float Range = 4;
     public float Cycle = 0.5f;
+    
+    public List<Turret> Turrets;
+
+    [ClientRpc]
+    public void Rpc_setTarget(GameObject tgo, byte ti ) {
+        if( ti >= (byte)Turrets.Count ) return;
+        var trt = Turrets[ti];
+        if(tgo != null) {
+            trt.Target = tgo.GetComponent<Unit>();
+            if(trt.Target != null)
+                trt.getSubTarget();
+        } else
+            trt.Target = null;
+    }
+
 
     void Awake() {
   // ??      if(!isServer) Destroy(this);
         U =  GetComponent<Unit>();
+
+      
     }
 
+    void OnEnable() {
+        for(int i = Turrets.Count; i-- > 0; )
+            Turrets[i].MyInd = i;
+    }
 
     float Timer;
 
@@ -35,7 +56,7 @@ public class Targeting : NetBehaviour {
             Timer -= Cycle;
 
             TargetList.Clear();
-            var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range ); //, U.Owner.EnemyMask );
+            var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, U.Owner.EnemyMask );
             foreach(var c in cols) {
                 if( c.attachedRigidbody == null ) continue;
                 var u = c.attachedRigidbody.GetComponent<Unit>();

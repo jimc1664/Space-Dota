@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+
 
 public class Unit : NetBehaviour {
 
@@ -143,6 +145,31 @@ public class Unit : NetBehaviour {
         //}
     }
 
+    public float Dodge = 0.0f;
+    public float MaxHealth = 1337.0f;
+    public float Armor = 3;
+
+    float Health = 1;
+    public Slider HealthBar;
+    public Transform Canvas;
+
+    protected void Update() {
+
+        Canvas.rotation = Quaternion.LookRotation( -Camera.main.transform.forward, Vector3.forward);
+        
+    }
+    public void damage(float dmg, float ap) {
+        float effArmor = Mathf.Max(0, Armor - ap) * (1 + Random.Range(0.0f, 0.5f));
+
+        float reduction = 0.025f+ 1.95f/ (1.0f + Mathf.Exp(  effArmor *0.5f ) );
+        dmg *= reduction;
+
+        Health -= (  dmg) / MaxHealth;
+
+        Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
+
+        HealthBar.value = 1- Health;
+    }
 
     void OnDrawGizmos() {
         Trnsfrm = transform;

@@ -8,6 +8,9 @@ public class Sys : MonoBehaviour {
 
     public List<Team> Teams = new List<Team>();
 
+   // public GameObject HealthBarFab, CanvasObj;
+
+
     public Material BaseColMat;
     //public int ActiveTeams = 2;
    // public int TeamInteractMask = 0;

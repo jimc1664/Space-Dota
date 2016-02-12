@@ -18,6 +18,7 @@ public class Carrier : Unit {
     float BuildTimer = 0.5f; //initial delay
     void Update() {
 
+        base.Update();
         if(Owner == null || !Owner.isLocalPlayer) return;
 
         BuildTimer -= Time.deltaTime;

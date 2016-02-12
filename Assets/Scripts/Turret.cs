@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+//using UnityEngine.Networking;
 
 public class Turret : MonoBehaviour {
 
@@ -9,33 +11,47 @@ public class Turret : MonoBehaviour {
     Transform Trnsfrm;
     Targeting Trgtn;
 
-    public float Range = 3, RoF = 1, RetargetTime;
+    public float Range = 3, RoF = 1, Dmg = 500, AP = 0, Accuracy = 0.95f, InvTracking = 1;
     public float TurretSpeed = 10;
     float RofTimer = -5;
 
+    public int MyInd = 255;
     public Unit Target;
+
     Transform SubTarget;
 
     Vector3 TargetOff;
 
-    void getSubTarget() {
+    public void getSubTarget() {
 
         SubTarget = Target.HitTargets[Random.Range(0, Target.HitTargets.Count)];
         TargetOff = Random.insideUnitSphere;
     }
 
-	void Update () {
-	    
-        Unit nt = null;
-        if(Trgtn.TargetList.Count > 0) {
-            nt = Trgtn.TargetList.Values[0];
-        }
-        if(nt != Target) {
-            Target = nt;
-            if(Target != null)
-                getSubTarget();
-        }
+    bool JustFired = false;
 
+	void Update () {
+
+        if(Trgtn.isServer && (Time.time - RofTimer ) > RoF/2 ) {
+
+            Unit nt = null;
+            if(Trgtn.TargetList.Count > 0) {
+                nt = Trgtn.TargetList.Values[0];
+            }
+            if(nt != Target) {
+
+                if(nt != null) {
+                    Trgtn.Rpc_setTarget(nt.gameObject, (byte)MyInd);
+                    
+                } else
+                    Trgtn.Rpc_setTarget(null, (byte)MyInd);
+
+            }
+            if(JustFired) {
+                if(Target != null) getSubTarget();
+                JustFired = false;
+            }
+        }
         Vector3 vec = Vector3.up;
 
         
@@ -58,8 +74,8 @@ public class Turret : MonoBehaviour {
 
         if( Target == null ) return;
 
-        Debug.Log( "  a  "+ Mathf.DeltaAngle( rz,dz ) + "  b  "+ Mathf.DeltaAngle( rx,dx ) );
-        float coneSqr = 9;
+     //   Debug.Log( "  a  "+ Mathf.DeltaAngle( rz,dz ) + "  b  "+ Mathf.DeltaAngle( rx,dx ) );
+        float coneSqr = 25;
 
         //todo --- targeting improvement to get range to collider it hit
         //todo  vec.sqrMagnitude   -- for range - ---- but then need to pick smart sub target
@@ -68,8 +84,16 @@ public class Turret : MonoBehaviour {
             
             RofTimer = Time.time;
             Instantiate( FireingAnim ).GetComponent<CannonShell>().init( MuzzelPoint.position, Target.Trnsfrm.position );
+            JustFired = true;
 
-            getSubTarget();
+            if(Trgtn.isServer) {
+                float acc = Accuracy - Target.Dodge * InvTracking;  //todo - ensure doesn't go below 0... 
+                float roll = Random.Range(0.0f,1.0f);
+                if( roll < acc )
+                    Target.damage(Dmg, AP);
+
+                Debug.Log("rool  " + roll + "   acc " + acc);
+            }
         }
     }
 
