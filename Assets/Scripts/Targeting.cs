@@ -46,7 +46,7 @@ public class Targeting : NetBehaviour {
         }
     }
 
-    public SortedList<float, Unit> TargetList = new SortedList<float,Unit>();
+    public SortedList<float, Unit> TargetList = new SortedList<float,Unit>( new DuplicateKeyComparer<float> () );
     //public List<Unit> TargetList;
 
     [ServerCallback]
@@ -78,6 +78,7 @@ public class Targeting : NetBehaviour {
 
         if(Timer > Cycle / 2) return;
         foreach(Unit u in TargetList.Values ) {
+            if(u == null) continue;
             Gizmos.color = Color.Lerp(Gizmos.color, new Color (0, 0, 0, -1), 1.0f- Timer / (Cycle * 2));
             Gizmos.DrawLine(t.position, u.Trnsfrm.position);
             Gizmos.color = Color.yellow;

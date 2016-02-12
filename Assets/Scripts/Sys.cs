@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 //using System;
 
@@ -31,7 +32,13 @@ public class Sys : MonoBehaviour {
 
     }
 
+     public Text UI;
 
+     void Update() {
+
+         UI.text = " Unit Count : " + NetMan.UnitCount;
+
+     }
     /*
     NetServer Server;
     NetClient Client;*/

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Player : NetBehaviour {
 
@@ -43,13 +44,11 @@ public class Player : NetBehaviour {
 
         Rpc_init((byte)(uint)ti, (byte)(uint)colI );
 
-
-        GameObject c = (GameObject)Instantiate(Cmmdr, Vector3.zero, Quaternion.identity );
+        Vector3 sp = t.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
+        GameObject c = (GameObject)Instantiate(Cmmdr, sp, t.SpawnLoc.rotation );
         NetworkServer.Spawn(c);
         c.GetComponent<Carrier>().Rpc_init( this.gameObject );
     }
-
-
 
 
 

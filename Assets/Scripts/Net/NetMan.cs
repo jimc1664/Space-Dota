@@ -149,6 +149,8 @@ public class NetMan : NetworkManager {
    //     p.init(m.Team, m.ColorI);
     }
 
+    public static int UnitCount = 0;
+
     public override void OnServerReady(NetworkConnection conn) {  //someone is ready
         base.OnServerReady(conn);
       //  Debug.Log(" OnServerReady " + conn);
@@ -204,6 +206,8 @@ public class NetMan : NetworkManager {
         base.OnStartHost();
 
         WeIsHosting = true;
+
+        UnitCount = 0;
     }
     public override void OnStopHost() {
 
@@ -224,7 +228,7 @@ public class NetMan : NetworkManager {
     void Update() {
         if(!WeIsHosting) return;
 
-        float rate = 0.1f;
+        float rate = 0.25f;
         if((SyncTimer += Time.deltaTime) > rate) {
             SyncTimer -= rate;
 

@@ -43,17 +43,22 @@ public class Unit : NetBehaviour {
     void Awake() {
         Trnsfrm = transform;
         Body = GetComponent<Rigidbody2D>();
+
+        
    //     DesPos = transform.position;
     }
+
+
     void Start() {
     //    DesPos = transform.position;
+        
     }
 
     [HideInInspector]
     public Unit_SyncHelper SyncO;  //todo client only
     void OnEnable() {
 
-       
+        NetMan.UnitCount++;
 
         var go = new GameObject();
         go.name = name + "  syncO";
@@ -73,6 +78,8 @@ public class Unit : NetBehaviour {
 
     void OnDisable() {
         if(SyncO != null) Destroy(SyncO.gameObject);
+
+        NetMan.UnitCount--;
     }
 
     /*
