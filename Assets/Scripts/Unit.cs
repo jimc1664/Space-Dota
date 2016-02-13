@@ -7,13 +7,20 @@ using UnityEngine.UI;
 
 public class Unit : NetBehaviour {
 
-    [SyncVar(hook = "Hook_DesPos")]
+    //[SyncVar(hook = "Hook_DesPos")]
     public Vector2 DesPos;
-
+/*
     void Hook_DesPos( Vector2 dp ) {
         DesPos = dp;
         PathActive = true;
         if( SyncO != null ) SyncO.PathActive = true;
+    } */
+
+    [ClientRpc]
+    public void Rpc_DesPos(Vector2 dp) {
+        DesPos = dp;
+        PathActive = true;
+        if(SyncO != null) SyncO.PathActive = true;
     }
 
     [HideInInspector]
@@ -33,6 +40,7 @@ public class Unit : NetBehaviour {
     public float MaxSpeed = 5;
     public float TurnSpeed = 10;
     public float Acceleration = 2;
+    public float Friction = 40;
 
     //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
     public float OffsetSyncMax = 0.5f, RoughRadius = 1;

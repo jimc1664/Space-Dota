@@ -110,10 +110,12 @@ public class Player : NetBehaviour {
     }
  
     [Command]
-    public void Cmd_moveUnit(GameObject u, Vector3 p) {
-        u.GetComponent<Unit>().DesPos = p;
-        u.GetComponent<Unit>().PathActive = true;
-        Debug.Log("move unit " + u.name + "  to - " + p);
+    public void Cmd_moveUnit(GameObject uo, Vector3 p) {
+        if(uo == null) return;
+        var u = uo.GetComponent<Unit>();
+        if(u == null) return;
+        u.Rpc_DesPos(p);
+      //  Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
 
@@ -122,7 +124,7 @@ public class Player : NetBehaviour {
         if(muhCarrier == null) return;  // it died mayhaps?
         var c = muhCarrier.GetComponent<Carrier>();
         if(c== null || c.Owner != this) return; //todo - zomg cheater .. ban-hammer  or possibly error..
-        Debug.Log("Cmd_createFrom");
+      //  Debug.Log("Cmd_createFrom");
         GameObject go = (GameObject)Instantiate(c.SpawnDat[i].Fab, Vector3.zero, Quaternion.identity);
 
         NetworkServer.Spawn(go);

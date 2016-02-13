@@ -100,14 +100,17 @@ public class NetMan : NetworkManager {
             OwnerObj = u.Owner.gameObject;
             Ang = u.Body.rotation;
             Pathing = u.PathActive ? (byte)1 : (byte)0;
+            DesPos = u.DesPos;
 
             Vel = u.Body.velocity;
             AngVel = u.Body.angularVelocity;
+
         }
         public GameObject Uo;
         public GameObject OwnerObj;
         public float Ang;
         public byte Pathing;
+        public Vector2 DesPos;
 
         public Vector2 Vel;
         public float AngVel;
@@ -122,6 +125,7 @@ public class NetMan : NetworkManager {
         u.Body.velocity = m.Vel;
         u.Body.angularVelocity = m.AngVel;
         u.PathActive = m.Pathing != 0;
+        u.DesPos = m.DesPos;
 
         var sp = u.GetComponent<UnitSpawn_Hlpr>();
         if(sp != null) {

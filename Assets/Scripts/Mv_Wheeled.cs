@@ -44,6 +44,6 @@ public class Mv_Wheeled  {
         if(Mathf.Abs(desSpeed) < Mathf.Abs(speed)) acc *= 3;
         speed = Mathf.Lerp(speed, desSpeed, acc * Time.deltaTime);
         //        var pos = Trnsfrm.position; pos.y = 0; Trnsfrm.position = pos;
-        Body.velocity = Vector2.Lerp(fwd * speed, Body.velocity, 20 * Time.deltaTime);
+        Body.velocity = Vector2.Lerp(Body.velocity, fwd * speed, u.Friction * Time.deltaTime);
     }
 }
