@@ -166,6 +166,8 @@ public class Unit : NetBehaviour {
 
     [SyncVar] //todo - lazy 
     float Health = 1;
+    public bool Invinciblity = false;  //for very subtle cheating...
+
 
     public Slider HealthBar;
     public Transform Canvas;
@@ -185,6 +187,8 @@ public class Unit : NetBehaviour {
        // Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
 
         HealthBar.value = 1- Health;
+
+        if(Invinciblity) Health = Mathf.Max(Health, 0.01f);
 
         if(Health < 0) Destroy(gameObject);
     }

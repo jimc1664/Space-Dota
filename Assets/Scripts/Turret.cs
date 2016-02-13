@@ -92,7 +92,7 @@ public class Turret : MonoBehaviour {
                 if( roll < acc )
                     Target.damage(Dmg, AP);
 
-                Debug.Log("rool  " + roll + "   acc " + acc);
+             //   Debug.Log("rool  " + roll + "   acc " + acc);
             }
         }
     }
