@@ -2,16 +2,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
+
 
 public class Unit : NetBehaviour {
 
-    [SyncVar(hook = "Hook_DesPos")]
+    //[SyncVar(hook = "Hook_DesPos")]
     public Vector2 DesPos;
-
+/*
     void Hook_DesPos( Vector2 dp ) {
         DesPos = dp;
         PathActive = true;
         if( SyncO != null ) SyncO.PathActive = true;
+    } */
+
+    [ClientRpc]
+    public void Rpc_DesPos(Vector2 dp) {
+        DesPos = dp;
+        PathActive = true;
+        if(SyncO != null) SyncO.PathActive = true;
     }
 
     [HideInInspector]
@@ -31,23 +40,33 @@ public class Unit : NetBehaviour {
     public float MaxSpeed = 5;
     public float TurnSpeed = 10;
     public float Acceleration = 2;
+    public float Friction = 40;
 
     //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
-    public float OffsetSyncMax = 0.5f;
-   
+    public float OffsetSyncMax = 0.5f, RoughRadius = 1;
+
+
+    public List<Transform> HitTargets;  //todo - very optimisable..
 
     void Awake() {
         Trnsfrm = transform;
         Body = GetComponent<Rigidbody2D>();
+
+        
    //     DesPos = transform.position;
     }
+
+
     void Start() {
     //    DesPos = transform.position;
+        
     }
 
     [HideInInspector]
     public Unit_SyncHelper SyncO;  //todo client only
     void OnEnable() {
+
+        NetMan.UnitCount++;
 
         var go = new GameObject();
         go.name = name + "  syncO";
@@ -67,6 +86,8 @@ public class Unit : NetBehaviour {
 
     void OnDisable() {
         if(SyncO != null) Destroy(SyncO.gameObject);
+
+        NetMan.UnitCount--;
     }
 
     /*
@@ -90,6 +111,15 @@ public class Unit : NetBehaviour {
 
     public void init(Player o) {
         Owner = o;
+        if(!Owner.isLocalPlayer) {
+            var s = GetComponent<Selectable>();
+            if(s!=null) Destroy(s);
+        }
+
+        foreach(var c in GetComponentsInChildren<Collider2D>()) {
+            c.gameObject.layer = o.Layer;
+        }
+
         fixCol(o.Col);
     }
     /* public void init(Player o) {  NOTE:  --- it appears   Server's local client also gets Rpc function called.. which is bit weird...it's kind of handy so will tolerate it
@@ -130,6 +160,39 @@ public class Unit : NetBehaviour {
         //}
     }
 
+    public float Dodge = 0.0f;
+    public float MaxHealth = 1337.0f;
+    public float Armor = 3;
+
+    [SyncVar] //todo - lazy 
+    float Health = 1;
+    public bool Invinciblity = false;  //for very subtle cheating...
+
+
+    public Slider HealthBar;
+    public Transform Canvas;
+
+    protected void Update() {
+        Canvas.rotation = Quaternion.LookRotation( -Camera.main.transform.forward, Vector3.forward);
+        HealthBar.value = 1 - Health;
+    }
+    public void damage(float dmg, float ap) {
+        float effArmor = Mathf.Max(0, Armor - ap) * (1 + Random.Range(0.0f, 0.5f));
+
+        float reduction = 0.025f+ 1.95f/ (1.0f + Mathf.Exp(  effArmor *0.5f ) );
+        dmg *= reduction;
+
+        Health -= (  dmg) / MaxHealth;
+
+       // Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
+
+        HealthBar.value = 1- Health;
+
+        if(Invinciblity) Health = Mathf.Max(Health, 0.01f);
+
+        if(Health < 0) Destroy(gameObject);
+    }
+
     void OnDrawGizmos() {
         Trnsfrm = transform;
         Gizmos.color = Color.black;
@@ -138,6 +201,8 @@ public class Unit : NetBehaviour {
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(Trnsfrm.position, OffsetSyncMax);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(Trnsfrm.position, RoughRadius );
     }
 
 

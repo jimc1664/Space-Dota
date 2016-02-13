@@ -13,6 +13,7 @@ public class Team {
     public int ColPoolI;
     public List<Player> Members;
 
+    public Transform SpawnLoc;
 
     void Start() {
 

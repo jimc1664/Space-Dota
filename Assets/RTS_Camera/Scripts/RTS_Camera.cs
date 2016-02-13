@@ -263,6 +263,9 @@ namespace RTS_Cam
                 desiredMove.z = 0;
                 m_Transform.Translate(desiredMove, Space.World);
             }
+
+
+
         }
 
         /// <summary>
@@ -271,6 +274,7 @@ namespace RTS_Cam
         private void HeightCalculation()
         {
             float distanceToGround = DistanceToGround();
+
             if(useScrollwheelZooming)
                 zoomPos += ScrollWheel * Time.deltaTime * scrollWheelZoomingSensitivity;
             if (useKeyboardZooming)
@@ -278,14 +282,23 @@ namespace RTS_Cam
 
             zoomPos = Mathf.Clamp01(zoomPos);
 
+            
             float targetHeight = Mathf.Lerp(minHeight, maxHeight, zoomPos);
-            float difference = 0; 
+            float difference = 0;
 
             if(distanceToGround != targetHeight)
                 difference = targetHeight - distanceToGround;
 
+            var oz = m_Transform.position.z;
             m_Transform.position = Vector3.Lerp(m_Transform.position,
                 new Vector3(m_Transform.position.x, m_Transform.position.y, targetHeight + difference ), Time.deltaTime * heightDampening);
+
+
+            Vector3 desiredMove = m_Transform.forward * ( oz- m_Transform.position.z );
+            desiredMove.z = 0;
+            m_Transform.Translate(desiredMove, Space.World);
+
+
         }
 
         /// <summary>

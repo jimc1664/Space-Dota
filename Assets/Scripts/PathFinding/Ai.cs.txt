@@ -1,0 +1,250 @@
+﻿using UnityEngine;
+using System.Collections;
+
+/// <summary>
+/// This class is the main script for the enemies, 
+/// it handles their movement and death, contains several tweakable variables.
+/// It contains the code for the smoothing of their path 
+///   -  which should probably be moved so it is less bloated, 
+///   dependant on their being a NavMesh in scene to handle requests for paths.
+/// </summary>
+
+public class Ai : MonoBehaviour {
+	// Variables for FollowBot
+	Transform Trnsfrm;
+    public PlayerController Target;
+
+    NavMesh NavMsh;
+	public float speed = 4;
+    float OSpeed, OMass;
+    public NavMesh.Path Path;
+    public int CurNode;
+
+    public float Health = 10;
+
+    public float Slow = 0;
+    public bool Scale = false;
+    public int MaxSmoothIter = -1;
+    public float PathRadius = 1.0f;
+    
+    [HideInInspector] public FrameFromDirection FFD;
+
+    float MaxHealth;
+    Vector2 OScale;
+    void Awake() {
+        Trnsfrm = transform;
+        OScale = Trnsfrm.localScale;
+        OSpeed = speed;
+        MaxHealth = Health;
+        OMass = rigidbody2D.mass;
+        FFD = GetComponentInChildren<FrameFromDirection>();
+    }
+	void Start () {
+		// Defines who the bot follows
+        Target = FindObjectOfType<PlayerController>();
+        NavMsh = FindObjectOfType<NavMesh>();
+
+      //  transform.LookAt(Target.transform.position);
+        ValidPos = Trnsfrm.position;
+
+        //Trnsfrm.rotation = Quaternion.LookRotation(Target.transform.position - Trnsfrm.position, Vector3.forward);
+        var vec = Target.transform.position - Trnsfrm.position;
+
+      //  rigidbody2D.rotation = Mathf.Rad2Deg * Mathf.Atan2(vec.y, vec.x);
+
+    //    rigidbody2D.angularDrag = 0.5f;
+    }
+
+    public void damage(float dmg) {
+
+        if(!enabled) return;
+        if(  (Health -= dmg) <= 0) {
+            
+            StartCoroutine(delayedDestroy(1.0f, gameObject) );
+            enabled = false;
+
+        }
+        if(Scale) {
+            float mod = Mathf.Max(Health / MaxHealth, 0) ;
+            Trnsfrm.localScale = OScale * (0.4f + mod* 0.6f);
+            rigidbody2D.mass = OMass * (0.2f * mod * 0.8f);
+            mod = 1.0f - mod;
+            speed = OSpeed * (1.0f + 5.0f * mod * mod);
+
+        }
+        
+    }
+    IEnumerator delayedDestroy( float delay, GameObject go ) {
+        float oDelay = delay;
+        for(; ; ) {
+            if( (delay -= Time.deltaTime) < 0) break;
+            var c = FFD.SR.color;
+            float mod = 1/(c.a);
+            c.a = Mathf.Sin(delay / oDelay * Mathf.PI*0.5f);
+            mod *= c.a;
+            c.b *= mod;
+            c.g *= mod;
+            FFD.SR.color = c;
+            yield return new YieldInstruction();
+        }
+
+        Destroy(go);
+    }
+
+    Vector2 ValidPos; 
+
+
+    // adjusts the corner by pathing radius of the AI - ie go around corners not through them
+    Vector2 smoothHelper( Vector2 edge, Vector2 at, bool flip  ) {  //todo think of better name...
+        Vector2 ret = edge, vec = edge - at;
+        if(flip) vec = -vec;
+        vec = Vector3.Cross(vec, Vector3.forward);  //lazy..
+        vec.Normalize();
+        //Debug.DrawLine(ret, ret + vec * PathRadius, Color.grey);
+        ret += vec * PathRadius;
+        return ret;
+    }
+
+
+	void Update () {
+
+        if(Target == null || NavMsh == null ) return;
+
+        Vector2 tPos = Target.transform.position, cPos = Trnsfrm.position;
+
+        // if target moved much - need to recalculate path
+        if(Path != null) 
+            if((Path.Smooth[0].P - tPos).sqrMagnitude > 0.25f) Path = null;
+        
+        
+
+
+        if(Path == null) {
+            Path = NavMsh.getPath(cPos, tPos, Target.Node);
+
+            if(Path != null) {
+                CurNode = Path.Smooth.Count - 2;
+                ValidPos = Trnsfrm.position;
+           //     Debug.Log("pc  " + Path.Smooth.Count + "  cn " + CurNode);
+            } else CurNode = -1;
+        }
+
+
+        ///funnel!
+        //  basicly recursivlely look at edge we must travers to get to next node until we find a corner in our way - then move thataway
+        //  no corner in the way means just go towards target
+        Vector2 vec, cnrA, cnrB;
+        if(Path != null) {
+            for(; CurNode > 0; CurNode--) {  //path is backwards - because .... reasons
+                //  tPos = Path.Smooth[CurNode].P;                
+                if(Util.sign(Path.Smooth[CurNode].E2, cPos, Path.Smooth[CurNode].E1) < 0) continue;  
+                // if  so  then we passed through an edge - advance our place along the path
+                //  -done awkard way because fo how things were refactored - not neatening because it won't be more efficent - and might somehow implode
+
+                // the arc defined between cnrA < cPos > cnrB  is the range of current valid directions 
+                cnrA = smoothHelper(Path.Smooth[CurNode].E1, cPos, true);
+                cnrB = smoothHelper(Path.Smooth[CurNode].E2, cPos, false);
+
+                float sgn = -1;
+                //  int msi = MaxSmoothIter;
+                for(int ci = CurNode - 1; ; ci--) { 
+
+                    if(ci <= 0) break;  //reached end of path
+                    
+                    // only one of these will be different from current corners   -- this would be an obvious place to optimise (todo)
+                    Vector2 nCnrA = smoothHelper(Path.Smooth[ci].E1, cPos, true);
+                    Vector2 nCnrB = smoothHelper(Path.Smooth[ci].E2, cPos, false);
+
+
+                    //new corner may refine our current valid arc 
+                    //  it may refine it so far that the angle of the arc becomes 0 - ie a direction - cnrA . cnrB  would be  exactly the same direction  - if so then we are done here
+                    if((nCnrA - cnrA).sqrMagnitude > (nCnrB - cnrB).sqrMagnitude) {
+                        // Debug.DrawLine(cPos, fnlA2, Color.black);
+                        sgn = Util.sign(nCnrA, cPos, cnrA);
+                        if(Util.sign(nCnrA, cPos, cnrA) > 0) {
+
+                            if(Util.sign(cnrB, cPos, nCnrA) < 0) {
+                                tPos = cnrB;
+                                //  Debug.Log("breakb");
+                                break;
+                            }
+                            cnrA = nCnrA;
+                        }
+                    } else {
+                        //Debug.DrawLine(cPos, fnlB2, Color.black);
+                        sgn = Util.sign(cnrB, cPos, nCnrB);
+                        if(Util.sign(cnrB, cPos, nCnrB) > 0) {
+                            if(Util.sign(cnrB, cPos, nCnrA) < 0) {
+                                    tPos = cnrA;
+                                //   Debug.Log("breaka");
+                                    break;
+                            }
+                            cnrB = nCnrB;
+                        }
+                    }
+                    // if( msi-- == 0 ) break;
+                }
+
+                if(Util.sign(cnrB, cPos, tPos) < 0) tPos = cnrB;
+                if(Util.sign(tPos, cPos, cnrA) < 0) tPos = cnrA;
+
+                /*//   Debug.Log("sgn  " + sgn);
+                Debug.DrawLine(cPos, fnlA, Color.green);
+                Debug.DrawLine(cPos, fnlB, Color.red);
+                Debug.DrawLine(cPos, tPos, Color.white); */
+                break;
+            }
+
+        } else {
+            if( NavMsh.findNode( cPos ) != Target.Node ) //fallen off map somehow  ... used to happen when colliders dind match map and also current node wasn't clamped    -- try and move back to last valid position
+                tPos = ValidPos;
+        }
+
+        vec = tPos - cPos;
+        vec.Normalize();
+
+       // rigidbody2D.rotation = Mathf.LerpAngle(rigidbody2D.rotation, Mathf.Rad2Deg * Mathf.Atan2(vec.y, vec.x), 2.0f * Time.deltaTime);        
+       // Trnsfrm.rotation = Quaternion.Lerp( Trnsfrm.rotation, Quaternion.LookRotation(vec, Vector3.forward ) , 2.0f *Time.deltaTime );
+
+        FFD.set(Mathf.Rad2Deg * Mathf.Atan2(vec.y, vec.x));
+
+        Timer += Time.deltaTime * Random.Range(0.95f,1.05f);
+
+        var effSpeed = speed * (0.2f + 0.8f * Mathf.Abs(1-Mathf.Sin(Timer * speed*4.0f)));
+
+        if( (Slow -= Time.deltaTime) > 0.0f) {
+            effSpeed *= 0.2f;
+        }
+
+        rigidbody2D.velocity = vec * effSpeed;
+    }
+    float Timer;
+
+
+    // wave manager needs to know how many enemies are active
+    void OnEnable() {
+        FindObjectOfType<WaveMan>().enemySpawned();
+    //    Debug.Log("AI " + name + " :: Enable ");
+    }
+    void OnDisable() {
+      //  Debug.Log("AI " + name + " :: Disenable ");
+        var wm = FindObjectOfType<WaveMan>();
+        if( wm != null ) wm.enemyDied();
+
+    }
+
+    void OnDrawGizmos() {
+
+        if(Path != null) {
+           //*
+            Gizmos.color = Color.grey;
+            NavMesh.SmoothNode prev = null;
+            foreach( NavMesh.SmoothNode sn in Path.Smooth ) {
+                if(prev != null) {
+                    Gizmos.DrawLine(prev.P, sn.P);
+                }
+                prev = sn;
+            }//*/
+        }
+    }
+}

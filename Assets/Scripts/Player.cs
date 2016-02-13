@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Player : NetBehaviour {
 
@@ -43,13 +44,11 @@ public class Player : NetBehaviour {
 
         Rpc_init((byte)(uint)ti, (byte)(uint)colI );
 
-
-        GameObject c = (GameObject)Instantiate(Cmmdr, Vector3.zero, Quaternion.identity );
+        Vector3 sp = t.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
+        GameObject c = (GameObject)Instantiate(Cmmdr, sp, t.SpawnLoc.rotation );
         NetworkServer.Spawn(c);
         c.GetComponent<Carrier>().Rpc_init( this.gameObject );
     }
-
-
 
 
 
@@ -57,10 +56,20 @@ public class Player : NetBehaviour {
   //  public Material Mat;
     public Team Tm;
 
+    public int Layer = 0;
+    public LayerMask EnemyMask;  //AllyMask
+
+
+    const int Team1i = 10, TeamC = 8;
     public void init(byte teamI, byte colI) {
         Tm = Sys.get().Teams[teamI];
         Col = Tm.ColorPool[colI];
         Tm.Members.Add(this);
+
+        Layer = teamI + Team1i;
+        EnemyMask = (((1 << TeamC) - 1) ^ (1 << teamI)) << Team1i;    //playing with ma bits -- (hashtag) real programmerz
+
+
     }
      
     [ClientRpc]
@@ -72,18 +81,28 @@ public class Player : NetBehaviour {
         if(Input.GetMouseButtonUp(0)) {
             Selected = null;
             RaycastHit hit;
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) {
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) { //todo - layer mask me
                 Debug.Log(" hit "+hit.collider.name);
                 Selected = hit.collider.gameObject.GetComponentInParent<Unit>();
             }
 
         }
-        if(Selected == null) return;
+        //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
             RaycastHit hit;
             if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
 
-                Cmd_moveUnit(Selected.gameObject, hit.point);
+                if(Selected) {
+                    var s = Selected.GetComponent<Selectable>();
+                    if( s != null && s.selected == false )
+                        Cmd_moveUnit(Selected.gameObject, hit.point);
+                }
+
+                //todo -- this is unbelievably wrong
+                foreach(var s in FindObjectsOfType<Selectable>()) {
+                    if( s.selected && s.U.Owner == this )
+                        Cmd_moveUnit(s.gameObject, hit.point);
+                }
             }
 
         }
@@ -91,10 +110,12 @@ public class Player : NetBehaviour {
     }
  
     [Command]
-    public void Cmd_moveUnit(GameObject u, Vector3 p) {
-        u.GetComponent<Unit>().DesPos = p;
-        u.GetComponent<Unit>().PathActive = true;
-        Debug.Log("move unit " + u.name + "  to - " + p);
+    public void Cmd_moveUnit(GameObject uo, Vector3 p) {
+        if(uo == null) return;
+        var u = uo.GetComponent<Unit>();
+        if(u == null) return;
+        u.Rpc_DesPos(p);
+      //  Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
 
@@ -103,7 +124,7 @@ public class Player : NetBehaviour {
         if(muhCarrier == null) return;  // it died mayhaps?
         var c = muhCarrier.GetComponent<Carrier>();
         if(c== null || c.Owner != this) return; //todo - zomg cheater .. ban-hammer  or possibly error..
-        Debug.Log("Cmd_createFrom");
+      //  Debug.Log("Cmd_createFrom");
         GameObject go = (GameObject)Instantiate(c.SpawnDat[i].Fab, Vector3.zero, Quaternion.identity);
 
         NetworkServer.Spawn(go);

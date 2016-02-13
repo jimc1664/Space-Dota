@@ -100,14 +100,17 @@ public class NetMan : NetworkManager {
             OwnerObj = u.Owner.gameObject;
             Ang = u.Body.rotation;
             Pathing = u.PathActive ? (byte)1 : (byte)0;
+            DesPos = u.DesPos;
 
             Vel = u.Body.velocity;
             AngVel = u.Body.angularVelocity;
+
         }
         public GameObject Uo;
         public GameObject OwnerObj;
         public float Ang;
         public byte Pathing;
+        public Vector2 DesPos;
 
         public Vector2 Vel;
         public float AngVel;
@@ -122,6 +125,7 @@ public class NetMan : NetworkManager {
         u.Body.velocity = m.Vel;
         u.Body.angularVelocity = m.AngVel;
         u.PathActive = m.Pathing != 0;
+        u.DesPos = m.DesPos;
 
         var sp = u.GetComponent<UnitSpawn_Hlpr>();
         if(sp != null) {
@@ -148,6 +152,8 @@ public class NetMan : NetworkManager {
         UnitSpawn_Hlpr p = m.Uo.GetComponent<UnitSpawn_Hlpr>();
    //     p.init(m.Team, m.ColorI);
     }
+
+    public static int UnitCount = 0;
 
     public override void OnServerReady(NetworkConnection conn) {  //someone is ready
         base.OnServerReady(conn);
@@ -204,6 +210,8 @@ public class NetMan : NetworkManager {
         base.OnStartHost();
 
         WeIsHosting = true;
+
+        UnitCount = 0;
     }
     public override void OnStopHost() {
 
@@ -224,7 +232,7 @@ public class NetMan : NetworkManager {
     void Update() {
         if(!WeIsHosting) return;
 
-        float rate = 0.1f;
+        float rate = 0.25f;
         if((SyncTimer += Time.deltaTime) > rate) {
             SyncTimer -= rate;
 

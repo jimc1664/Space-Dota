@@ -1,12 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 //using System;
 
 public class Sys : MonoBehaviour {
 
     public List<Team> Teams = new List<Team>();
+
+   // public GameObject HealthBarFab, CanvasObj;
+
 
     public Material BaseColMat;
     //public int ActiveTeams = 2;
@@ -28,7 +32,13 @@ public class Sys : MonoBehaviour {
 
     }
 
+     public Text UI;
 
+     void Update() {
+
+         UI.text = " Unit Count : " + NetMan.UnitCount;
+
+     }
     /*
     NetServer Server;
     NetClient Client;*/
