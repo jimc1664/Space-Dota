@@ -206,6 +206,7 @@ public class Unit : NetBehaviour {
     }
 
     int LastPath = -1;
+    Vector2 LTPos;
     void updatePath() {
         if(NavMsh == null) return;
         CurNode = NavMsh.findNode(Trnsfrm.position, CurNode);
@@ -222,19 +223,20 @@ public class Unit : NetBehaviour {
 
         if(Path != null && LastPath - Time.frameCount < -10) {
             // Debug.Log(" LastPath -Time.frameCount " + (LastPath - Time.frameCount) );
-            if((Path.Smooth[0].P - tPos).sqrMagnitude > 0.25f || LastPath - Time.frameCount < -180) Path = null;
+
+            if((LTPos - tPos).sqrMagnitude > 0.25f || LastPath - Time.frameCount < -180) Path = null;
 
         }
-
 
         if(Path == null) {
             Path = NavMsh.getPath(cPos, tPos, TargetNode);
 
             if(Path != null) {
+                LTPos = tPos;
                 LastPath = Time.frameCount;
-                CurNodeI = Path.Smooth.Count - 2;
+                CurNodeI = Path.Smooth.Count - 1;
                // ValidPos = Trnsfrm.position;
-                //    Debug.Log("pc  " + Path.Smooth.Count + "  cn " + CurNode);
+                  //  Debug.Log("pc  " + Path.Smooth.Count + "  cn " + CurNode);
             } else {
                 CurNodeI = -1;
                 //      Debug.Log("path fail");
@@ -247,10 +249,25 @@ public class Unit : NetBehaviour {
         //  no corner in the way means just go towards target
         Vector2 vec, cnrA, cnrB;
         if(Path != null) {
-            for(; CurNodeI > 0; CurNodeI--) {  //path is backwards - because .... reasons
+            Vector2 lastPos = cPos;
+
+
+
+            for(int i = CurNodeI; i-- > 0; ) {
+                Debug.DrawLine(lastPos, Path.Smooth[i].P, Color.black);
+                Debug.DrawLine(lastPos, Path.Smooth[i].E1, Color.grey);
+                Debug.DrawLine(lastPos, Path.Smooth[i].E2, Color.grey);
+
+                lastPos = Path.Smooth[i].P;
+            }
+            Debug.DrawLine(lastPos, tPos, Color.black );
+            
+
+
+            for(; CurNodeI >= 0; CurNodeI--) {  //path is backwards - because .... reasons
                 //  tPos = Path.Smooth[CurNode].P;                
                 ///
-
+               
                 if(Util.sign(Path.Smooth[CurNodeI].E2, cPos, Path.Smooth[CurNodeI].E1) < 0) {
                     // if  so  then we passed through an edge - advance our place along the path
                     //  -done awkard way because fo how things were refactored - not neatening because it won't be more efficent - and might somehow implode
@@ -263,41 +280,51 @@ public class Unit : NetBehaviour {
                 // the arc defined between cnrA < cPos > cnrB  is the range of current valid directions 
                 cnrA = smoothHelper(Path.Smooth[CurNodeI].E1, cPos, true);
                 cnrB = smoothHelper(Path.Smooth[CurNodeI].E2, cPos, false);
-
+                Debug.DrawLine(cPos, cnrA, Color.red);
+                Debug.DrawLine(cPos, cnrB, Color.blue);
+               
                 float sgn = -1;
                 //  int msi = MaxSmoothIter;
                 for(int ci = CurNodeI - 1; ; ci--) {
 
-                    if(ci <= 0) break;  //reached end of path
+                    if(ci < 0) break;  //reached end of path
 
                     // only one of these will be different from current corners   -- this would be an obvious place to optimise (todo)
+                    ///!!! no longer true -- still place to optimise - vert ids
+
                     Vector2 nCnrA = smoothHelper(Path.Smooth[ci].E1, cPos, true);
                     Vector2 nCnrB = smoothHelper(Path.Smooth[ci].E2, cPos, false);
 
+                    ///!!!!!!BIG TODO ---BUG!! 
+                    /// the order thse are done in matters..    by closest new corner
 
                     //new corner may refine our current valid arc 
                     //  it may refine it so far that the angle of the arc becomes 0 - ie a direction - cnrA . cnrB  would be  exactly the same direction  - if so then we are done here
-                    if((nCnrA - cnrA).sqrMagnitude > (nCnrB - cnrB).sqrMagnitude) {
-                        //Debug.DrawLine(cPos, fnlA2, Color.black);
+                    if((nCnrA - cnrA).sqrMagnitude > 0.01f ) {
                         sgn = Util.sign(nCnrA, cPos, cnrA);
+                        Debug.DrawLine(nCnrA, cnrA, Color.magenta);
                         if(Util.sign(nCnrA, cPos, cnrA) > 0) {
-
                             if(Util.sign(cnrB, cPos, nCnrA) < 0) {
                                 tPos = cnrB;
-                                //  Debug.Log("breakb");
+                                  Debug.Log("breakb");
                                 break;
                             }
+                            Debug.DrawLine(nCnrA, cnrA, Color.red);
+                            Debug.DrawLine(cPos, (cnrA + nCnrA) * 0.5f, Color.red);
                             cnrA = nCnrA;
                         }
-                    } else {
-                        //Debug.DrawLine(cPos, fnlB2, Color.black);
+                    }
+                    if((nCnrB - cnrB).sqrMagnitude > 0.01f ) {
                         sgn = Util.sign(cnrB, cPos, nCnrB);
+                        Debug.DrawLine(nCnrB, cnrB, Color.cyan);
                         if(Util.sign(cnrB, cPos, nCnrB) > 0) {
                             if(Util.sign(cnrB, cPos, nCnrA) < 0) {
                                 tPos = cnrA;
-                                //   Debug.Log("breaka");
+                                   Debug.Log("breaka");
                                 break;
                             }
+                            Debug.DrawLine(nCnrB, cnrB, Color.blue);
+                            Debug.DrawLine(cPos, (cnrB + nCnrB) * 0.5f, Color.blue);
                             cnrB = nCnrB;
                         }
                     }
@@ -327,16 +354,30 @@ public class Unit : NetBehaviour {
        // DesVec = vec;
     }
 
+
+
 ///!  le copied and pasted from earlier thing i did 
     // adjusts the corner by pathing radius of the AI - ie go around corners not through them
     Vector2 smoothHelper(Vector2 edge, Vector2 at, bool flip) {  //todo think of better name...
-        Vector2 ret = edge, vec = edge - at;
-        if(flip) vec = -vec;
+        Vector2 b = edge, aToC = edge - at, vec = aToC;
         vec = Vector3.Cross(vec, Vector3.forward);  //lazy..
         vec.Normalize();
-        //Debug.DrawLine(ret, ret + vec * PathRadius, Color.grey);
-        ret += vec * PathRadius;
-        return ret;
+        if(flip) vec = -vec;
+        
+        b += vec * PathRadius;
+        Debug.DrawLine(edge, b, Color.grey);
+
+        for(int iter = 2; iter-- > 0; ) {
+            var aToB = b - at;
+            var sMag = aToB.sqrMagnitude;
+            if(sMag < 0.001f) return b;
+            var d = Vector2.Dot(aToB, aToC) / sMag;
+            b = at + aToB * d;
+            b = edge + (b - edge).normalized * PathRadius;
+
+            Debug.DrawLine(edge, b, Color.yellow);
+        }
+        return b;
     }
 
 
