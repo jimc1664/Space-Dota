@@ -97,7 +97,7 @@ public class Unit : NetBehaviour {
     [ClientRpc]
     public void Rpc_DesPos(Vector2 dp) {
 
-
+        Debug.Log("Rpc_DesPos");
         //Target = null;
         var n = NavMsh.findNode(dp, TargetNode);
         if(n == null) return;
@@ -116,7 +116,7 @@ public class Unit : NetBehaviour {
     //    DesPos = transform.position;
         NavMsh = FindObjectOfType<NavMesh>();
 
-        Rpc_DesPos(Body.position); //WRONG!!
+       // Rpc_DesPos(Body.position); //WRONG!!
     }
 
     [HideInInspector]
@@ -190,8 +190,9 @@ public class Unit : NetBehaviour {
        // localAvoidance();
 
 
-        SyncO.PathActive = PathActive = true;
+        //SyncO.PathActive = PathActive = true;
        // Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
+     //   Debug.Log(" SyncO.PathActive " + SyncO.PathActive);
         Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this, LocalAvoidance_FB );
 
         
@@ -253,7 +254,7 @@ public class Unit : NetBehaviour {
         if(Health < 0) Destroy(gameObject);
     }
 
-
+    public bool RefreshLA = true;
    
     void localAvoidance() {
 
