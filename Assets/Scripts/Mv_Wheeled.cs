@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Mv_Wheeled  {
 
@@ -45,5 +46,159 @@ public class Mv_Wheeled  {
         speed = Mathf.Lerp(speed, desSpeed, acc * Time.deltaTime);
         //        var pos = Trnsfrm.position; pos.y = 0; Trnsfrm.position = pos;
         Body.velocity = Vector2.Lerp(Body.velocity, fwd * speed, u.Friction * Time.deltaTime);
+    }
+
+    static void drawNode(Vector2 p, Vector2 d, Color c, GizmoFeedBack gizmo, float r = 1 ) {
+
+        gizmo.sphere(p,r, c );
+
+        gizmo.line(p, p + d * 1.5f, Color.black);
+    }
+    public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
+        public int Compare(K x, K y) {
+            int result = x.CompareTo(y);
+            if(result == 0) return 1;
+            else return result;  // (-) invert 
+        }
+    }
+    class LANode {
+        public Vector2 Pos, Dir;
+        public float Speed, Ang, AngVel;
+        public int Depth;
+        public LANode Prev;
+    };
+
+    static void step(ref Vector2 p0, ref float a0, ref float av0, float s0, float s1, float avAdd, float step ) {
+        //float s = spd[si];
+        //float avAdd = angV[ai];
+
+        var effSpd = (s0 + s1) * 0.5f;
+
+        var av1 = av0 + avAdd;
+
+        var a1 = (a0 + (av0 + av1) * 0.5f * step);
+        var ta = (a1 + a0) * 0.5f;
+        Vector2 td = new Vector2(-Mathf.Sin(ta * Mathf.Deg2Rad), Mathf.Cos(ta * Mathf.Deg2Rad));
+        //Vector2 d = new Vector2(-Mathf.Sin(a * Mathf.Deg2Rad), Mathf.Cos(a * Mathf.Deg2Rad));
+
+       // Vector2 p = n1.Pos + td * effSpd * step;
+
+        p0 += td * effSpd * step;
+        av0 = av1;
+        a0 = a1;
+    }
+
+
+
+    public static void update(Transform Trnsfrm, Rigidbody2D Body, ref bool PathActive, Unit u, GizmoFeedBack gizmo) {
+
+        //Vector2 fwd = Trnsfrm.up;
+        //float desSpeed = 0, speed = Vector2.Dot(Body.velocity, fwd);
+
+        gizmo.reset();
+        var n1 = new LANode();
+        n1.Dir = Trnsfrm.forward;  //wrong?
+        n1.Pos = Body.position;
+        n1.Speed = Vector2.Dot(Body.velocity, n1.Dir );
+        n1.Ang = Body.rotation;
+        n1.AngVel = Body.angularVelocity;
+        n1.Depth = 0;
+
+        float[] spd = new float[3];
+        float[] angV = new float[3];
+        float tStep = 1.0f;
+
+        float r = 1.1f;
+        Color col = Color.red;
+        SortedList<float, LANode> search = new SortedList<float, LANode>(new DuplicateKeyComparer<float>());
+
+
+        float bestD = float.MaxValue;
+        LANode best = null ;
+
+        for(int maxIter = 1000; maxIter-- > 0; ) {
+
+            spd[0] = n1.Speed;
+            float acc = u.Acceleration * tStep;
+            float dec = acc * 3;
+            if(Mathf.Abs(n1.Speed) > Mathf.Abs(n1.Speed + dec))
+                spd[1] = n1.Speed + dec;
+            else
+                spd[1] = n1.Speed + acc;
+            if(Mathf.Abs(n1.Speed) > Mathf.Abs(n1.Speed - dec))
+                spd[2] = n1.Speed - dec;
+            else
+                spd[2] = n1.Speed - acc;
+
+
+            angV[0] = 0;
+            float avAcc = 25 * tStep;
+            angV[1] = + avAcc;
+            angV[2] = - avAcc;
+
+          //  Debug.Log("i " + i + "  step " + step + "  spd[1] " + spd[1] + "  angV[1] " + angV[1]);
+
+            for(int si = 3; si-- > 0; ) 
+            for(int ai = 3; ai-- > 0; ) {
+               // int si = 1; ai = 1;
+                float s = spd[si];
+                float avAdd = angV[ai];
+                /*
+                var effSpd = (n1.Speed + s) * 0.5f;
+                var av = n1.AngVel + avAdd;
+
+                var a = (n1.Ang +(n1.AngVel+ av)*0.5f*step  ); 
+                var ta = (a + n1.Ang) * 0.5f;
+                Vector2 td = new Vector2(-Mathf.Sin(ta* Mathf.Deg2Rad), Mathf.Cos(ta* Mathf.Deg2Rad));
+                Vector2 d = new Vector2(-Mathf.Sin(a* Mathf.Deg2Rad), Mathf.Cos(a* Mathf.Deg2Rad));
+
+                Vector2 p = n1.Pos + td   *effSpd*step;
+                */
+                Vector2 p = n1.Pos;
+                float a = n1.Ang, av = n1.AngVel;
+
+                //ef Vector2 p0, ref float a0, ref float av0, ref float s0, float s1, float avAdd, float step ) {
+                step( ref p, ref a, ref av, n1.Speed, s, avAdd, tStep );
+                
+                Vector2 d = new Vector2(-Mathf.Sin(a* Mathf.Deg2Rad), Mathf.Cos(a* Mathf.Deg2Rad));
+
+                drawNode(p, d, col, gizmo, r);
+                var vec = u.TargetP - p;
+
+                float dis = Mathf.Abs( (u.TargetP - p).magnitude  -  Vector2.Dot( vec.normalized, d )*s  );
+
+                
+                var nn = new LANode();
+                nn.Dir = d;
+                nn.Pos = p;
+                nn.Speed = s;
+                nn.Ang = a;
+                nn.AngVel = av;
+                nn.Depth = n1.Depth + 1;
+                nn.Prev = n1;
+                dis -= nn.Depth;
+                
+                if(dis < bestD) {
+                    best = nn;
+                    bestD = dis;
+                }
+                if(n1.Depth < 3) {
+                    search.Add(dis, nn);
+                } 
+            }
+
+           
+
+          
+            if(search.Count == 0) goto label_doubleBreak;
+            if(search.Keys[0] > (bestD+1) * 1.1f ) break;
+            n1 = search.Values[0];
+            search.RemoveAt(0);      
+        }
+        label_doubleBreak:;
+        while(best != null) {
+            drawNode(best.Pos, best.Dir, Color.green, gizmo, 1.2f);
+            best = best.Prev;
+        }
     }
 }
