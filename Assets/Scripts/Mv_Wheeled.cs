@@ -48,6 +48,160 @@ public class Mv_Wheeled  {
         Body.velocity = Vector2.Lerp(Body.velocity, fwd * speed, u.Friction * Time.deltaTime);
     }
 
+    struct NewtonRaphson_Helper {
+
+        float Drag, MaxSpeed, Accel, V0, P0;
+
+        public NewtonRaphson_Helper(float maxSpeed, float maxAccel, float accel, float v0, float p0) {
+            Drag = maxAccel / maxSpeed;
+            MaxSpeed = maxSpeed;
+            V0 = v0;
+            P0 = p0;
+            Accel = accel;
+            K2 = (-Drag * v0 + accel) / (Drag * Drag);
+            K1 = p0 - K2;         
+        }
+        public float solve( int iter = 4 ) {
+            float t = P0 / MaxSpeed;
+            for(; iter-- > 0; ) {  //note - no early exit -... todo make compiler unroll...
+                float at = K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
+                float vt = K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+
+                t = t - at / vt;// / dvt;
+            }
+            return Mathf.Abs( t );
+        }
+        public float vel(float t) {
+            return K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+        }
+        public float pos(float t) {
+            return K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
+        }
+
+        float K1, K2;
+    };
+
+    static bool active = false;
+    public static void update(Transform Trnsfrm, Rigidbody2D Body, ref bool PathActive, Unit u, GizmoFeedBack gizmo) {
+
+        //if(!PathActive) return;
+        if(PathActive) {
+            active = true;
+        }
+        if(!active) return;
+
+        var ry = Body.rotation;
+        Vector2 fwd = new Vector2(-Mathf.Sin(ry * Mathf.Deg2Rad), Mathf.Cos(ry * Mathf.Deg2Rad));
+        float desSpeed = 0, speed = Vector2.Dot(Body.velocity, fwd);
+        float av = Body.angularVelocity;
+       // if(PathActive) {
+            var vec = u.TargetP - (Vector2)Trnsfrm.position;
+            var mag = vec.magnitude;
+        //    vec *= 1000.0f;
+            // if(mag > 0.01) {
+            var dy = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
+            //Debug.Log(" ang = " + ry + "  des " + dy);
+            float rotMod = (1.0f - Mathf.Abs(0.5f - Mathf.Pow(speed / u.MaxSpeed, 2)));// *u.TurnSpeed;
+            rotMod = 1;
+            float rotMaxSpeed = rotMod * 100;
+            float rotMaxAccel = rotMod * 90.0f;
+            float rotMaxDecel = rotMaxAccel * 1.5f;
+
+            float rotDecel = rotMaxDecel;
+            if(av < 0) rotDecel = -rotDecel;
+            float timeToStopRot = av / rotDecel;
+
+            float angDiff = Mathf.DeltaAngle(ry, dy);
+            float v0 = av; //if(angDiff < 0) v0 = -v0;
+
+            //float timeToMaxSpd = (rotMaxSpeed - v0) / (rotMaxAccel * (1.0f - Mathf.Max(0, v0 / rotMaxSpeed)));
+            float drag = rotMaxAccel / rotMaxSpeed;
+            //k2 = =(-$B$2*$B$4*G4-$B$4^2*$B$3)/($B$2^2)
+            //float dv
+
+            float accAdd = rotMaxAccel; if(angDiff < 0) accAdd = -accAdd;
+
+            var rotEq = new NewtonRaphson_Helper(rotMaxSpeed, rotMaxAccel, accAdd, av, -angDiff);
+            float timeToDesRot = rotEq.solve();
+            
+            
+        /*
+            float a = rotMaxAccel;
+            if(angDiff < 0) a = -a;
+            float b = av, c = -angDiff, b2 = b * b, ac = 4 * a * c;//, addAcc = -a;            
+            float b2ac = Mathf.Sqrt(b2 - ac);
+            float  timeToDesRot = (-b + b2ac) / a;
+
+            if(timeToDesRot < 0) {
+                timeToDesRot = (-b - b2ac) /a;
+            }
+            timeToDesRot *= 0.5f;
+        */
+
+            Debug.Log("timeToStopRot  " + timeToStopRot + "   timeToDesRot  " + timeToDesRot + "   angDiff  " + angDiff 
+                + "   av  " + av + "   v0  " + v0 + " ||| " + Mathf.Max(0, v0 / rotMaxSpeed) +" | " + (1.0f- Mathf.Max(0, v0 / rotMaxSpeed) ) );
+
+            if(timeToDesRot > timeToStopRot)
+                //av += a * Mathf.Min(Time.deltaTime, timeToDesRot);
+                av = rotEq.vel(Mathf.Min(Time.deltaTime, timeToDesRot));
+            else
+                av -= rotDecel * Mathf.Min(Time.deltaTime, timeToStopRot);
+
+            //Body.MoveRotation(ry);
+            desSpeed = Mathf.Clamp(Vector3.Dot(fwd, vec*10.0f), -u.MaxSpeed / 2, u.MaxSpeed);
+
+            if(desSpeed > -u.MaxSpeed / 6) {
+                if(desSpeed < u.MaxSpeed / 2)
+                    desSpeed = Mathf.Max(Mathf.Min(mag, u.MaxSpeed / 2), desSpeed);
+            }
+            var acc = u.Acceleration;
+         //   if(desSpeed < 0) acc = -acc;
+          //  if(Mathf.Abs(desSpeed) < Mathf.Abs(speed)) acc *= 3;
+            var posEq = new NewtonRaphson_Helper(u.MaxSpeed, u.Acceleration, acc, speed, -mag);
+            //float timeToLoc = posEq.solve();
+
+            if(PathActive) {
+                var rotE = rotEq;
+                var posE = posEq;
+                var cp = Body.position;
+                var cSpd = speed;
+                var cDir = fwd;
+                var cAng = ry;
+    
+                for(int iter = 20; ; ) {
+                    float step = 1.0f;
+
+                                    
+                    if((iter--) < 0) break;
+                }
+
+            }
+            //desSpeed = 0;
+            /*
+                       // if(desSpeed > -u.MaxSpeed / 6) {
+                            if(desSpeed < u.MaxSpeed / 2)
+                                desSpeed = Mathf.Max(Mathf.Min(mag, u.MaxSpeed / 2), desSpeed);
+                        } else {
+
+                            if(desSpeed < -u.MaxSpeed / 6 - speed) {
+                                if(desSpeed > -u.MaxSpeed / 3)
+                                    desSpeed = Mathf.Min(-Mathf.Min(mag, u.MaxSpeed / 3), desSpeed);
+                            } else
+                                desSpeed = Mathf.Max(Mathf.Min(mag, u.MaxSpeed / 2), -desSpeed);
+                        }*/
+
+       // }
+       // float acc = u.Acceleration;
+        speed = posEq.vel(Time.deltaTime);
+        var vel = Body.velocity;
+        vel -= fwd * Vector2.Dot(Body.velocity, fwd);
+        Body.velocity = vel * 0.8f + fwd*speed; 
+        Body.angularVelocity = av;
+
+
+        PathActive = false;
+    }
+
     static void drawNode(Vector2 p, Vector2 d, Color c, GizmoFeedBack gizmo, float r = 1 ) {
 
         gizmo.sphere(p,r, c );
@@ -90,7 +244,8 @@ public class Mv_Wheeled  {
 
     static LANode Cur;
     static float Timer = 0;
-    public static void update(Transform Trnsfrm, Rigidbody2D Body, ref bool PathActive, Unit u, GizmoFeedBack gizmo) {
+
+    public static void update2(Transform Trnsfrm, Rigidbody2D Body, ref bool PathActive, Unit u, GizmoFeedBack gizmo) {
      //   Time.timeScale = 0.1f;
         if(!PathActive) return;
         //Vector2 fwd = Trnsfrm.up;
