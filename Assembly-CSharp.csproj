@@ -52,6 +52,7 @@
      <Compile Include="Assets\Scripts\Carrier.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\BoxSelector.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\MenuManager.cs" />
+     <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\ParticleRotation.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\Selectable.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\Selected.cs" />
      <Compile Include="Assets\Scripts\Mv_Wheeled.cs" />
