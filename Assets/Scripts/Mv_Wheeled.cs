@@ -122,7 +122,7 @@ public class Mv_Wheeled  {
             U = u;
         }
 
-        public void step( float t, ref float rotBias  ) {
+        public void step( float t, ref float movBias, ref float rotBias ) {
 
             var oAng = Ang;
             Vector2 oFwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));
@@ -133,12 +133,16 @@ public class Mv_Wheeled  {
 
             //var mAng = Mathf.LerpAngle(Ang, oAng, 0.5f);
             // Vector2 mFwd = new Vector2(-Mathf.Sin(mAng * Mathf.Deg2Rad), Mathf.Cos(mAng * Mathf.Deg2Rad)) 
-            desSpeed = Mathf.Clamp(Vector3.Dot(oFwd, vec ), -U.MaxSpeed / 2, U.MaxSpeed); ;//
-            if(desSpeed > -U.MaxSpeed / 6) {
+
+            desSpeed = Mathf.Clamp(Vector3.Dot(oFwd, vec), -U.MaxSpeed / 2, U.MaxSpeed); ;//
+
+            if(movBias != -1 && desSpeed > U.MaxSpeed/6) movBias = 0;
+
+            if( movBias == 1 || desSpeed > -U.MaxSpeed / 6 && movBias != -1 ) {
                 if(desSpeed < U.MaxSpeed / 2)
                     desSpeed = Mathf.Max(Mathf.Min(mag, U.MaxSpeed / 2), desSpeed);   //todo - add magic no. mul to mag (tweak)
             } else {
-                if(desSpeed < -U.MaxSpeed / 6 - oSpeed) {
+                if(desSpeed < -U.MaxSpeed / 6 - oSpeed  || movBias == -1 ) {
                     if(desSpeed > -U.MaxSpeed / 3)
                         desSpeed = Mathf.Min(-Mathf.Min(mag, U.MaxSpeed / 3), desSpeed);
                 } else
@@ -248,26 +252,35 @@ public class Mv_Wheeled  {
         if(PathActive) {
             gizmo.reset();
             gizmo.line(st1.Pos, u.TargetP, Color.white);
-            
-            var col = Color.red;
-            float bias = 1;
-            for(int i = 1;; ) {
+
+            Color[] cols = { Color.red, Color.blue, Color.green, Color.yellow };
+            float[,] bias = { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
+            int dirs = 4;
+
+            Vector2 oFwd = new Vector2(-Mathf.Sin(st1.Ang * Mathf.Deg2Rad), Mathf.Cos(st1.Ang * Mathf.Deg2Rad));
+            var vec = U.TargetP - st1.Pos;
+
+            if(Vector2.Dot(vec, oFwd) > 0.0f) {
+                dirs = 2;
+                bias[0, 0] = bias[1, 0] = 0;
+            }
+            for(int i = dirs; i-- >0; ) {
+                var col = cols[i];
                 State st = st1;
                 Vector2 lp = st.Pos;
+                float mBias = bias[i, 0], rBias = bias[i, 1];
                 for(int iter = 30; ; ) {
                     //  float step = 1.0f;
-                    st.step(0.3f, ref bias );
+                    st.step(0.3f, ref mBias, ref rBias );
                     gizmo.line(st.Pos, lp, col );
                     if((iter--) < 0) break;
                     lp = st.Pos;
-                }
-                if(i-- <= 0) break;
-                col = Color.blue;
-                bias = -1;
+                }               
             }
         }
         float rotBias = 0;
-        st1.step(Time.deltaTime, ref rotBias );
+        float movBias = 0;
+        st1.step(Time.deltaTime, ref movBias, ref rotBias);
 
         Body.velocity = st1.Vel;
         Body.angularVelocity = st1.AngVel;
