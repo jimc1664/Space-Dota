@@ -1,8 +1,12 @@
-﻿using UnityEngine;
+﻿//#define DRAW_NAV_LINES
+
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+
 
 public class GizmoFeedBack {
     public struct Sphere {
@@ -71,6 +75,7 @@ public class Unit : NetBehaviour {
 
 
     public float Friction = 40;
+    public float SteerStep = 0.7f;
 
     //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
     public float OffsetSyncMax = 0.5f, RoughRadius = 1;
@@ -90,12 +95,12 @@ public class Unit : NetBehaviour {
 
     protected NavMesh.Node TargetNode;
 
-    [HideInInspector]
-    public bool PathActive = false;
+   // [HideInInspector]
+    //public bool PathActive = false;
     //two targeting modes..
     // public CharMotor Target;
     [HideInInspector]
-    public Vector2 DesPos, TargetP;
+    public Vector2 TargetP;
 
 
 
@@ -108,8 +113,8 @@ public class Unit : NetBehaviour {
         if(n == null) return;
         TargetNode = n;
         TargetP = dp;
-        PathActive = true;
-        if(SyncO != null) SyncO.PathActive = true;
+        MvmntController.PathActive = true;
+        MvmntController_SO.PathActive = true;
     }
 
 
@@ -120,7 +125,7 @@ public class Unit : NetBehaviour {
     void Start() {
     //    DesPos = transform.position;
         NavMsh = FindObjectOfType<NavMesh>();
-
+        TargetNode = CurNode = NavMsh.findNode(Trnsfrm.position);
        // Rpc_DesPos(Body.position); //WRONG!!
     }
 
@@ -134,7 +139,6 @@ public class Unit : NetBehaviour {
         go.name = name + "  syncO";
         SyncO = go.AddComponent<Unit_SyncHelper>();
         SyncO.Body = go.AddComponent<Rigidbody2D>(Body);
-        SyncO.PathActive = PathActive;
         for( int i = 0; i < Trnsfrm.childCount; i++ ) {
             var t = Trnsfrm.GetChild(i);
             if(t.GetComponentInChildren<Collider2D>() == null) continue;
@@ -188,7 +192,11 @@ public class Unit : NetBehaviour {
     [ClientRpc]
     public void Rpc_init(GameObject oo) { init(oo.GetComponent<Player>()); }
 
+    public Mv_Wheeled MvmntController_SO = new Mv_Wheeled(), MvmntController = new Mv_Wheeled();
 
+    float SteerTimer = 0;
+    const float SteerDelay = 1.5f;
+    bool SteerUpdate = false;
     void FixedUpdate() {
 
         updatePath();
@@ -198,9 +206,17 @@ public class Unit : NetBehaviour {
         //SyncO.PathActive = PathActive = true;
        // Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
      //   Debug.Log(" SyncO.PathActive " + SyncO.PathActive);
-        Mv_Wheeled.update(SyncO.Trnsfrm, SyncO.Body, ref SyncO.PathActive, this, LocalAvoidance_FB );
 
-        
+        bool steerCheck = MvmntController_SO.PathActive && ((Time.time - SteerTimer) > SteerDelay) && (SteerUpdate || SyncO.Body.velocity.sqrMagnitude < 0.25f);
+        MvmntController_SO.update(SyncO.Trnsfrm, SyncO.Body, steerCheck, this, Steering_FB);
+        if(steerCheck) {
+            SteerUpdate = false;
+            SteerTimer = Time.time;
+            MvmntController.CMBias = MvmntController_SO.CMBias;
+            MvmntController.CRBias = MvmntController_SO.CRBias;
+        }
+        MvmntController.update(Trnsfrm, Body, false, this, null );
+
         //if(isClient) {  //todo -- leave for testing 
         float lerp = 10.0f *Time.deltaTime ;
         float off = (Body.position - SyncO.Body.position).magnitude;
@@ -209,11 +225,15 @@ public class Unit : NetBehaviour {
         if(off > OffsetSyncMax) {
             if(off > OffsetSyncMax * 2) {
                 lerp = 1;
+                MvmntController.CMBias = MvmntController_SO.CMBias;
+                MvmntController.CRBias = MvmntController_SO.CRBias;
+                MvmntController.SPi = MvmntController_SO.SPi;
+
             } else {
                 lerp = Mathf.Max( lerp, 1.0f  - OffsetSyncMax / off );
             }
         }
-        lerp = 1;
+      //  lerp = 1;
 
        // Debug.Log(lerp);
         Body.MovePosition(Vector2.Lerp(Body.position, SyncO.Body.position, lerp));
@@ -259,8 +279,10 @@ public class Unit : NetBehaviour {
         if(Health < 0) Destroy(gameObject);
     }
 
+    /*
     public bool RefreshLA = true;
    
+    
     void localAvoidance() {
 
         LocalAvoidance_FB.reset();
@@ -272,13 +294,14 @@ public class Unit : NetBehaviour {
         LocalAvoidance_FB.sphere(cp + vec.normalized * 4, 1, Color.red);
 
     }
-    GizmoFeedBack LocalAvoidance_FB = new GizmoFeedBack();
+    GizmoFeedBack LocalAvoidance_FB = new GizmoFeedBack(); */
 
     float LPathTime = -1, LSmoothTime = -1;
     Vector2 LTPos; NavMesh.Node LTNode;
     public List<Vector2> SmoothPath = new List<Vector2>();
-    public int SPi = 0;
     static List<Vector2> WorkingSmoothPath = new List<Vector2>();
+
+
     void updatePath() {
         if(NavMsh == null) return;
         var lCn =  CurNode;
@@ -295,7 +318,6 @@ public class Unit : NetBehaviour {
         Vector2 tPos = TargetP, cPos = Body.position;
 
         Vector2 tPos2 = tPos;
-        var smthP = WorkingSmoothPath;
 
         if(CurNode != TargetNode) {
 
@@ -333,117 +355,140 @@ public class Unit : NetBehaviour {
                 }
             }
 
-            smthP.Clear();
+            
             ///funnel!
             //  basicly recursivlely look at edge we must travers to get to next node until we find a corner in our way - then move thataway
             //  no corner in the way means just go towards target
 
-            if(Path != null) {
+            bool reSmooth = true;
+            if(reSmooth) {
+                var smthP = WorkingSmoothPath;
+                smthP.Clear();
+                if(Path != null) {
 
-               
+
 #if DRAW_NAV_LINES                 
-                Vector2 lastPos = cPos;
-                for(int i = CurNodeI; i-- > 0; ) {
-                    Debug.DrawLine(lastPos, Path.Smooth[i].P, Color.white);
-                    Debug.DrawLine(lastPos, Path.Smooth[i].E1, Color.grey);
-                    Debug.DrawLine(lastPos, Path.Smooth[i].E2, Color.grey);
+                    Vector2 lastPos = cPos;
+                    for(int i = CurNodeI; i-- > 0; ) {
+                        Debug.DrawLine(lastPos, Path.Smooth[i].P, Color.white);
+                        Debug.DrawLine(lastPos, Path.Smooth[i].E1, Color.grey);
+                        Debug.DrawLine(lastPos, Path.Smooth[i].E2, Color.grey);
 
-                    lastPos = Path.Smooth[i].P;
-                }
-                Debug.DrawLine(lastPos, tPos, Color.white);
-#endif
-                // for(; CurNodeI >= 0; CurNodeI--) {  //path is backwards - because .... reasons
-
-                funnel(cPos, ref tPos, CurNodeI);
-
-                var lp = cPos;
-                var cp = tPos; var cni = CurNodeI; var n = CurNode;
-                float dis = (lp - cp).magnitude;
-                float lDis = 0;
-                float maxDis = 25;
-              
-                for(int maxIter = 10; maxIter-- > 0; ) {
-                   // Debug.Log("iter " + maxIter);
-                    
-                    var tp = TargetP;
-                    if(dis > maxDis) {
-                     //   Debug.Log("PASS dis " + maxIter);
-                        var v = (cp - lp);
-#if DRAW_NAV_LINES  
-                        Debug.DrawLine(lp, lp + v * (maxDis - lDis) / v.magnitude, Color.black);
-#endif
-                        break;
+                        lastPos = Path.Smooth[i].P;
                     }
-                    if((tp - cp).sqrMagnitude < 0.5f) {
-                      //  Debug.Log("PASS  " + maxIter);
+                    Debug.DrawLine(lastPos, tPos, Color.white);
+#endif
+                    // for(; CurNodeI >= 0; CurNodeI--) {  //path is backwards - because .... reasons
+
+                    funnel(cPos, ref tPos, CurNodeI);
+
+                    var lp = cPos;
+                    var cp = tPos; var cni = CurNodeI; var n = CurNode;
+                    float dis = (lp - cp).magnitude;
+                    float lDis = 0;
+                    float maxDis = 25;
+
+
+                    for(int maxIter = 10; maxIter-- > 0; ) {
+                        // Debug.Log("iter " + maxIter);
+                        smthP.Add(cp);
+                        var tp = TargetP;
+                        if(dis > maxDis) {
+                            //   Debug.Log("PASS dis " + maxIter);
+                            var v = (cp - lp);
+#if DRAW_NAV_LINES  
+                            Debug.DrawLine(lp, lp + v * (maxDis - lDis) / v.magnitude, Color.black);
+#endif
+                            break;
+                        }
+                        if((tp - cp).sqrMagnitude < 0.5f) {
+                            //  Debug.Log("PASS  " + maxIter);
+#if DRAW_NAV_LINES  
+                            Debug.DrawLine(lp, cp, Color.black);
+#endif
+                            break;
+                        }
 #if DRAW_NAV_LINES  
                         Debug.DrawLine(lp, cp, Color.black);
 #endif
-                        break;
-                    }
-#if DRAW_NAV_LINES  
-                    Debug.DrawLine(lp, cp, Color.black);
-#endif
-                    var ln = n;
-                    n = NavMsh.findNode(cp, n);
+                        var ln = n;
+                        n = NavMsh.findNode(cp, n);
 
-                    if(ln != n) {
-                        if(n == TargetNode) {
-                         //   Debug.Log("PASS  " + maxIter);
+                        if(ln != n) {
+                            if(n == TargetNode) {
+                                //   Debug.Log("PASS  " + maxIter);
 #if DRAW_NAV_LINES  
-                            Debug.DrawLine(cp, tp, Color.black);
+                                Debug.DrawLine(cp, tp, Color.black);
 #endif
-                            break;
+                                smthP.Add(tp);
+                                break;
+                            }
+                            if(!fixNodeI(ref cni, n)) {
+                                //    Debug.Log("FAIL --- you shall not pass");
+                                smthP.Add(tp);  //hope for the best
+                                break;
+                            }
                         }
-                        if(!fixNodeI(ref cni, n)) {
-                        //    Debug.Log("FAIL --- you shall not pass");
-                            break;
+
+                        funnel(cp, ref tp, cni);
+                        float d = (cp - tp).magnitude;
+                        //   Debug.Log("dis " + d);
+                        float minStep = 0.75f;
+                        if(d < minStep) {
+                            tp = cp + (tp - cp) * minStep / d;
+                            d = minStep;
                         }
+                        lDis = dis;
+                        dis += d;
+                        //   break;
+                        lp = cp;
+                        cp = tp;
                     }
-                    smthP.Add(cp);
-                    funnel(cp, ref tp, cni);
-                    float d = (cp - tp).magnitude;
-                    //   Debug.Log("dis " + d);
-                    float minStep = 0.75f;
-                    if(d < minStep) {
-                        tp = cp + (tp - cp) * minStep / d;
-                        d = minStep;
-                    }
-                    lDis = dis;
-                    dis += d;
-                    //   break;
-                    lp = cp;
-                    cp = tp;
+
+                } else {
+                    smthP.Add(TargetP);
+                    if(CurNode != TargetNode) //fallen off map somehow  ... used to happen when colliders dind match map and also current node wasn't clamped    -- try and move back to last valid position
+                        //  tPos = ValidPos;
+                        Debug.Log("Awk noes we appear to have fallen off the map");
                 }
-                
-            } else {
-                if(CurNode != TargetNode) //fallen off map somehow  ... used to happen when colliders dind match map and also current node wasn't clamped    -- try and move back to last valid position
-                    //  tPos = ValidPos;
-                    Debug.Log("Awk noes we appear to have fallen off the map");
-            }
-            smthP.Add(TargetP);
-            SmoothPath = new List<Vector2>( smthP ); //todo 
-            SPi = 0;
+
+                if( SmoothPath.Count > 0 ) {
+                    if( Vector2.Dot( (Body.position - smthP[0] ).normalized, (Body.position - SmoothPath[MvmntController_SO.SPi]).normalized ) < 0.8f )
+                        steerUpdate();
+                } else steerUpdate();
+
+                SmoothPath = new List<Vector2>(smthP); //todo 
+                MvmntController.SPi = MvmntController_SO.SPi = 0;
+            }           
         } else {
             Path = null;
-            bool dirty = false;
+            //bool dirty = false;
             if(SmoothPath.Count < 1) {
-                dirty = true;
+               // dirty = true;
                 SmoothPath.Add(TargetP);
+                steerUpdate();
             } else if( (SmoothPath[0]- TargetP).sqrMagnitude > 0.5f ) {
-                dirty = true;
-                SmoothPath[0] = TargetP;
-                SPi = 0;
-            }       
+               // dirty = true;
+
+                if( Vector2.Dot( (Body.position - TargetP).normalized, (Body.position - SmoothPath[0]).normalized ) < 0.8f )
+                    steerUpdate();
+                SmoothPath.Clear();
+                SmoothPath.Add(TargetP);
+            }
+            MvmntController.SPi = MvmntController_SO.SPi = 0;
         }
 
 
        // Debug.DrawLine( Body.position, tPos, Color.white);
       //  Debug.DrawLine( tPos2, tPos, Color.white);
-        DesPos = tPos;
+        //DesPos = tPos;
         //vec = tPos - cPos;
 
        // DesVec = vec;
+    }
+    void steerUpdate() {
+        SteerUpdate = true;
+        SteerTimer = Mathf.Min(SteerTimer, Time.time - SteerDelay / 3);
     }
 
     void funnel(Vector2 cPos, ref Vector2 tPos, int ni ) {
@@ -589,11 +634,11 @@ public class Unit : NetBehaviour {
         return b;
     }
 
-
+    GizmoFeedBack Steering_FB = new GizmoFeedBack();
     void OnDrawGizmos() {
         Trnsfrm = transform;
 
-        LocalAvoidance_FB.draw();
+        Steering_FB.draw();
 
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(Trnsfrm.position, RoughRadius);
