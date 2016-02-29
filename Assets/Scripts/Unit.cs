@@ -63,8 +63,13 @@ public class Unit : NetBehaviour {
     public GameObject VisDat;
 
     public float MaxSpeed = 5;
-    public float TurnSpeed = 10;
     public float Acceleration = 2;
+
+    public float MaxTurnSpeed = 180;
+    public float MaxTurnAccel = 90;
+    public float TurnDeAccelMod = 1.5f;
+
+
     public float Friction = 40;
 
     //- maximum offset the network sync stuff will allow, it will clamp to this range or tele if your wayout(2x) somehow
@@ -271,8 +276,8 @@ public class Unit : NetBehaviour {
 
     float LPathTime = -1, LSmoothTime = -1;
     Vector2 LTPos; NavMesh.Node LTNode;
-    List<Vector2> SmoothPath = new List<Vector2>();
-    int SPi;
+    public List<Vector2> SmoothPath = new List<Vector2>();
+    public int SPi = 0;
     static List<Vector2> WorkingSmoothPath = new List<Vector2>();
     void updatePath() {
         if(NavMsh == null) return;
@@ -291,7 +296,6 @@ public class Unit : NetBehaviour {
 
         Vector2 tPos2 = tPos;
         var smthP = WorkingSmoothPath;
-
 
         if(CurNode != TargetNode) {
 
@@ -329,15 +333,15 @@ public class Unit : NetBehaviour {
                 }
             }
 
-
+            smthP.Clear();
             ///funnel!
             //  basicly recursivlely look at edge we must travers to get to next node until we find a corner in our way - then move thataway
             //  no corner in the way means just go towards target
 
             if(Path != null) {
 
-                smthP.Clear();
-                     
+               
+#if DRAW_NAV_LINES                 
                 Vector2 lastPos = cPos;
                 for(int i = CurNodeI; i-- > 0; ) {
                     Debug.DrawLine(lastPos, Path.Smooth[i].P, Color.white);
@@ -347,7 +351,7 @@ public class Unit : NetBehaviour {
                     lastPos = Path.Smooth[i].P;
                 }
                 Debug.DrawLine(lastPos, tPos, Color.white);
-
+#endif
                 // for(; CurNodeI >= 0; CurNodeI--) {  //path is backwards - because .... reasons
 
                 funnel(cPos, ref tPos, CurNodeI);
@@ -357,29 +361,38 @@ public class Unit : NetBehaviour {
                 float dis = (lp - cp).magnitude;
                 float lDis = 0;
                 float maxDis = 25;
+              
                 for(int maxIter = 10; maxIter-- > 0; ) {
                    // Debug.Log("iter " + maxIter);
+                    
                     var tp = TargetP;
                     if(dis > maxDis) {
                      //   Debug.Log("PASS dis " + maxIter);
                         var v = (cp - lp);
-
+#if DRAW_NAV_LINES  
                         Debug.DrawLine(lp, lp + v * (maxDis - lDis) / v.magnitude, Color.black);
+#endif
                         break;
                     }
                     if((tp - cp).sqrMagnitude < 0.5f) {
                       //  Debug.Log("PASS  " + maxIter);
+#if DRAW_NAV_LINES  
                         Debug.DrawLine(lp, cp, Color.black);
+#endif
                         break;
                     }
+#if DRAW_NAV_LINES  
                     Debug.DrawLine(lp, cp, Color.black);
+#endif
                     var ln = n;
                     n = NavMsh.findNode(cp, n);
 
                     if(ln != n) {
                         if(n == TargetNode) {
                          //   Debug.Log("PASS  " + maxIter);
+#if DRAW_NAV_LINES  
                             Debug.DrawLine(cp, tp, Color.black);
+#endif
                             break;
                         }
                         if(!fixNodeI(ref cni, n)) {
@@ -387,6 +400,7 @@ public class Unit : NetBehaviour {
                             break;
                         }
                     }
+                    smthP.Add(cp);
                     funnel(cp, ref tp, cni);
                     float d = (cp - tp).magnitude;
                     //   Debug.Log("dis " + d);
@@ -401,12 +415,15 @@ public class Unit : NetBehaviour {
                     lp = cp;
                     cp = tp;
                 }
-
+                
             } else {
                 if(CurNode != TargetNode) //fallen off map somehow  ... used to happen when colliders dind match map and also current node wasn't clamped    -- try and move back to last valid position
                     //  tPos = ValidPos;
                     Debug.Log("Awk noes we appear to have fallen off the map");
             }
+            smthP.Add(TargetP);
+            SmoothPath = new List<Vector2>( smthP ); //todo 
+            SPi = 0;
         } else {
             Path = null;
             bool dirty = false;
@@ -434,9 +451,10 @@ public class Unit : NetBehaviour {
         // the arc defined between cnrA < cPos > cnrB  is the range of current valid directions 
         cnrA = smoothHelper(Path.Smooth[ni].E1, cPos, true);
         cnrB = smoothHelper(Path.Smooth[ni].E2, cPos, false);
+#if DRAW_NAV_LINES  
         Debug.DrawLine(cPos, cnrA, Color.red);
         Debug.DrawLine(cPos, cnrB, Color.blue);
-
+#endif
         var td = float.MaxValue;
         for(int ci = ni - 1; ci >= 0; ci--) {
             // only one of these will be different from current corners   -- this would be an obvious place to optimise (todo)
@@ -452,7 +470,9 @@ public class Unit : NetBehaviour {
 
             if((nCnrA - cnrA).sqrMagnitude > 0.01f) {
                 float sgn = Util.sign(nCnrA, cPos, cnrA);
+#if DRAW_NAV_LINES  
                 Debug.DrawLine(nCnrA, cnrA, Color.magenta);
+#endif
                 if(Util.sign(nCnrA, cPos, cnrA) > 0) {
                     if(Util.sign(cnrB, cPos, nCnrA) < 0) {
                         tPos = cnrB;
@@ -462,15 +482,19 @@ public class Unit : NetBehaviour {
                         //  Debug.Log("breakb");
                         //break;
                     } else {
+#if DRAW_NAV_LINES  
                         Debug.DrawLine(nCnrA, cnrA, Color.red);
                         Debug.DrawLine(cPos, (cnrA + nCnrA) * 0.5f, Color.red);
+#endif
                         cnrA = nCnrA;
                     }
                 }
             }
             if((nCnrB - cnrB).sqrMagnitude > 0.01f) {
                 float sgn = Util.sign(cnrB, cPos, nCnrB);
+#if DRAW_NAV_LINES  
                 Debug.DrawLine(nCnrB, cnrB, Color.cyan);
+#endif
                 if(Util.sign(cnrB, cPos, nCnrB) > 0) {
                     if(Util.sign(cnrB, cPos, nCnrA) < 0) {
                         if((cPos - cnrA).sqrMagnitude < td) {
@@ -482,8 +506,10 @@ public class Unit : NetBehaviour {
                         //   Debug.Log("breaka");
                         //break;
                     } else {
+#if DRAW_NAV_LINES  
                         Debug.DrawLine(nCnrB, cnrB, Color.blue);
                         Debug.DrawLine(cPos, (cnrB + nCnrB) * 0.5f, Color.blue);
+#endif
                         cnrB = nCnrB;
                     }
                 }
@@ -546,8 +572,9 @@ public class Unit : NetBehaviour {
         if(flip) vec = -vec;
         
         b += vec * PathRadius;
+#if DRAW_NAV_LINES  
         Debug.DrawLine(edge, b, Color.grey);
-
+#endif
         for(int iter = 2; iter-- > 0; ) {
             var aToB = b - at;
             var sMag = aToB.sqrMagnitude;
@@ -555,8 +582,9 @@ public class Unit : NetBehaviour {
             var d = Vector2.Dot(aToB, aToC) / sMag;
             b = at + aToB * d;
             b = edge + (b - edge).normalized * PathRadius;
-
+#if DRAW_NAV_LINES  
             Debug.DrawLine(edge, b, Color.yellow);
+#endif
         }
         return b;
     }
@@ -567,7 +595,8 @@ public class Unit : NetBehaviour {
 
         LocalAvoidance_FB.draw();
 
-
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(Trnsfrm.position, RoughRadius);
         return;
         Gizmos.color = Color.black;
         if(SyncO != null) 

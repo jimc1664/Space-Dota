@@ -17,7 +17,7 @@ public class Mv_Wheeled  {
                 var ry = Trnsfrm.eulerAngles.z;
                 var dy = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
                 //Debug.Log(" ang = " + ry + "  des " + dy);
-                float rotSpeed = (1.0f - Mathf.Abs(0.5f - Mathf.Pow(speed / u.MaxSpeed, 2))) * u.TurnSpeed;
+                float rotSpeed = (1.0f - Mathf.Abs(0.5f - Mathf.Pow(speed / u.MaxSpeed, 2))) * u.MaxTurnSpeed;
                 ry = Mathf.LerpAngle(ry, Mathf.MoveTowardsAngle(ry, dy, 600 * Time.deltaTime), rotSpeed * Time.deltaTime);
                 ///Trnsfrm.RotateAround(  
                 //Trnsfrm.eulerAngles = new Vector3(0, 0, ry);
@@ -112,41 +112,74 @@ public class Mv_Wheeled  {
 
     struct State {
 
-        public float Ang, AngVel;
-        public Vector2 Pos, Vel;
+        public float Ang, AngVel, Mag;
+        public Vector2 Pos, Vel, Vec, Fwd;
         Unit U;
+        public float FullTurn;
         public State( Unit u, Vector2 p, Vector2 vel, float a, float av ) {
             Pos = p; Vel = vel;
             Ang = a;
             AngVel = av;
             U = u;
+            FullTurn = 0;
+            Fwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));
+
+            Vec = U.SmoothPath[U.SPi] - Pos;
+            Mag = Vec.magnitude;
         }
 
-        public void step( float t, ref float movBias, ref float rotBias ) {
+        public void step( float t, ref float movBias, ref float rotBias, ref int spi ) {
 
             var oAng = Ang;
-            Vector2 oFwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));
-            var vec = U.TargetP - Pos;
-            var mag = vec.magnitude;
-
-            float desSpeed = 0, oSpeed = Vector2.Dot(Vel, oFwd);
+            Vector2 oFwd = Fwd;
+            float desSpeed = 0, dt, oSpeed = Vector2.Dot(Vel, oFwd);
 
             //var mAng = Mathf.LerpAngle(Ang, oAng, 0.5f);
             // Vector2 mFwd = new Vector2(-Mathf.Sin(mAng * Mathf.Deg2Rad), Mathf.Cos(mAng * Mathf.Deg2Rad)) 
 
-            desSpeed = Mathf.Clamp(Vector3.Dot(oFwd, vec), -U.MaxSpeed / 2, U.MaxSpeed); ;//
 
-            if(movBias != -1 && desSpeed > U.MaxSpeed/6) movBias = 0;
+            for(;;) {
+
+                dt = Vector3.Dot(oFwd, Vec);
+                desSpeed = Mathf.Clamp(dt, -U.MaxSpeed / 2, U.MaxSpeed); ;//
+
+                if(dt != desSpeed ) break;  //we clamped.. so full speed.. 
+                
+                if( Mag < U.RoughRadius *0.75 ) {
+                    if( spi < U.SmoothPath.Count-1 ) {
+                        spi++;
+                        Vec = U.SmoothPath[spi] - Pos;
+                        Mag = Vec.magnitude;
+                    }  else {
+                        //pathActive = false;
+                        break;
+                    }
+                } else {
+                    if( spi >= U.SmoothPath.Count-1 ) break;
+                    var v2 = U.SmoothPath[spi + 1] - U.SmoothPath[spi];
+                    var vn = Vec / Mag;
+                    float dt2 = Vector2.Dot(v2, vn);
+                    if(dt2 > 0) {
+
+                        
+                        Mag += dt2;
+                        Vec = vn * Mag;
+                    } else break;
+                }
+                
+            }
+
+            if(movBias == -1 &&  dt/Mag > 0.6f ) movBias = 0;
 
             if( movBias == 1 || desSpeed > -U.MaxSpeed / 6 && movBias != -1 ) {
                 if(desSpeed < U.MaxSpeed / 2)
-                    desSpeed = Mathf.Max(Mathf.Min(mag, U.MaxSpeed / 2), desSpeed);   //todo - add magic no. mul to mag (tweak)
+                    desSpeed = Mathf.Max(Mathf.Min(Mag, U.MaxSpeed / 2), desSpeed);   //todo - add magic no. mul to mag (tweak)
             } else {
                 if(desSpeed < -U.MaxSpeed / 6 - oSpeed  || movBias == -1 ) {
                     if(desSpeed > -U.MaxSpeed / 3)
-                        desSpeed = Mathf.Min(-Mathf.Min(mag, U.MaxSpeed / 3), desSpeed);
+                        desSpeed = Mathf.Min(-Mathf.Min(Mag, U.MaxSpeed / 3), desSpeed);
                 } else
-                    desSpeed = Mathf.Max(Mathf.Min(mag, U.MaxSpeed / 2), -desSpeed);
+                    desSpeed = Mathf.Max(Mathf.Min(Mag, U.MaxSpeed / 2), -desSpeed);
             }
   
 
@@ -165,21 +198,21 @@ public class Mv_Wheeled  {
                 if(nSpeed < desSpeed) nSpeed = desSpeed;
             }
 
-            var dy = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
+            var dy = Mathf.Rad2Deg * Mathf.Atan2(-Vec.x, Vec.y);
 
             float rotMod = (1.0f - Mathf.Abs(0.5f - Mathf.Pow( (oSpeed+nSpeed)*0.5f / U.MaxSpeed, 2)));// *u.TurnSpeed;
            // rotMod = 1;
-            float rotMaxSpeed = rotMod * 100;
-            float rotMaxAccel = rotMod * 90.0f;
-            float rotMaxDecel = rotMaxAccel * 1.5f;
+            float rotMaxSpeed = rotMod * U.MaxTurnSpeed;
+            float rotMaxAccel = rotMod * U.MaxTurnAccel;
+            float rotMaxDecel = rotMaxAccel * U.TurnDeAccelMod;
 
             float angDiff = Mathf.DeltaAngle(Ang, dy);
 
+            FullTurn = 0;
             if( Mathf.Abs(angDiff + AngVel * t) < rotMaxAccel * 0.5f *t *0.25f ) {
                 AngVel = 0;
                 Ang = dy;
             } else {
-
                 float rotDecel = rotMaxDecel;
                 if(AngVel < 0) rotDecel = -rotDecel;
                 float timeToStopRot = AngVel / rotDecel;
@@ -206,6 +239,7 @@ public class Mv_Wheeled  {
                  //   Debug.Log("timeToStopRot  " + timeToStopRot + "   timeToDesRot  " + timeToDesRot + "   angDiff  " + angDiff
                  //       + "   AngVel  " + AngVel + "   nav  " + rotEq.vel(t) + " ||| " + rotBias + "  f " + rbFlag);
                 }
+               
                 var oAv = AngVel;
                 if(timeToDesRot > timeToStopRot) {
                     var rs = t;
@@ -214,6 +248,7 @@ public class Mv_Wheeled  {
                         AngVel = 0;
                         Ang = dy;
                     } else {
+                        if( rbFlag )  FullTurn = Mathf.Sign(accAdd);
                         AngVel = rotEq.vel(t);
                         Ang += (AngVel + oAv) * 0.5f * t;
                     }
@@ -229,16 +264,39 @@ public class Mv_Wheeled  {
                 }
             }
             
-            Vector2 nFwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));//, mFwd = (oFwd + (nFwd-oFwd)*0.5f).normalized;
+            Fwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));//, mFwd = (oFwd + (nFwd-oFwd)*0.5f).normalized;
             // float acc = u.Acceleration;
            
             //var tVel = Vel;
            // tVel -= fwd * Vector2.Dot(Vel, ofwd);
             var oVel = Vel;
-            Vel = nFwd * nSpeed;
+            Vel = Fwd * nSpeed;
             Pos += (Vel + oVel) * 0.5f * t;
+
+            Vec = U.SmoothPath[spi] - Pos;
+            Mag = Vec.magnitude;
         }
     
+    };
+    static float CMBias = 0, CRBias = 0;
+    static List<Vector2> SubPath = new List<Vector2>();
+
+
+
+    public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
+        public int Compare(K x, K y) {
+            int result = x.CompareTo(y);
+            if(result == 0) return 1;
+            else return result;  // (-) invert 
+        }
+    }
+    class SteerNode {
+        public State St;
+        public SteerNode Prev;
+        public int Spi, Iter;
+
+        public float CurMBias, CurRBias;
+        public float MBias, RBias;
     };
     public static void update(Transform Trnsfrm, Rigidbody2D Body, ref bool PathActive, Unit u, GizmoFeedBack gizmo) {
 
@@ -249,38 +307,96 @@ public class Mv_Wheeled  {
         if(!active) return;
         State st1 = new State( u, Trnsfrm.position, Body.velocity, Body.rotation, Body.angularVelocity );
 
+
         if(PathActive) {
             gizmo.reset();
-            gizmo.line(st1.Pos, u.TargetP, Color.white);
+            //gizmo.line(st1.Pos, u.SmoothPath[u.SmoothPath.Count-1], Color.white);
 
             Color[] cols = { Color.red, Color.blue, Color.green, Color.yellow };
             float[,] bias = { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
             int dirs = 4;
 
-            Vector2 oFwd = new Vector2(-Mathf.Sin(st1.Ang * Mathf.Deg2Rad), Mathf.Cos(st1.Ang * Mathf.Deg2Rad));
-            var vec = U.TargetP - st1.Pos;
-
-            if(Vector2.Dot(vec, oFwd) > 0.0f) {
+           // SubPath = new List<Vector2>();
+/*            float  dt = Vector2.Dot(st1.Vec, st1.Fwd) / st1.Mag;
+            if(dt > -0.05f) {
                 dirs = 2;
                 bias[0, 0] = bias[1, 0] = 0;
-            }
+            } */
+            CMBias = CRBias = 0;
+            int bestI = -1; float bestD = -1; 
+
+            int mapLm = 1 << LayerMask.NameToLayer("Map");
+
             for(int i = dirs; i-- >0; ) {
-                var col = cols[i];
+       
                 State st = st1;
                 Vector2 lp = st.Pos;
+                int spi = u.SPi;
                 float mBias = bias[i, 0], rBias = bias[i, 1];
-                for(int iter = 30; ; ) {
+                float tMb = mBias, tRb = rBias;
+                for(int maxIter = 30, iter =maxIter ; ; ) {
+                    var col = cols[i];
                     //  float step = 1.0f;
-                    st.step(0.3f, ref mBias, ref rBias );
+                    st.step(0.7f, ref mBias, ref rBias, ref spi );
                     gizmo.line(st.Pos, lp, col );
+
+                    col.a = 0.3f;
+                    gizmo.sphere(st.Pos, u.RoughRadius, col);
+
+                    col = col * 0.25f;
+                    col.a = 1;
+                    if(st.FullTurn != 0) {
+
+                        gizmo.line(st.Pos, st.Pos + (Vector2)Vector3.Cross((Vector3)st.Fwd, Vector3.back).normalized * st.FullTurn, col);
+                    } else {
+
+                        if(maxIter - iter < 2) {
+                            tRb = 0;
+                            rBias = 0;
+                        }
+                        iter = Mathf.Min(iter, 3);
+                    }
+
+                    var hit = Physics2D.OverlapCircle(st.Pos, u.RoughRadius, mapLm );
+                    if(hit == null) {
+
+                    } else {
+                        gizmo.sphere(st.Pos, u.RoughRadius, col );
+                       /* var cc = hit as CircleCollider2D;
+                        if(cc != null) {
+
+                            var tan = (Vector2)Vector3.Cross((Vector3)st.Fwd/st.Mag, Vector3.back).normalized;
+                            Vector2 cp = cc.transform.position;
+                            var cr = cc.radius;
+                            tan *= (cr + u.RoughRadius)*1.1f;
+                            gizmo.sphere(cp + tan, u.RoughRadius, Color.green);
+                            gizmo.sphere(cp - tan, u.RoughRadius, Color.green);
+                        } */
+                        break;
+                    }
+
+
+                    if(  spi >= u.SmoothPath.Count-1 && st.Mag < 2.5f && Vector2.Dot(st.Vec, st.Fwd) / st.Mag > 0.8f) {
+                        if(iter > bestI || ( iter == bestI && st.Mag < bestD ) ) {
+                            bestI = iter;
+                            CMBias = tMb;
+                            CRBias = tRb;
+                            bestD = st.Mag;
+                        }
+                        break;
+                    }
+                  
                     if((iter--) < 0) break;
+   
                     lp = st.Pos;
+
                 }               
             }
+
+   
         }
-        float rotBias = 0;
-        float movBias = 0;
-        st1.step(Time.deltaTime, ref movBias, ref rotBias);
+        Debug.DrawLine(Trnsfrm.position, u.SmoothPath[u.SPi], Color.white );
+        st1.step(Time.deltaTime, ref CMBias, ref CRBias, ref u.SPi );
 
         Body.velocity = st1.Vel;
         Body.angularVelocity = st1.AngVel;
@@ -294,7 +410,7 @@ public class Mv_Wheeled  {
 
         gizmo.line(p, p + d * 1.5f, Color.black);
     }
-    public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
+ /*   public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
         public int Compare(K x, K y) {
             int result = x.CompareTo(y);
             if(result == 0) return 1;
@@ -398,7 +514,7 @@ public class Mv_Wheeled  {
                         Vector2 d = new Vector2(-Mathf.Sin(a* Mathf.Deg2Rad), Mathf.Cos(a* Mathf.Deg2Rad));
 
                         Vector2 p = n1.Pos + td   *effSpd*step;
-                        */
+                        * /
                         Vector2 p = n1.Pos;
                         float a = n1.Ang, av = n1.AngVel;
 
@@ -476,5 +592,5 @@ public class Mv_Wheeled  {
         //Body.angularVelocity = 10;
         //Body.MoveRotation(ang);        
         Body.velocity = dir * spd1;
-    }
+    } */
 }
