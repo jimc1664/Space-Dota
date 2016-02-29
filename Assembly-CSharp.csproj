@@ -51,6 +51,7 @@
      <Compile Include="Assets\Scripts\CannonShell.cs" />
      <Compile Include="Assets\Scripts\Carrier.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\BoxSelector.cs" />
+     <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\Game Logic\GameTimer.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\MenuManager.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\ParticleRotation.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\Selectable.cs" />
