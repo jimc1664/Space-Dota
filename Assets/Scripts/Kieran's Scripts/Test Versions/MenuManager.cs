@@ -8,80 +8,53 @@ public class MenuManager : MonoBehaviour {
     public Transform mainMenu, optionsMenu, graphicsMenu, controlsMenu;
 
     [SerializeField]
-    private Slider AASlider;
+    private Dropdown qualitySettingsDropDown;
 
     [SerializeField]
-    private Text AAValue;
+    private Dropdown antialiasingDropDown;
 
     [SerializeField]
-    private Dropdown Resolution;
+    private Toggle fullscreenToggle;
 
     public bool isFullScreen = false;
 
+    public void Start()
+    {
+        qualitySettingsDropDown.options.Clear();
+
+        for (int i = 0; i < QualitySettings.names.Length; i++)
+        {
+            qualitySettingsDropDown.options.Add(new Dropdown.OptionData(QualitySettings.names[i]));
+        }
+        qualitySettingsDropDown.onValueChanged.AddListener(
+
+            delegate
+            {
+                SetQualityLevel();
+            }
+        );
+
+        antialiasingDropDown.onValueChanged.AddListener(
+            delegate
+            {
+                SetAntiAliasing();
+            }
+        );
+
+        fullscreenToggle.onValueChanged.AddListener(
+
+            delegate
+            {
+                EnableFullScreen();
+            }
+        );
+    }
+
     public void Update()
     {
-        ChangeResolution();
+        
     }
 
-    public void ChangeAA()
-    {
-        switch ((int)AASlider.value)
-        {
-            case 00:
-                PlayerPrefs.SetInt("AntiAliasing", 0);
-                QualitySettings.antiAliasing = 0;
-                AASlider.value = 0;
-                AAValue.text = "Disabled";
-                break;
-
-            case 01:
-                PlayerPrefs.SetInt("AntiAliasing", 2);
-                QualitySettings.antiAliasing = 2;
-                AASlider.value = 2;
-                AAValue.text = "2x Sampling";
-                break;
-
-            case 02:
-                PlayerPrefs.SetInt("AntiAliasing", 4);
-                QualitySettings.antiAliasing = 4;
-                AASlider.value = 4;
-                AAValue.text = "4x Sampling";
-                break;
-
-            case 03:
-                PlayerPrefs.SetInt("AntiAliasing", 8);
-                QualitySettings.antiAliasing = 8;
-                AASlider.value = 8;
-                AAValue.text = "8x Sampling";
-                break;
-        }
-    }
-
-    public void ChangeResolution()
-    {
-      if(Resolution.onValueChanged.Equals(true))
-        {
-            if (Resolution.options[1].text == "1920x1080")
-            {
-                Screen.SetResolution(1920, 1080, isFullScreen);
-            }
-            else if (Resolution.options[1].text == "1600x900")
-            {
-                Screen.SetResolution(1600, 900, isFullScreen);
-            }
-            else if (Resolution.options[1].text == "1366x768")
-            {
-                Screen.SetResolution(1366, 768, isFullScreen);
-            }
-            else if (Resolution.options[1].text == "800x600")
-            {
-                Screen.SetResolution(800, 600, isFullScreen);
-            }
-        }
-    
-
-        // Screen.SetResolution(width, height, isFullScreen);
-    }
 
     public void LoadScene(string name)
     {
@@ -141,9 +114,40 @@ public class MenuManager : MonoBehaviour {
 
     }
 
-    public void EnableFullScreen(bool isFullScreen)
+    private void EnableFullScreen()
     {
         isFullScreen = !isFullScreen;
+
+        if (isFullScreen)
+            Screen.SetResolution(Screen.width, Screen.height, true);
+       else
+            Screen.SetResolution(Screen.width, Screen.height, false);
+    }
+
+    public void SetQualityLevel()
+    {
+        QualitySettings.SetQualityLevel(qualitySettingsDropDown.value);
+    }
+
+    public void SetAntiAliasing()
+    {
+        switch (antialiasingDropDown.value)
+        {
+            case 0:
+                QualitySettings.antiAliasing = 0;
+                break;
+
+            case 1:
+                QualitySettings.antiAliasing = 2;
+                break;
+            case 2:
+                QualitySettings.antiAliasing = 4;
+                break;
+
+            case 3:
+                QualitySettings.antiAliasing = 8;
+                break;
+        }
     }
 }
 
