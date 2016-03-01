@@ -361,7 +361,7 @@ public class Unit : NetBehaviour {
             //  no corner in the way means just go towards target
 
             bool reSmooth = true;
-            if(reSmooth) {
+            if(Time.time - LSmoothTime > 0.5f) {  //todo - can check if we have diverged from path to affect resmooth
                 var smthP = WorkingSmoothPath;
                 smthP.Clear();
                 if(Path != null) {
