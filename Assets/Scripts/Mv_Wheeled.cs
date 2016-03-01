@@ -11,8 +11,8 @@ public class Mv_Wheeled  {
         if(PathActive) {
             var vec = u.DesPos - (Vector2)Trnsfrm.position;
             var mag = vec.magnitude;
-
-            if(mag > 0.1) {
+            vec *= 1000.0f;
+           // if(mag > 0.01) {
                 var ry = Trnsfrm.eulerAngles.z;
                 var dy = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
                 //Debug.Log(" ang = " + ry + "  des " + dy);
@@ -38,7 +38,7 @@ public class Mv_Wheeled  {
                 //Debug.Log("ms  " + desSpeed  +   "  --- " + ( (-MaxSpeed / 6 - speed) ) );
                 //  if(desSpeed > -MaxSpeed / 4 && desSpeed < 0 && speed > desSpeed / 4)
                 //      desSpeed = -desSpeed;
-            } else PathActive = false;
+          //  } else PathActive = false;
         }
         float acc = u.Acceleration;
         if(Mathf.Abs(desSpeed) < Mathf.Abs(speed)) acc *= 3;
