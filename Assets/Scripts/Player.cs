@@ -10,7 +10,6 @@ public class Player : NetBehaviour {
     [SyncVar]  ///lazy!
     public GameObject Cmmdr;
 
-    public Unit Selected;
 
     /*
     static Player Singleton;
@@ -44,10 +43,12 @@ public class Player : NetBehaviour {
 
         Rpc_init((byte)(uint)ti, (byte)(uint)colI );
 
+      //  Debug.Log("wtf");
         Vector3 sp = t.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
         GameObject c = (GameObject)Instantiate(Cmmdr, sp, t.SpawnLoc.rotation );
+     //   c.GetComponent<Carrier>().init(this);
         NetworkServer.Spawn(c);
-        c.GetComponent<Carrier>().Rpc_init( this.gameObject );
+        c.GetComponent<Carrier>().Rpc_init(this.gameObject);
     }
 
 
@@ -59,6 +60,9 @@ public class Player : NetBehaviour {
     public int Layer = 0;
     public LayerMask EnemyMask;  //AllyMask
 
+    public int Pop, MaxPop = 80;
+    public float MaxSquids = 100;
+    public float Squids = 50;
 
     const int Team1i = 10, TeamC = 8;
     public void init(byte teamI, byte colI) {
@@ -68,35 +72,65 @@ public class Player : NetBehaviour {
 
         Layer = teamI + Team1i;
         EnemyMask = (((1 << TeamC) - 1) ^ (1 << teamI)) << Team1i;    //playing with ma bits -- (hashtag) real programmerz
-
-
     }
      
     [ClientRpc]
     void Rpc_init(byte teamI, byte colI) { init(teamI, colI); }
 
+    Selectable Highlighted = null;
     void Update() {
+        
+       
+        if(isServer || isLocalPlayer) {
+            float squidRate = 4;
+            Squids += squidRate*Time.deltaTime;
+            if( Squids > MaxSquids ) Squids = MaxSquids;
+           
+        }
         if (!isLocalPlayer)  return;
+        
+        var sys = Sys.get();
+        sys.SquidUI.text = "" + Mathf.FloorToInt(Squids);
+        sys.PopUI.text = "" + Pop +" / "+MaxPop;
+
+        RaycastHit hit;
+        Selectable nHl = null;
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1)) { //todo - layer mask me
+          
+            nHl = hit.collider.gameObject.GetComponentInParent<Selectable>();
+            Debug.Log(" hit " + hit.collider.name + "   " + nHl);
+        }
+
+        if(nHl != Highlighted ) {
+            if(Highlighted != null ) Highlighted.Highlighted = false;
+            if(nHl != null) nHl.Highlighted = true;
+            Highlighted = nHl;
+        }
 
         if(Input.GetMouseButtonUp(0)) {
-            Selected = null;
-            RaycastHit hit;
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, -1 )) { //todo - layer mask me
-                Debug.Log(" hit "+hit.collider.name);
-                Selected = hit.collider.gameObject.GetComponentInParent<Unit>();
+            
+            var shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            bool bs = Mathf.Abs(BoxSelector.selection.width * BoxSelector.selection.height) > 8;
+            foreach(var s in FindObjectsOfType<Selectable>()) {
+                if(s.selected && (!shift || s.U.Owner != this)) s.selected = false;
+
+                if( bs ) {
+                    Vector3 camPos = Camera.main.WorldToScreenPoint(s.transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
+                    camPos.y = BoxSelector.ScreenToRectSpace(camPos.y);  //more efficent to transform rect to screen space  (not that it makes any real difference) 
+                    s.selected |= BoxSelector.selection.Contains(camPos);  //todo radius
+                }
             }
 
+            if(!bs && Highlighted != null) {
+                if(!shift || Highlighted.U.Owner == this)
+                    Highlighted.selected = true;
+            }
+            BoxSelector.selection = new Rect(Input.mousePosition.x, BoxSelector.ScreenToRectSpace(Input.mousePosition.y), 0, 0);
         }
         //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
-            RaycastHit hit;
+            //RaycastHit hit;
             if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
-
-                if(Selected) {
-                    var s = Selected.GetComponent<Selectable>();
-                    if( s != null && s.selected == false )
-                        Cmd_moveUnit(Selected.gameObject, hit.point);
-                }
 
                 //todo -- this is unbelievably wrong
                 foreach(var s in FindObjectsOfType<Selectable>()) {
@@ -125,10 +159,17 @@ public class Player : NetBehaviour {
         var c = muhCarrier.GetComponent<Carrier>();
         if(c== null || c.Owner != this) return; //todo - zomg cheater .. ban-hammer  or possibly error..
       //  Debug.Log("Cmd_createFrom");
-        GameObject go = (GameObject)Instantiate(c.SpawnDat[i].Fab, Vector3.zero, Quaternion.identity);
+        var sd = c.SpawnDat[i];
+        var ud = sd.Fab.GetComponent<Unit>();
+        if(ud.PopCost + Pop > MaxPop) return; //todo...feed back 
+        if(ud.SquidCost > Mathf.FloorToInt(Squids) ) return; //todo...feed back 
+
+        GameObject go = (GameObject)Instantiate(sd.Fab, Vector3.zero, Quaternion.identity);
 
         NetworkServer.Spawn(go);
         //todo -- SpawnPoints.Count  >= 256 == err
+        Squids -= (float)ud.SquidCost;
+        Pop += ud.PopCost;
         go.GetComponent<UnitSpawn_Hlpr>().Rpc_init(muhCarrier, (byte)Random.Range(0, c.SpawnPoints.Count));
     }
 }

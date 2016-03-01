@@ -9,13 +9,17 @@ public class Carrier : Unit {
     public class SpawnData {
         public GameObject Fab;
         public KeyCode Key;
-        public float Cost = 1;  //"cost"  - delay before can build summit else 
+        public float ConstructTime = 1;  // delay before can build summit else 
+
     };
     public List<SpawnData> SpawnDat;
 
     public List<GameObject> SpawnPoints;
 
     float BuildTimer = 0.5f; //initial delay
+
+
+
     void Update() {
 
         base.Update();
@@ -28,7 +32,7 @@ public class Carrier : Unit {
             SpawnData sd = SpawnDat[i];
             if(Input.GetKeyUp(sd.Key)) {  //todo getkeyup should be reference to real ui
                 Owner.Cmd_createFrom((byte) i, gameObject );  //more than 256 ?? nah
-                BuildTimer = sd.Cost;
+                BuildTimer = sd.ConstructTime;  //todo -- verify
                 Debug.Log("Cmd_createFrom please??");
             }
         }

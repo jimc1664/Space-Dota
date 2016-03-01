@@ -32,7 +32,9 @@ public class Sys : MonoBehaviour {
 
     }
 
-     public Text UI;
+    public Text UI;
+    public Text SquidUI;
+    public Text PopUI;
 
      void Update() {
 

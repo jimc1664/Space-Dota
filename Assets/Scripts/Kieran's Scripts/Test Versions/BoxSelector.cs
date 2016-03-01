@@ -17,18 +17,16 @@ public class BoxSelector : MonoBehaviour {
 
     private void CheckCamera()
     {
-        if (Input.GetMouseButtonDown(0))
+        if(Input.GetMouseButtonDown(0)) {
 
             startClick = Input.mousePosition;
-        else if (Input.GetMouseButtonUp(0))
-        {
-            if (selection.width < 0)
-            {
+            selection = new Rect(startClick.x, ScreenToRectSpace(startClick.y), 0, 0);
+        } else if(Input.GetMouseButtonUp(0)) {
+            if(selection.width < 0) {
                 selection.x += selection.width;
                 selection.width = -selection.width;
             }
-            if (selection.height < 0)
-            {
+            if(selection.height < 0) {
                 selection.y += selection.height;
                 selection.height = -selection.height;
             }
@@ -42,7 +40,7 @@ public class BoxSelector : MonoBehaviour {
 
     private void OnGUI()
     {
-        if (startClick != -Vector3.one)
+        if ( Mathf.Abs(selection.width*selection.height ) > 8   )
         {
             GUI.color = new Color(1, 1, 1, 0.5f);
             GUI.DrawTexture(selection, selectionHighLight);
