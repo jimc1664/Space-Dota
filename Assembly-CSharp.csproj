@@ -59,6 +59,7 @@
      <Compile Include="Assets\Scripts\Net\NetBehaviour.cs" />
      <Compile Include="Assets\Scripts\Net\NetMan.cs" />
      <Compile Include="Assets\Scripts\ParticleAutoDestroy.cs" />
+     <Compile Include="Assets\Scripts\PathFinding\NavMesh.cs" />
      <Compile Include="Assets\Scripts\PathFinding\Util.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
      <Compile Include="Assets\Scripts\Sys.cs" />

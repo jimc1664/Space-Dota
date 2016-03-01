@@ -743,9 +743,9 @@ public class NavMesh : MonoBehaviour {
     }
 
     public class SmoothNode {
-        public Vector2 P, P2;
+        public Vector2 P;//, P2;
         public Vector2 E1, E2;
-        //public Node N;  todo..
+        public Node N; 
     }
 
 
@@ -835,7 +835,8 @@ public class NavMesh : MonoBehaviour {
                 // Gizmos.DrawLine(Verts[ n.N.Vi[ cP.NbrI ] ],Verts[ n.N.Vi[ (cP.NbrI+2)%3 ] ] );
 
                 smt = new SmoothNode();
-                smt.P2 = smt.P = cP.P;
+                smt.P = cP.P;
+                smt.N = n.N;
                 smt.E1 = Verts[n.N.Vi[cP.NbrI]];
                 smt.E2 = Verts[n.N.Vi[(cP.NbrI + 1) % n.N.Nbrs.Length]];// -smt.E1;
                 smooth.Add(smt);
@@ -990,7 +991,6 @@ public class NavMesh : MonoBehaviour {
 
         foreach(Node n in Nodes ) {
             for(int i = n.Nbrs.Length; i-- > 0; ) {
-
                 Gizmos.color = new Color(0.0f, 1.0f, 0, 0.5f);
                 Gizmos.DrawLine(Verts[n.Vi[i]], Verts[n.Vi[(i + 1) % n.Nbrs.Length]]);
             }
@@ -1003,7 +1003,7 @@ public class NavMesh : MonoBehaviour {
             Gizmos.color = Color.white;
             Gizmos.DrawLine(T1.position, T2.position);
             if(p != null) {
-                Debug.Log(" pc " + p.Smooth.Count);
+             //   Debug.Log(" pc " + p.Smooth.Count);
                 Vector2 lastPos = T1.position;
                 for(int i = p.Smooth.Count; i-- > 0; ) {
                     Gizmos.color = Color.black;

@@ -5,8 +5,8 @@ using System.Reflection;
 
 public class Unit_SyncHelper : MonoBehaviour {
 
-    [HideInInspector]
-    public bool PathActive = false;
+  //  [HideInInspector]
+  //  public bool PathActive = false;
 
     [HideInInspector]
     public Transform Trnsfrm;
