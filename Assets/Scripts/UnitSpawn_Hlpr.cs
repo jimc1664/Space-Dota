@@ -16,6 +16,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
     void Awake() {
         U = GetComponent<Unit>();
         U.enabled = false;
+        if(U.enabled == true) Debug.LogError("err");
         U.VisDat.SetActive(false);
 
 
@@ -41,7 +42,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
 
     [ClientRpc]
     public void Rpc_init(GameObject co, byte spI) {
-
+       
         var c = co.GetComponent<Carrier>();
         if(c == null || (uint)spI >= (uint)c.SpawnPoints.Count) {  //note: in network functions we are unduly careful
             Destroy(gameObject);
@@ -50,6 +51,12 @@ public class UnitSpawn_Hlpr : NetBehaviour {
         }
 
         Player o = c.Owner;
+
+        if(o.isLocalPlayer && !isServer) {
+            o.Squids -= (float) U.SquidCost;
+            o.Pop += U.PopCost;
+        }
+
         U.init(o);
 
         var sp = c.SpawnPoints[spI];

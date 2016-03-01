@@ -97,6 +97,7 @@ public class NetMan : NetworkManager {
         public Msg_Unit() { }
         public Msg_Unit( Unit u ) {
             Uo =u.gameObject;
+            Debug.Log(" uu " + u.GetInstanceID() +"  name"+u.name + "  o " + u.Owner);
             OwnerObj = u.Owner.gameObject;
             Ang = u.Body.rotation;
             Pathing = u.MvmntController_SO.PathActive ? (byte)1 : (byte)0;

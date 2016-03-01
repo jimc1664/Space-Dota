@@ -102,7 +102,8 @@ public class Unit : NetBehaviour {
     [HideInInspector]
     public Vector2 TargetP;
 
-
+    public int SquidCost = 25;
+    public int PopCost = 4;
 
     [ClientRpc]
     public void Rpc_DesPos(Vector2 dp) {
@@ -154,6 +155,12 @@ public class Unit : NetBehaviour {
         if(SyncO != null) Destroy(SyncO.gameObject);
 
         NetMan.UnitCount--;
+
+        if( Owner != null && (Owner.isLocalPlayer || isServer) ) {
+            Owner.Pop -= PopCost;
+            Owner = null;
+            Debug.Log("OnDisable  " + name);
+        }
     }
 
 
@@ -172,11 +179,22 @@ public class Unit : NetBehaviour {
     }
 
     public void init(Player o) {
+        Debug.Log("init  " + name);
         Owner = o;
-        if(!Owner.isLocalPlayer) {
+        Debug.Log(" init " + GetInstanceID() + "  o " + Owner);
+      /*  if(!Owner.isLocalPlayer) {
             var s = GetComponent<Selectable>();
-            if(s!=null) Destroy(s);
-        }
+            if(s != null) {
+
+                var pm = s.Projector.GetComponent<Projector>().material;
+                var c = pm.color;
+                c.b = pm.color.r;
+                c.r = pm.color.b;
+                pm.color = c;
+            }
+        } */
+
+        //todo
 
         foreach(var c in GetComponentsInChildren<Collider2D>()) {
             c.gameObject.layer = o.Layer;
@@ -189,8 +207,14 @@ public class Unit : NetBehaviour {
 
         _int_init(o);
     } */
+
+  
     [ClientRpc]
-    public void Rpc_init(GameObject oo) { init(oo.GetComponent<Player>()); }
+    public void Rpc_init(GameObject oo) {
+       // if(isServer) return; //better way..
+        init(oo.GetComponent<Player>()); 
+    
+    }
 
     public Mv_Wheeled MvmntController_SO = new Mv_Wheeled(), MvmntController = new Mv_Wheeled();
 
@@ -256,10 +280,10 @@ public class Unit : NetBehaviour {
 
 
     public Slider HealthBar;
-    public Transform Canvas;
+   // public Transform Canvas;
 
     protected void Update() {
-        Canvas.rotation = Quaternion.LookRotation( -Camera.main.transform.forward, Vector3.forward);
+       
         HealthBar.value = 1 - Health;
     }
     public void damage(float dmg, float ap) {
