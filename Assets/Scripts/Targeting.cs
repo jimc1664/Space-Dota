@@ -23,6 +23,14 @@ public class Targeting : NetBehaviour {
             trt.Target = null;
     }
 
+    public float calcEngageRange(Unit target) {
+        float ret = float.MaxValue;
+        foreach(Turret t in Turrets) {
+            ret = Mathf.Min( ret, t.EngageRange );
+        }
+        if(ret == float.MaxValue) ret = U.RoughRadius;
+        return ret;
+    }
 
     void Awake() {
   // ??      if(!isServer) Destroy(this);
@@ -36,7 +44,7 @@ public class Targeting : NetBehaviour {
             Turrets[i].MyInd = i;
     }
 
-    float Timer;
+    [HideInInspector] public  float Timer;
 
     public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
         public int Compare(K x, K y) {
@@ -56,6 +64,11 @@ public class Targeting : NetBehaviour {
             Timer = Time.time;
 
             TargetList.Clear();
+            if(U.Target) {
+                TargetList.Add(0,U.Target);
+                Timer -= Cycle * 0.5f;
+                return;
+            }
             var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, U.Owner.EnemyMask );
             foreach(var c in cols) {
                 if( c.attachedRigidbody == null ) continue;

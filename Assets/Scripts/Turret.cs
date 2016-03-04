@@ -22,6 +22,9 @@ public class Turret : MonoBehaviour {
 
     Vector3 TargetOff;
 
+    [HideInInspector]
+    public float EngageRange;
+
     public void getSubTarget() {
 
         SubTarget = Target.HitTargets[Random.Range(0, Target.HitTargets.Count)];
@@ -101,7 +104,9 @@ public class Turret : MonoBehaviour {
         Trnsfrm = transform;
         Trgtn = GetComponentInParent<Targeting>();
     }
-
+    void Start() {
+        EngageRange = Range - ((Vector2)Trnsfrm.position - Trgtn.U.Body.position).magnitude * 1.1f;  //world space cos lazy
+    }
     void OnDrawGizmos() {
         var t = transform;
 

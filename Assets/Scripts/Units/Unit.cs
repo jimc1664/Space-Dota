@@ -150,11 +150,11 @@ public class Unit : NetBehaviour {
 
     public List<Transform> HitTargets;  //todo - very optimisable..
 
-    NavMesh NavMsh;
+    public NavMesh NavMsh;
 
     public NavMesh.Path Path;
     public int CurNodeI;
-    NavMesh.Node CurNode;
+    public NavMesh.Node CurNode;
 
     public int MaxSmoothIter = -1;
     public float PathRadius = 1.0f;
@@ -164,7 +164,8 @@ public class Unit : NetBehaviour {
    // [HideInInspector]
     //public bool PathActive = false;
     //two targeting modes..
-    // public CharMotor Target;
+    public Unit Target = null;
+    float EngageRange = 0;
     [HideInInspector]
     public Vector2 TargetP;
 
@@ -176,6 +177,7 @@ public class Unit : NetBehaviour {
         if(n == null) return false;
         TargetNode = n;
         TargetP = dp;
+        Target = null;
 
         PathActive = true;
         SyncO.PathActive = true;
@@ -185,10 +187,36 @@ public class Unit : NetBehaviour {
     [ClientRpc]
     public void Rpc_DesPos(Vector2 dp) { desPos(dp); }
 
+    virtual protected float calcEngageRange( Unit target ) {
+        if(Trgtn != null)
+            return Trgtn.calcEngageRange(target);
+        return RoughRadius * 1.5f;
+    }
+    [ClientRpc]
+    public void Rpc_attackUnit(GameObject trgt) {
 
+        if(trgt == null) return;
+        var tu = trgt.GetComponent<Unit>();
+        if(tu == null) return;
+
+        Target = tu;
+        TargetNode = tu.CurNode;
+        TargetP = tu.Body.position;
+        EngageRange = calcEngageRange(Target);
+
+        EngageRange += tu.RoughRadius * 0.5f;
+        if(Trgtn != null)
+            Trgtn.Timer = 0;
+
+        PathActive = true;
+        SyncO.PathActive = true;    
+    }
+
+    protected Targeting Trgtn;
     protected void Awake() {
         Trnsfrm = transform;
         Body = GetComponent<Rigidbody2D>();
+        Trgtn = GetComponent<Targeting>();  //could be null...
 
         forEach_Buffable((float baseVal, ref float cacheVal, ref List<Buff> buffs) => {
             cacheVal = baseVal;
@@ -204,6 +232,8 @@ public class Unit : NetBehaviour {
     [HideInInspector]
     public Unit_SyncHelper SyncO;  //todo client only
     protected void OnEnable() {
+        SmoothPath = new List<Vector2>();
+        SmoothPath.Add(TargetP = Trnsfrm.position);
 
         NetMan.UnitCount++;
 
@@ -232,7 +262,7 @@ public class Unit : NetBehaviour {
         if( Owner != null && (Owner.isLocalPlayer || isServer) ) {
             Owner.Pop -= PopCost;
             Owner = null;
-            Debug.Log("OnDisable  " + name);
+          //  Debug.Log("OnDisable  " + name);
         }
     }
 
@@ -269,7 +299,7 @@ public class Unit : NetBehaviour {
         //todo
 
         var l = o.Layer; if((this as Helio) != null) l += Player.TeamC;
-        Debug.Log("helio? " + l );
+       // Debug.Log("helio? " + l );
         foreach(var c in GetComponentsInChildren<Collider2D>()) {
             if(c.gameObject.layer == 0)
                 c.gameObject.layer = l;
@@ -393,21 +423,44 @@ public class Unit : NetBehaviour {
     public List<Vector2> SmoothPath = new List<Vector2>();
     static List<Vector2> WorkingSmoothPath = new List<Vector2>();
 
+    protected void checkTarget() {
+        if(Target != null) {
+            Vector2 tp = Target.Trnsfrm.position;
+
+            var vec = tp - SyncO.Body.position;
+            var sm = vec.sqrMagnitude;
+
+            if(sm < EngageRange * 0.9f) {
+
+                SyncO.PathActive = PathActive = false;
+
+            } else if(sm > EngageRange)
+                SyncO.PathActive = PathActive = true;
+
+            if(PathActive) {
+                TargetNode = Target.CurNode;
+                TargetP = tp;
+            } else {
+                TargetNode = CurNode;
+                TargetP = SyncO.Body.position;
+            }
+        }
+    }
+
     protected void updatePath() {
         if(NavMsh == null) return;
         var lCn =  CurNode;
-        CurNode = NavMsh.findNode(Trnsfrm.position, CurNode);
+        CurNode = NavMsh.findNode(SyncO.Body. position, CurNode);
         if(CurNode == null) {
             Debug.Log("no node..");
             Debug.DrawLine(Trnsfrm.position, Vector3.zero);
-
         }
-     /*   if(Target != null) {
-            TargetP = Target.Trnsfrm.position;
-            TargetNode = Target.CurNode;
-        } */
 
-        Vector2 tPos = TargetP, cPos = Body.position;
+        checkTarget();
+
+        if(!PathActive) return;
+
+        Vector2 tPos = TargetP, cPos = SyncO.Body.position;
 
         Vector2 tPos2 = tPos;
 
@@ -425,7 +478,7 @@ public class Unit : NetBehaviour {
             if(Path != null && lCn != CurNode) {
                 if(!fixNodeI(ref CurNodeI, CurNode)) {
                     ///not resolved!! -- we got shunted off to side most likely..   --- or possibly rewound but too far - (likely cos we just repathed)
-                    Debug.Log("SHUNTED!!");
+                   // Debug.Log("SHUNTED!!");
                     Path = null;  //todo - we may be able to quick fix some of thse cases
                 }
             }

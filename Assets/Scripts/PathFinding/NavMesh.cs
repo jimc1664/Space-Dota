@@ -710,19 +710,41 @@ public class NavMesh : MonoBehaviour {
     public Node findNode(Vector2 p) {
 
         //todo - real version..
-        foreach(Tri n in Tris ) {
+        foreach(Tri n in Tris) {
             if(Util.pointInTriangle(p, Verts[n.a], Verts[n.b], Verts[n.c])) return n.Nd;
         }
         return null;
     }
+    public Node findNode_Closest(Vector2 p) {
+        float d = float.MaxValue;
+        Node ret = null;
+        //todo - real version..
+        foreach(Tri n in Tris) {
+            if(Util.pointInTriangle(p, Verts[n.a], Verts[n.b], Verts[n.c])) return n.Nd;
+            var d2 = (p - n.Centre).sqrMagnitude;
+            if(d2 < d) {
+                d = d2;
+                ret = n.Nd;
+            }
+        }
+        return ret;
+    }
 
-    public Node findNode(Vector2 p, Node n ) {
+    public Node findNode(Vector2 p, Node n) {
         if(n != null) {
-            foreach( var t in n.Tris )
+            foreach(var t in n.Tris)
                 if(Util.pointInTriangle(p, Verts[t.a], Verts[t.b], Verts[t.c])) return n;
 
         }
         return findNode(p);
+    }
+
+    public Node findNode_Closest(Vector2 p, Node n) {
+        if(n != null) {
+            foreach(var t in n.Tris)
+                if(Util.pointInTriangle(p, Verts[t.a], Verts[t.b], Verts[t.c])) return n;
+        }
+        return findNode_Closest(p);
     }
 
 

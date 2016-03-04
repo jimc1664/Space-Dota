@@ -75,6 +75,24 @@ public class Mv_Wheeled  {
             Vector2 oFwd = Fwd;
             float desSpeed = 0, dt, oSpeed = Vector2.Dot(Vel, oFwd);
 
+            for(; ; ) {
+                if(spi < U.SmoothPath.Count - 1) {
+                    var v2 = U.SmoothPath[spi + 1] - Pos;
+                    if(Vector2.Dot(Vec, v2) < -0.1f || v2.sqrMagnitude < U.RoughRadius*1.2f ) {
+                        spi++;
+                        Vec = v2;
+                    } else {
+                        Mag = Vec.magnitude;
+                        break;
+                    }
+                } else {
+                    Mag = Vec.magnitude;
+                    if(Mag < U.RoughRadius + 0.3f)
+                        pathActive = false;
+                    break;
+                }
+            }
+
             for(;;) {
 
                 dt = Vector3.Dot(oFwd, Vec);
@@ -216,24 +234,8 @@ public class Mv_Wheeled  {
             Pos += (Vel + oVel) * 0.5f * t;
 
             Vec = U.SmoothPath[spi] - Pos;
+            Mag = Vec.magnitude;
 
-            for(; ; ) {
-                if(spi < U.SmoothPath.Count - 1) {
-                    var v2 = U.SmoothPath[spi+1] - Pos;
-                    if(Vector2.Dot(Vec, v2) < -0.1f) {
-                        spi++;
-                        Vec = v2;
-                    } else {
-                        Mag = Vec.magnitude;
-                        break;
-                    }
-                } else {
-                    Mag = Vec.magnitude;
-                    if( Mag < U.RoughRadius +0.3f ) 
-                        pathActive = false;
-                    break;
-                }
-            }
         }
         public void stopStep(float t) {  //todo use dont't need some stuff in ctor..
             var oAng = Ang;

@@ -126,6 +126,7 @@ public class Carrier : Vehicle {
         // if(isServer) return; //better way..
         init(oo.GetComponent<Player>());
 
+        Owner.Car = this;
         Owner.MaxSquids = MaxSquidCap;
         Owner.Squids = 100;
 

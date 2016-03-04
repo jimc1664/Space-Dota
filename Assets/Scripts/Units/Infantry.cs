@@ -9,12 +9,12 @@ public class Infantry : Unit {
 
     Animator Anim;
 
-    Targeting Trgtn;
+   // Targeting Trgtn;
     public Transform MuzzelPoint;
     public GameObject FireingAnim;
 
 
-    public Unit Target;
+    public Unit FireTarget;
     [HideInInspector] public float TargetAng;
     bool JustFired = false;
 
@@ -26,13 +26,13 @@ public class Infantry : Unit {
 
     public void getSubTarget() {
 
-        SubTarget = Target.HitTargets[Random.Range(0, Target.HitTargets.Count)];
+        SubTarget = FireTarget.HitTargets[Random.Range(0, FireTarget.HitTargets.Count)];
         TargetOff = Random.insideUnitSphere;
     }
     void Awake() {
         base.Awake();
         Anim = VisDat.GetComponentInChildren<Animator>();
-        Trgtn = GetComponent<Targeting>();
+        
         Trgtn.enabled = false;
         
     }
@@ -86,11 +86,16 @@ public class Infantry : Unit {
             var dy = Mathf.Rad2Deg * Mathf.Atan2(-Vec.x, Vec.y);
             Body.MoveRotation(Mathf.LerpAngle(Ang, Mathf.MoveTowardsAngle(Ang, dy, 1080 * Time.deltaTime), U.MaxTurnSpeed * Time.deltaTime));
         } else {
-            if(U.Target != null) {
+            if(U.FireTarget != null) {
                 Body.MoveRotation(Mathf.LerpAngle(Ang, Mathf.MoveTowardsAngle(Ang, U.TargetAng, 1080 * Time.deltaTime), U.MaxTurnSpeed * Time.deltaTime));
             }
             Body.velocity = Vector2.Lerp(Body.velocity, Vector2.zero, 1.5f *U.Acceleration * Time.deltaTime);
         }         
+    }
+
+
+    override protected float calcEngageRange(Unit target) {        
+        return Range;
     }
 
     float AnimRandTimer = 1;
@@ -99,11 +104,11 @@ public class Infantry : Unit {
     [ClientRpc]
     public void Rpc_setTarget(GameObject tgo) {
         if(tgo != null) {
-            Target = tgo.GetComponent<Unit>();
-            if(Target != null)
+            FireTarget = tgo.GetComponent<Unit>();
+            if(FireTarget != null)
                getSubTarget();
         } else
-            Target = null;
+            FireTarget = null;
     }
 
     float FiredTimer = 0;
@@ -118,7 +123,7 @@ public class Infantry : Unit {
                 if(Trgtn.TargetList.Count > 0) {
                     nt = Trgtn.TargetList.Values[0];
                 }
-                if(nt != Target) {
+                if(nt != FireTarget) {
                     if(nt != null) {
                         Rpc_setTarget(nt.gameObject);
 
@@ -126,13 +131,13 @@ public class Infantry : Unit {
                         Rpc_setTarget(null );
                 }
                 if(JustFired) {
-                    if(Target != null) getSubTarget();
+                    if(FireTarget != null) getSubTarget();
                     JustFired = false;
                 }
             }
 
         
-            if( Target != null ) {
+            if( FireTarget != null ) {
 
                 var tp = SubTarget.TransformPoint(TargetOff);
 
@@ -140,7 +145,7 @@ public class Infantry : Unit {
                 //vec = Trgtn.U.Trnsfrm.InverseTransformDirection(vec);
 
                 TargetAng = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
-                if((Time.time - RofTimer) > RoF && (Trnsfrm.position - Target.Trnsfrm.position).magnitude - Target.RoughRadius < Range
+                if((Time.time - RofTimer) > RoF && (Trnsfrm.position - FireTarget.Trnsfrm.position).magnitude - FireTarget.RoughRadius < Range
                     && Vector2.Dot( Trnsfrm.up,  vec.normalized ) > 0.9f  ) {  //todo - neaten?
 
                     RofTimer = Time.time;
@@ -148,10 +153,10 @@ public class Infantry : Unit {
                     JustFired = true;
                     FiredTimer = 0.2f + Time.deltaTime;
                     if(isServer) {
-                        float acc = Accuracy - Target.Dodge * InvTracking;  //todo - ensure doesn't go below 0... 
+                        float acc = Accuracy - FireTarget.Dodge * InvTracking;  //todo - ensure doesn't go below 0... 
                         float roll = Random.Range(0.0f, 1.0f);
                         if(roll < acc)
-                            Target.damage(Dmg, AP);
+                            FireTarget.damage(Dmg, AP);
                     }
                 }  
             

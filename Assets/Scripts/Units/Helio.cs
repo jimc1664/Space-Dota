@@ -9,8 +9,6 @@ public class Helio : Unit {
 
     void OnEnable() {
         base.OnEnable();
-        SmoothPath = new List<Vector2>();
-        SmoothPath.Add(TargetP = Trnsfrm.position);
 
 
         CurHoverDistance = VisDat.transform.position.z;
@@ -129,9 +127,17 @@ public class Helio : Unit {
 
         if(!FlyingHigh)
             updatePath();
-        else if( PathActive ) {
-            //if smothpath count > 1 ...etc
-            SmoothPath[0] = TargetP; 
+        else {
+
+            CurNode = NavMsh.findNode_Closest(SyncO.Body.position, CurNode );
+ 
+            checkTarget();
+
+            if(PathActive) {
+                //if smothpath count > 1 ...etc
+
+                SmoothPath[0] = TargetP;
+            }
         }
 
         Vector2 drift = Random.onUnitSphere * wobble() *25.0f;

@@ -8,7 +8,7 @@ public class Player : NetBehaviour {
 
 
     //[SyncVar]  ///lazy!
-   // public GameObject Cmmdr;
+    public Carrier Car;
 
 
     /*
@@ -150,7 +150,7 @@ public class Player : NetBehaviour {
             foreach(var s in FindObjectsOfType<Selectable>()) {
                 if(s.selected && (!shift || s.U.Owner != this)) s.selected = false;
 
-                if( bs ) {
+                if(bs && s.U.Owner == this ) {
                     Vector3 camPos = Camera.main.WorldToScreenPoint(s.U.VisDat.transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
                     camPos.y = BoxSelector.ScreenToRectSpace(camPos.y);  //more efficent to transform rect to screen space  (not that it makes any real difference) 
                     s.selected |= BoxSelector.selection.Contains(camPos);  //todo radius
@@ -166,26 +166,99 @@ public class Player : NetBehaviour {
         //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
             //RaycastHit hit;
-            if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
-                Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
-                //todo -- this is unbelievably wrong
+             int lm = 1 << LayerMask.NameToLayer("Map");
+            if(Highlighted != null && Highlighted.U.Owner != null && (EnemyMask.value & (1<<Highlighted.U.Owner.Layer)) != 0 ) {
                 foreach(var s in FindObjectsOfType<Selectable>()) {
-                    if( s.selected && s.U.Owner == this )
-                        Cmd_moveUnit(s.gameObject, hit.point);
+                    if(s.selected && s.U.Owner == this)
+                        Cmd_attackUnit(s.gameObject, Highlighted.gameObject );
+                }
+            } else if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, lm)) {
+                //Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
+                //todo -- this is unbelievably wrong
+
+                Vector2 cp = hit.point;
+                var n =  FindObjectOfType<NavMesh>().findNode(cp);
+
+                Vector2 yAx = Vector2.up;
+                Vector2 xAx = Vector2.right;
+                float rad = 1.1f;
+
+                int r = 0, c = 0, cm = 1, rm = 0;
+                bool fr = false;
+
+                Selectable cs = null;
+                if(Car != null && n != null ) {
+                    cs = Car.GetComponent<Selectable>();
+                    if(cs.selected == true) {
+                        c = 2; cm = 2; rm = 1;
+                        Cmd_moveUnit(Car.gameObject, cp );
+                    }
+                }
+
+                int maxAttempt = 50;
+//                List<Selectable> selection = new List<Selectable>();
+                foreach(var s in FindObjectsOfType<Selectable>()) {
+                    if(!s.selected || s.U.Owner != this) continue;
+                    
+                    bool isHeli = (s.U as Helio) != null;
+                    if(n == null && !isHeli) continue;
+                    if(cs == s) continue;
+
+                    maxAttempt += 10;
+                    for(; maxAttempt-- > 0 ;) {
+                        var off = c * xAx + r * yAx;
+                        var p = cp + off * rad;
+
+                        if(c > 0) c = -c;
+                        else if(-c == cm) {
+                            if(r > 0) {
+                                if(fr) c = 0;
+                                else c = -c;
+                                r = -r;
+                            } else if(-r == rm) {
+                                if(rm >= cm) {
+                                    c = ++cm;
+                                    r = 0;
+                                    fr = false;
+                                } else {
+                                    r = ++rm;
+                                    c = 0;
+                                    fr = true;
+                                }
+                            } else {
+                                r = -r + 1;
+                                c = -c;
+                            }
+                        } else c = -c + 1;
+
+                        if( isHeli || Physics2D.OverlapCircle(p, rad * 0.8f, lm) == null) {
+                            Cmd_moveUnit(s.gameObject, p );
+                            break;
+                        } 
+                    }
+                        
                 }
             }
 
         }
 
     }
- 
+
     [Command]
     public void Cmd_moveUnit(GameObject uo, Vector3 p) {
         if(uo == null) return;
         var u = uo.GetComponent<Unit>();
         if(u == null) return;
         u.Rpc_DesPos(p);
-      //  Debug.Log("move unit " + u.name + "  to - " + p);
+        //  Debug.Log("move unit " + u.name + "  to - " + p);
+    }
+    [Command]
+    public void Cmd_attackUnit(GameObject uo, GameObject trgt ) {
+        if(uo == null || trgt == null ) return;
+        var u = uo.GetComponent<Unit>();
+        if(u == null || trgt.GetComponent<Unit>() == null ) return;
+        u.Rpc_attackUnit(trgt);
+        //  Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
 

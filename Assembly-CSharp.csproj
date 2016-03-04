@@ -65,6 +65,7 @@
      <Compile Include="Assets\Scripts\Sys.cs" />
      <Compile Include="Assets\Scripts\Targeting.cs" />
      <Compile Include="Assets\Scripts\Team.cs" />
+     <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Turret.cs" />
      <Compile Include="Assets\Scripts\Units\Carrier.cs" />
      <Compile Include="Assets\Scripts\Units\Helio.cs" />
