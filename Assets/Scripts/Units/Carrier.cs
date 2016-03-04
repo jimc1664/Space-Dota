@@ -61,7 +61,11 @@ public class Carrier : Vehicle {
         Owner.Squids += SquidGenRate * Time.deltaTime;
         if(Owner.Squids > MaxSquidCap) Owner.Squids = Owner.MaxSquids;
         if(Owner.Squids + Owner.UnrefSquids > MaxSquidCap) Owner.UnrefSquids = Owner.MaxSquids - Owner.Squids;
-        
+
+        if(isServer) {
+            Health += 4.0f*Time.deltaTime / MaxHealth;
+            if(Health > 1) Health = 1;
+        }
 
         if(!Owner.isLocalPlayer) return;
         BuildTimer -= Time.deltaTime;
@@ -130,7 +134,18 @@ public class Carrier : Vehicle {
         Owner.MaxSquids = MaxSquidCap;
         Owner.Squids = 100;
 
+
         if(Owner.isLocalPlayer) {
+
+            Sys.get().CarrierSpecUI[Owner.CarrierSelection].SetActive(true);
+          //  fucking shitty sync...
+
+            var s = Sys.get();
+            for(int i = s.Carriers.Count; i-- > 0; )
+                if(name ==  s.Carriers[i].name+"(Clone)" )
+                    s.CarrierSpecUI[i].SetActive(true);
+
+
             var ct = Camera.main.transform;
             var p = ct.position; 
             p.x = transform.position.x;

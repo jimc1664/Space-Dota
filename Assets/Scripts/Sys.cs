@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 //using System;
 
@@ -40,6 +41,7 @@ public class Sys : MonoBehaviour {
     public GameObject GameUI;
 
     public List<GameObject> Carriers;
+    public List<GameObject> CarrierSpecUI;
 
     public bool Started = false;
 
@@ -64,11 +66,14 @@ public class Sys : MonoBehaviour {
      }
 
      public void startGame() {
-         if(Started) return;
-         Started = true;
+        if(Started) return;
+        Started = true;
 
-         GameUI.SetActive(true);
-         StartUI.SetActive(false);
+        GameUI.SetActive(true);
+        StartUI.SetActive(false);
+
+
+
      }
     /*
     NetServer Server;

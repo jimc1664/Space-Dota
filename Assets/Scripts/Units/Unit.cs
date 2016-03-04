@@ -204,7 +204,7 @@ public class Unit : NetBehaviour {
         TargetP = tu.Body.position;
         EngageRange = calcEngageRange(Target);
 
-        EngageRange += tu.RoughRadius * 0.5f;
+        EngageRange += tu.RoughRadius * 0.75f;
         if(Trgtn != null)
             Trgtn.Timer = 0;
 
@@ -370,7 +370,7 @@ public class Unit : NetBehaviour {
     public float Armor = 3;
 
     [SyncVar] //todo - lazy 
-    float Health = 1;
+    protected float Health = 1;
     public bool Invinciblity = false;  //for very subtle cheating...
 
 
@@ -430,11 +430,11 @@ public class Unit : NetBehaviour {
             var vec = tp - SyncO.Body.position;
             var sm = vec.sqrMagnitude;
 
-            if(sm < EngageRange * 0.9f) {
+            if(sm <  Util.pow2( EngageRange * 0.9f )) {
 
                 SyncO.PathActive = PathActive = false;
 
-            } else if(sm > EngageRange)
+            } else if(sm > EngageRange * EngageRange )
                 SyncO.PathActive = PathActive = true;
 
             if(PathActive) {

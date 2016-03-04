@@ -22,7 +22,7 @@ public class Turret : MonoBehaviour {
 
     Vector3 TargetOff;
 
-    [HideInInspector]
+   // [HideInInspector]
     public float EngageRange;
 
     public void getSubTarget() {

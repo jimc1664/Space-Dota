@@ -97,17 +97,24 @@ public class Player : NetBehaviour {
     [ClientRpc]
     void Rpc_init(byte teamI, byte colI) { init(teamI, colI); }
 
- 
+    [SyncVar]
     public int CarrierSelection = -1;
     [Command]
-    void Cmd_setCarrierSelection(int cs) { CarrierSelection = cs; }
+    void Cmd_setCarrierSelection(int cs) {
+        if(Sys.get().Started == false) 
+            CarrierSelection = cs; 
+    }
 
     Selectable Highlighted = null;
     void Update() {
 
         var sys = Sys.get();
+
+
         if(!sys.Started) {
             if(!isLocalPlayer) return;
+            if( CarrierSelection!= -1 ) //move this
+                sys.CarrierSpecUI[CarrierSelection].SetActive(true);
 
             for(int i = 0; i < sys.Carriers.Count; i++) {
                 if(Input.GetKeyUp(KeyCode.Alpha1 + i)) {

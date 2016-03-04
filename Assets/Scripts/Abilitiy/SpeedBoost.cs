@@ -14,7 +14,7 @@ public class SpeedBoost : NetBehaviour {
 
 	void OnEnable() {
         Car = GetComponent<Carrier>();
-        if(!Car.Owner.isLocalPlayer || !Car.isServer) Destroy(this);
+        if(!Car.Owner.isLocalPlayer && !Car.isServer) Destroy(this);
         Timer = Time.time-Cooldown;
 	}
 
