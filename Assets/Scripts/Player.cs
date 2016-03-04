@@ -59,7 +59,7 @@ public class Player : NetBehaviour {
         Vector3 sp = Tm.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
         GameObject c = (GameObject)Instantiate( s.Carriers[CarrierSelection], sp, Tm.SpawnLoc.rotation);
         //   c.GetComponent<Carrier>().init(this);
-        NetworkServer.Spawn(c);
+        NetworkServer.SpawnWithClientAuthority( c, connectionToClient );
         c.GetComponent<Carrier>().Rpc_init(this.gameObject);
     }
 

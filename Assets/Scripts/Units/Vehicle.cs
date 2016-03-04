@@ -26,7 +26,7 @@ public class Vehicle : Unit {
         // Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
         //   Debug.Log(" SyncO.PathActive " + SyncO.PathActive);
 
-        bool steerCheck = SyncO.PathActive && ((Time.time - SteerTimer) > SteerDelay) && (SteerUpdate || SyncO.Body.velocity.sqrMagnitude < 0.25f);
+        bool steerCheck = SyncO.PathActive && ((Time.time - SteerTimer) > SteerDelay) && (SteerUpdate || SyncO.Body.velocity.sqrMagnitude < 0.25f) && (MaxSpeed / _MaxSpeed  < 1.5f) ;
         MvmntController_SO.update(SyncO.Trnsfrm, SyncO.Body, steerCheck, this, ref SyncO.SPi, ref SyncO.PathActive, Steering_FB);
         if(steerCheck) {
             SteerUpdate = false;
