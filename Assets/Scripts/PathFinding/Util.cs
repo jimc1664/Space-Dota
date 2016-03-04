@@ -71,3 +71,64 @@ public class Util  {
     }
 
 }
+
+
+struct NewtonRaphson_Helper {
+
+    float Drag, MaxSpeed, Accel, V0, P0;
+
+    public NewtonRaphson_Helper(float maxSpeed, float maxAccel, float accel, float v0, float p0) {
+        Drag = maxAccel / maxSpeed;
+        MaxSpeed = maxSpeed;
+        V0 = v0;
+        P0 = p0;
+        Accel = accel;
+        K2 = (-Drag * v0 + accel) / (Drag * Drag);
+        K1 = p0 - K2;
+    }
+    public float solve(int iter = 4) {
+        float t = P0 / MaxSpeed;
+        for(; iter-- > 0; ) {  //note - no early exit -... todo make compiler unroll...
+            float pt = K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
+            float vt = K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+
+            t = t - pt / vt;// / dvt;
+        }
+        return Mathf.Abs(t);
+    }
+    public float vel(float t) {
+        return K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+    }
+    public float pos(float t) {
+        return K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
+    }
+
+    float K1, K2;
+};
+struct NewtonRaphson_Helper2 {
+
+    float Drag, MaxSpeed, Accel, V0;
+
+    public NewtonRaphson_Helper2(float maxSpeed, float maxAccel, float accel, float v0, float p0) {
+        Drag = maxAccel / maxSpeed;
+        MaxSpeed = maxSpeed;
+        V0 = v0;
+        Accel = accel;
+        K2 = (-Drag * v0 + accel) / (Drag * Drag);
+    }
+    /* public float solve(int iter = 4) {
+         float t = DesSpeed / Accel;
+         for(; iter-- > 0; ) {  //note - no early exit -... todo make compiler unroll...
+             float vt = K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+             float at = -vt * Drag - Accel;
+             t = t - (vt-DesSpeed) /at;// / dvt;
+         }
+         return Mathf.Abs(t);
+     } */
+    public float vel(float t) {
+        return K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
+    }
+
+    float K2;
+};
+

@@ -100,7 +100,7 @@ public class NetMan : NetworkManager {
             Debug.Log(" uu " + u.GetInstanceID() +"  name"+u.name + "  o " + u.Owner);
             OwnerObj = u.Owner.gameObject;
             Ang = u.Body.rotation;
-            Pathing = u.MvmntController_SO.PathActive ? (byte)1 : (byte)0;
+            Pathing = u.SyncO.PathActive ? (byte)1 : (byte)0;
             DesPos = u.TargetP;
 
             Vel = u.Body.velocity;
@@ -125,7 +125,7 @@ public class NetMan : NetworkManager {
         u.Body.MoveRotation( m.Ang );
         u.Body.velocity = m.Vel;
         u.Body.angularVelocity = m.AngVel;
-        u.MvmntController.PathActive = u.MvmntController_SO.PathActive = m.Pathing != 0;
+        u.PathActive = u.SyncO.PathActive = m.Pathing != 0;
         u.TargetP = m.DesPos;
 
         var sp = u.GetComponent<UnitSpawn_Hlpr>();
@@ -199,7 +199,8 @@ public class NetMan : NetworkManager {
         Debug.Log(" OnStartClient " + c);
     }
 
-    bool WeIsHosting = false;
+    [HideInInspector]
+    public bool WeIsHosting = false;
     public override void OnStartHost() {
         Debug.Log(" OnStartHost " );
         //reset stuff...
@@ -232,6 +233,8 @@ public class NetMan : NetworkManager {
   //  [ServerCallback]  sort of
     void Update() {
         if(!WeIsHosting) return;
+
+
 
         float rate = 0.25f;
         if((SyncTimer += Time.deltaTime) > rate) {

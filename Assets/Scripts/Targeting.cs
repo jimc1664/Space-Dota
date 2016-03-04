@@ -52,8 +52,8 @@ public class Targeting : NetBehaviour {
     [ServerCallback]
     void Update() {
         if(U.Owner == null) return;
-        if((Timer += Time.deltaTime) > Cycle) {
-            Timer -= Cycle;
+        if( (Time.time - Timer)  > Cycle) {
+            Timer = Time.time;
 
             TargetList.Clear();
             var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, U.Owner.EnemyMask );

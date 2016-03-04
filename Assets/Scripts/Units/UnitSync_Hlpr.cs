@@ -5,15 +5,17 @@ using System.Reflection;
 
 public class Unit_SyncHelper : MonoBehaviour {
 
-  //  [HideInInspector]
-  //  public bool PathActive = false;
+
 
     [HideInInspector]
     public Transform Trnsfrm;
     [HideInInspector]
     public Rigidbody2D Body;
 
-
+    [HideInInspector]
+    public bool PathActive = false;
+    [HideInInspector]
+    public int SPi;
 
     void Awake() {
 

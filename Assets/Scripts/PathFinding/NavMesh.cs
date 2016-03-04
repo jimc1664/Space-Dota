@@ -318,7 +318,7 @@ public class NavMesh : MonoBehaviour {
         for(int i = Verts.Count; --i > 0; ) {
             for(int j = i; j-- > 0; ) {
                 var d = (Verts[i] - Verts[j]).sqrMagnitude;
-                if(d < 0.5f) {
+                if(d < 0.1f) {
 
                     Debug.Log("d " + d);
                     debugDrawCross(Verts[i], Color.black);
@@ -754,7 +754,7 @@ public class NavMesh : MonoBehaviour {
     }
 
 
-    public Path getPath( Vector2 from, Vector2 to, Node toNode ) {
+    public Path getPath(Vector2 from, Vector2 biasedPosition, Vector2 to, Node toNode) {
 
         if(Nodes.Count == 0 ) return null;
 
@@ -768,7 +768,7 @@ public class NavMesh : MonoBehaviour {
         cur.D = 0;
         cur.N = a;
         cur.Prev = null;
-        cur.P = from;
+        cur.P = biasedPosition;
         cur.N.SN = cur;
 
 
@@ -999,7 +999,7 @@ public class NavMesh : MonoBehaviour {
 
         if(!Application.isPlaying && T1 != null && T2 != null) {
 
-            var p = getPath(T1.position, T2.position, findNode( T2.position) );
+            var p = getPath(T1.position, T1.position, T2.position, findNode(T2.position));
             Gizmos.color = Color.white;
             Gizmos.DrawLine(T1.position, T2.position);
             if(p != null) {

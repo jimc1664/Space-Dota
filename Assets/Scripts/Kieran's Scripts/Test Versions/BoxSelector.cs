@@ -8,14 +8,9 @@ public class BoxSelector : MonoBehaviour {
     private Vector3 startClick = -Vector3.one;
 
 	
-	// Update is called once per frame
-	void Update () {
 
-        CheckCamera();
-	
-	}
 
-    private void CheckCamera()
+    public void CheckCamera()
     {
         if(Input.GetMouseButtonDown(0)) {
 

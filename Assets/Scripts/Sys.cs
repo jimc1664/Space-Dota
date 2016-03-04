@@ -29,17 +29,46 @@ public class Sys : MonoBehaviour {
     void Awake() {
         if(Singleton != null && Singleton != this) Debug.LogError("Singleton violation");
         Singleton = this;
-
+        NetM = FindObjectOfType<NetMan>();
     }
 
     public Text UI;
     public Text SquidUI;
     public Text PopUI;
 
-     void Update() {
+    public GameObject StartUI;
+    public GameObject GameUI;
+
+    public List<GameObject> Carriers;
+
+    public bool Started = false;
+
+    NetMan NetM;
+    void Update() {
 
          UI.text = " Unit Count : " + NetMan.UnitCount;
 
+         if(NetM.WeIsHosting) {
+
+             if(!Started) {
+                 var players = FindObjectsOfType<Player>();
+                 foreach(var p in players)
+                     if((uint)p.CarrierSelection > (uint)Carriers.Count) return;
+
+
+                 foreach(var p in players)
+                     p.spawn();
+                 return;
+             }
+         }
+     }
+
+     public void startGame() {
+         if(Started) return;
+         Started = true;
+
+         GameUI.SetActive(true);
+         StartUI.SetActive(false);
      }
     /*
     NetServer Server;

@@ -36,7 +36,7 @@ public class CannonShell : MonoBehaviour {
         Delta += spd;
         
         
-        Tail.localScale = new Vector3(1, Delta * 0.8f + 0.1f, 1);
+        Tail.localScale = new Vector3(1, Delta * 0.8f, 1);
 
 	}
 }

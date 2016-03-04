@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#define DRAW_STEER_LINES
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -48,73 +50,14 @@ public class Mv_Wheeled  {
         Body.velocity = Vector2.Lerp(Body.velocity, fwd * speed, u.Friction * Time.deltaTime);
     }
     */
-    struct NewtonRaphson_Helper {
-
-        float Drag, MaxSpeed, Accel, V0, P0;
-
-        public NewtonRaphson_Helper(float maxSpeed, float maxAccel, float accel, float v0, float p0) {
-            Drag = maxAccel / maxSpeed;
-            MaxSpeed = maxSpeed;
-            V0 = v0;
-            P0 = p0;
-            Accel = accel;
-            K2 = (-Drag * v0 + accel) / (Drag * Drag);
-            K1 = p0 - K2;
-        }
-        public float solve(int iter = 4) {
-            float t = P0 / MaxSpeed;
-            for(; iter-- > 0; ) {  //note - no early exit -... todo make compiler unroll...
-                float pt = K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
-                float vt = K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
-
-                t = t - pt / vt;// / dvt;
-            }
-            return Mathf.Abs(t);
-        }
-        public float vel(float t) {
-            return K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
-        }
-        public float pos(float t) {
-            return K1 + K2 / Mathf.Exp(Drag * t) + Accel * t / Drag;
-        }
-
-        float K1, K2;
-    };
-    struct NewtonRaphson_Helper2 {
-
-        float Drag, MaxSpeed, Accel, V0;
-
-        public NewtonRaphson_Helper2(float maxSpeed, float maxAccel, float accel, float v0, float p0) {
-            Drag = maxAccel / maxSpeed;
-            MaxSpeed = maxSpeed;
-            V0 = v0;
-            Accel = accel;
-            K2 = (-Drag * v0 + accel) / (Drag * Drag);
-        }
-       /* public float solve(int iter = 4) {
-            float t = DesSpeed / Accel;
-            for(; iter-- > 0; ) {  //note - no early exit -... todo make compiler unroll...
-                float vt = K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
-                float at = -vt * Drag - Accel;
-                t = t - (vt-DesSpeed) /at;// / dvt;
-            }
-            return Mathf.Abs(t);
-        } */
-        public float vel(float t) {
-            return K2 * Mathf.Exp(-Drag * t) * (-Drag) + Accel / Drag;
-        }
-
-        float K2;
-    };
-
 
     struct State {
 
         public float Ang, AngVel, Mag;
         public Vector2 Pos, Vel, Vec, Fwd;
-        Unit U;
+        Vehicle U;
         public float FullTurn;
-        public State( Unit u, Vector2 p, Vector2 vel, float a, float av, int spi ) {
+        public State(Vehicle u, Vector2 p, Vector2 vel, float a, float av, int spi) {
             Pos = p; Vel = vel;
             Ang = a;
             AngVel = av;
@@ -276,7 +219,7 @@ public class Mv_Wheeled  {
 
             for(; ; ) {
                 if(spi < U.SmoothPath.Count - 1) {
-                    var v2 = U.SmoothPath[spi] - Pos;
+                    var v2 = U.SmoothPath[spi+1] - Pos;
                     if(Vector2.Dot(Vec, v2) < -0.1f) {
                         spi++;
                         Vec = v2;
@@ -291,8 +234,6 @@ public class Mv_Wheeled  {
                     break;
                 }
             }
-
-
         }
         public void stopStep(float t) {  //todo use dont't need some stuff in ctor..
             var oAng = Ang;
@@ -364,11 +305,11 @@ public class Mv_Wheeled  {
     };
 
     public float CMBias = 0, CRBias = 0;
-    public bool PathActive = false;
-    public int SPi;
+    //public bool PathActive = false;
+   // public int SPi;
 
 
-    public void update(Transform Trnsfrm, Rigidbody2D Body, bool steerCheck, Unit u, GizmoFeedBack gizmo) {
+    public void update(Transform Trnsfrm, Rigidbody2D Body, bool steerCheck, Vehicle u, ref int SPi, ref bool PathActive, GizmoFeedBack gizmo) {
 
         State st1 = new State(u, Trnsfrm.position, Body.velocity, Body.rotation, Body.angularVelocity, SPi);
 

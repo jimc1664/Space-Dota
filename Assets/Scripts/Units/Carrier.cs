@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public class Carrier : Unit {
+public class Carrier : Vehicle {
 
     [System.Serializable]
     public class SpawnData {
@@ -52,5 +52,19 @@ public class Carrier : Unit {
 
 
 
+    [ClientRpc]
+    public void Rpc_init(GameObject oo) {
+        // if(isServer) return; //better way..
+        init(oo.GetComponent<Player>());
 
+
+        if(Owner.isLocalPlayer) {
+            var ct = Camera.main.transform;
+            var p = ct.position; 
+            p.x = transform.position.x;
+            p.y = -7;
+            ct.position = p;
+            Sys.get().startGame();
+        }
+    }
 }

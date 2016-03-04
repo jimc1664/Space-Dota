@@ -52,12 +52,12 @@ public class Turret : MonoBehaviour {
                 JustFired = false;
             }
         }
-        Vector3 vec = Vector3.up;
+        Vector3 vec = Vector3.up, tp = Vector3.zero;
 
         
         if( Target != null ) {
 
-            var tp = SubTarget.TransformPoint(TargetOff);
+            tp = SubTarget.TransformPoint(TargetOff);
 
             vec = tp - Trnsfrm.position;
             vec = Trgtn.U.Trnsfrm.InverseTransformDirection(vec);
@@ -83,7 +83,7 @@ public class Turret : MonoBehaviour {
             && Util.pow2(Mathf.DeltaAngle(rz, dz)) < coneSqr && Util.pow2(Mathf.DeltaAngle(rx, dx)) < coneSqr) {  //todo - neaten?
             
             RofTimer = Time.time;
-            Instantiate( FireingAnim ).GetComponent<CannonShell>().init( MuzzelPoint.position, Target.Trnsfrm.position );
+            Instantiate(FireingAnim).GetComponent<CannonShell>().init(MuzzelPoint.position, tp );
             JustFired = true;
 
             if(Trgtn.isServer) {

@@ -56,7 +56,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
             o.Squids -= (float) U.SquidCost;
             o.Pop += U.PopCost;
         }
-
+        activate();
         U.init(o);
 
         var sp = c.SpawnPoints[spI];
@@ -70,7 +70,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
         Timer = 1;
         //enabled = true;
         // gameObject.SetActive(true);
-        activate();
+        
 
         var j = gameObject.AddComponent<DistanceJoint2D>();  //disble inter collision by magic
         j.connectedBody = c.Body;
