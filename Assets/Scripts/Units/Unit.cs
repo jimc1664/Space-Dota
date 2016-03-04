@@ -171,14 +171,15 @@ public class Unit : NetBehaviour {
     public int SquidCost = 25;
     public int PopCost = 4;
 
-    protected void desPos(Vector2 dp) {
+    virtual protected bool desPos(Vector2 dp) {
         var n = NavMsh.findNode(dp, TargetNode);
-        if(n == null) return;
+        if(n == null) return false;
         TargetNode = n;
         TargetP = dp;
 
         PathActive = true;
         SyncO.PathActive = true;
+        return true;
     }
 
     [ClientRpc]
@@ -223,7 +224,7 @@ public class Unit : NetBehaviour {
         }
     }
 
-    void OnDisable() {
+    protected void OnDisable() {
         if(SyncO != null) Destroy(SyncO.gameObject);
 
         NetMan.UnitCount--;
@@ -270,7 +271,9 @@ public class Unit : NetBehaviour {
         var l = o.Layer; if((this as Helio) != null) l += Player.TeamC;
         Debug.Log("helio? " + l );
         foreach(var c in GetComponentsInChildren<Collider2D>()) {
-            c.gameObject.layer = l;
+            if(c.gameObject.layer == 0)
+                c.gameObject.layer = l;
+
         }
 
         foreach(var c in GetComponentsInChildren<Collider>()) {

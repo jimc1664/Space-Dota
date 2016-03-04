@@ -15,14 +15,16 @@ public class Helio : Unit {
 
         CurHoverDistance = VisDat.transform.position.z;
     }
-    static void update(Transform Trnsfrm, Rigidbody2D Body, Helio U, ref int SPi, ref bool PathActive) {
+    static void update(Transform Trnsfrm, Rigidbody2D Body, Helio U, ref int SPi, ref bool PathActive, Vector2 drift ) {
 
-        Vector2 Pos = Body.position, Vel = Body.velocity;
+        Vector2 Pos = Body.position, dVel = Vector2.zero;
         float Ang = Body.rotation;
         float AngVel = Body.angularVelocity;
         Vector2 Fwd = new Vector2(-Mathf.Sin(Ang * Mathf.Deg2Rad), Mathf.Cos(Ang * Mathf.Deg2Rad));
         Vector2 Vec = U.SmoothPath[SPi] - Pos;
         float Mag = Vec.magnitude;
+        
+        float acc = U.Acceleration;
 
         if(PathActive) {
             for(; ; ) {
@@ -62,7 +64,7 @@ public class Helio : Unit {
                 } else break;
             }
             Vec *= rotMod;
-            Body.velocity = Vector2.Lerp(Body.velocity, Vec, U.Acceleration * Time.deltaTime);
+            dVel = Vec;
 
             var dy = Mathf.Rad2Deg * Mathf.Atan2(-Vec.x, Vec.y);
             Body.MoveRotation(Mathf.LerpAngle(Ang, Mathf.MoveTowardsAngle(Ang, dy, 720 * Time.deltaTime), U.MaxTurnSpeed * Time.deltaTime));
@@ -70,13 +72,15 @@ public class Helio : Unit {
             /*if(U.Target != null) {
                 Body.MoveRotation(Mathf.LerpAngle(Ang, Mathf.MoveTowardsAngle(Ang, U.TargetAng, 1080 * Time.deltaTime), U.MaxTurnSpeed * Time.deltaTime));
             } */
-            Body.velocity = Vector2.Lerp(Body.velocity, Vector2.zero, 1.5f * U.Acceleration * Time.deltaTime);
+            acc *= 1.5f;
         }
+        dVel += drift;
+        Body.velocity = Vector2.Lerp(Body.velocity, dVel, U.Acceleration * Time.deltaTime);
     }
 
     public float DesHoverDistance = 1;
     public float CurHoverDistance = 0;
-
+    public float HoverWobble = 1;
 
     float HeightCastTimer = 0;
     float HoverPseudoTimer = 0;
@@ -90,31 +94,49 @@ public class Helio : Unit {
             
 
             if( Physics.SphereCast( Trnsfrm.position  +Vector3.forward*10+ (Vector3)(Body.velocity*0.5f),RoughRadius , Vector3.back, out hit, 20.0f, layerM ) ) {
-                DesHoverDistance += ( ( hit.point.z+RoughRadius*2 )- DesHoverDistance) * 0.5f;
+                DesHoverDistance += ( ( hit.point.z+RoughRadius*0.5f +0.2f )- DesHoverDistance) * 0.5f;
             } else Debug.Log("miss??");
-
 
         }
 
-        
-        CurHoverDistance += (DesHoverDistance - CurHoverDistance) * 5 * Time.deltaTime;
+        float hs = 5;
+        if(CurHoverDistance > DesHoverDistance) hs *= 0.3f;
+
+        CurHoverDistance += (DesHoverDistance - CurHoverDistance) * hs * Time.deltaTime;
 
         HoverPseudoTimer += Time.deltaTime;
-        VisDat.transform.localPosition = new Vector3(0, 0, CurHoverDistance + Mathf.Sin(Mathf.Sin(HoverPseudoTimer * 5.0f) + HoverPseudoTimer) * 0.3f * +Mathf.Sin(HoverPseudoTimer * 10.0f) * 0.1f);
+        VisDat.transform.localPosition = new Vector3(0, 0, CurHoverDistance + wobble() );
+    }
+    float wobble() {
+        return (Mathf.Sin(Mathf.Sin(HoverPseudoTimer * 5.0f) + HoverPseudoTimer) * 0.3f * +Mathf.Sin(HoverPseudoTimer * 10.0f) * 0.1f) * HoverWobble;
     }
 
-    bool FlyingHigh = false;  //option for helio's to stick to ground and not fly over cliffs - (to hide)  (todo)
+    override protected bool desPos(Vector2 dp) {
+        if(base.desPos(dp)) return true;
+        if(FlyingHigh) {
+            TargetNode = null;
+            TargetP = dp;
+
+            PathActive = true;
+            SyncO.PathActive = true;
+            return true;
+        }
+        return false;
+    }
+
+    bool FlyingHigh = true;  //option for helio's to stick to ground and not fly over cliffs - (to hide)  (todo)
     void FixedUpdate() {
 
-        if(FlyingHigh)
+        if(!FlyingHigh)
             updatePath();
         else if( PathActive ) {
             //if smothpath count > 1 ...etc
             SmoothPath[0] = TargetP; 
         }
 
-        update(SyncO.Trnsfrm, SyncO.Body, this, ref SyncO.SPi, ref SyncO.PathActive);
-        update(Trnsfrm, Body, this, ref SPi, ref PathActive);
+        Vector2 drift = Random.onUnitSphere * wobble() *25.0f;
+        update(SyncO.Trnsfrm, SyncO.Body, this, ref SyncO.SPi, ref SyncO.PathActive, drift );
+        update(Trnsfrm, Body, this, ref SPi, ref PathActive, drift);
 
         fUpdate_ReSync();
     }

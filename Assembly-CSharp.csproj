@@ -61,6 +61,7 @@
      <Compile Include="Assets\Scripts\PathFinding\NavMesh.cs" />
      <Compile Include="Assets\Scripts\PathFinding\Util.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
+     <Compile Include="Assets\Scripts\ResourceField.cs" />
      <Compile Include="Assets\Scripts\Sys.cs" />
      <Compile Include="Assets\Scripts\Targeting.cs" />
      <Compile Include="Assets\Scripts\Team.cs" />

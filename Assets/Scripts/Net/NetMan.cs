@@ -53,6 +53,8 @@ public class NetMan : NetworkManager {
 
         public int Frame;
 
+        public float Squids, UnRefSquids;
+
         public const int Id = MsgType.Highest + 1;
         public short getId() { return Id; }
     };
@@ -60,7 +62,7 @@ public class NetMan : NetworkManager {
     int SynDat_Frame = 0;
     void recv(Msg_SyncDat msg ) {
       //  Debug.Log("recv syncdat !!");
-        if( msg.Frame < SynDat_Frame  && msg.Frame+100000 > SynDat_Frame ) return;
+        if( msg.Frame < SynDat_Frame  ) return;
 
         //if(!WeIsHosting )
         SynDat_Frame = msg.Frame;
@@ -253,8 +255,16 @@ public class NetMan : NetworkManager {
 
             foreach(var conn in NetworkServer.connections) {
                 if(conn == null) continue; ///todo investigate why i need this
-                if( conn.hostId >= 0 )
+                if(conn.hostId >= 0) {
+                    var pc = conn.playerControllers[0];
+                    var p = pc.gameObject.GetComponent<Player>();
+
+                    msg.Squids = p.Squids;
+                    msg.UnRefSquids = p.UnrefSquids;
                     conn.SendUnreliable(Msg_SyncDat.Id, msg);
+
+
+                }
             }
         }
     }

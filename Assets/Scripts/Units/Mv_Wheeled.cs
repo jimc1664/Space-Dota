@@ -229,7 +229,7 @@ public class Mv_Wheeled  {
                     }
                 } else {
                     Mag = Vec.magnitude;
-                    if( Mag < U.RoughRadius *2 ) 
+                    if( Mag < U.RoughRadius +0.3f ) 
                         pathActive = false;
                     break;
                 }

@@ -70,9 +70,12 @@ public class Player : NetBehaviour {
     public int Layer = 0;
     public LayerMask EnemyMask, SelectionMask;  //AllyMask
 
+
+    //todo - sync these properly every now and then
     public int Pop, MaxPop = 80;
-    public float MaxSquids = 100;
-    public float Squids = 50;
+    public float MaxSquids = 0;
+    public float Squids = 50, UnrefSquids = 0;
+
 
     public const int Team1i = 10, TeamC = 8;
     public void init(byte teamI, byte colI) {
@@ -114,18 +117,16 @@ public class Player : NetBehaviour {
             return;
         }
 
-        if(isServer || isLocalPlayer) {
-            float squidRate = 4;
-            Squids += squidRate*Time.deltaTime;
-            if( Squids > MaxSquids ) Squids = MaxSquids;
-           
-        }
+
         if (!isLocalPlayer)  return;
 
 
         Camera.main.GetComponent<BoxSelector>().CheckCamera(); //messy
 
         sys.SquidUI.text = "" + Mathf.FloorToInt(Squids);
+        sys.Squid_Unref_UI.text = "" + Mathf.FloorToInt(UnrefSquids);
+        sys.Squid_Cap_UI.text = "" + ( MaxSquids -Mathf.FloorToInt(UnrefSquids) - Mathf.FloorToInt(Squids));
+
         sys.PopUI.text = "" + Pop +" / "+MaxPop;
 
         RaycastHit hit;
@@ -157,8 +158,8 @@ public class Player : NetBehaviour {
             }
 
             if(!bs && Highlighted != null) {
-                if(!shift || Highlighted.U.Owner == this)
-                    Highlighted.selected = true;
+                if( Highlighted.U.Owner == this ||  !shift ) //todo --- or have nothing selected
+                    Highlighted.selected = !Highlighted.selected;
             }
             BoxSelector.selection = new Rect(Input.mousePosition.x, BoxSelector.ScreenToRectSpace(Input.mousePosition.y), 0, 0);
         }
@@ -166,7 +167,7 @@ public class Player : NetBehaviour {
         if(Input.GetMouseButtonUp(1)) {
             //RaycastHit hit;
             if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1<<LayerMask.NameToLayer("Map"))) {
-
+                Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
                 //todo -- this is unbelievably wrong
                 foreach(var s in FindObjectsOfType<Selectable>()) {
                     if( s.selected && s.U.Owner == this )
