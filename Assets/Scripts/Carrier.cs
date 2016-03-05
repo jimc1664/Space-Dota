@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Carrier : Unit {
+
 
     [System.Serializable]
     public class SpawnData {
@@ -28,14 +30,9 @@ public class Carrier : Unit {
         BuildTimer -= Time.deltaTime;
         if( BuildTimer > 0 ) return;
 
-        for(int i = SpawnDat.Count; i-- > 0;  ) {
-            SpawnData sd = SpawnDat[i];
-            if(Input.GetKeyUp(sd.Key)) {  //todo getkeyup should be reference to real ui
-                Owner.Cmd_createFrom((byte) i, gameObject );  //more than 256 ?? nah
-                BuildTimer = sd.ConstructTime;  //todo -- verify
-                Debug.Log("Cmd_createFrom please??");
-            }
-        }
+        ManageInput();
+
+
     }
 
     [Command]
@@ -50,7 +47,27 @@ public class Carrier : Unit {
         c.GetComponent<UnitSpawn_Hlpr>().Rpc_init(gameObject, (byte)Random.Range(0, SpawnPoints.Count));
     }
 
+    void ManageInput()
+    {
+        for (int i = SpawnDat.Count; i-- > 0;)
+        {
+            SpawnData sd = SpawnDat[i];
+            if (Input.GetKeyUp(sd.Key))
+            {  //todo getkeyup should be reference to real ui
+                Owner.Cmd_createFrom((byte)i, gameObject);  //more than 256 ?? nah
+                BuildTimer = sd.ConstructTime;  //todo -- verify
+                Debug.Log("Cmd_createFrom please??");
+            }
 
+        }
+    }
 
+    public void GenerateTank()
+    {
+        SpawnData sd = SpawnDat[0];
+        Owner.Cmd_createFrom((byte)0, gameObject);  //more than 256 ?? nah
+        BuildTimer = sd.ConstructTime;  //todo -- verify
+        Debug.Log("Cmd_createFrom please??");
+    }
 
 }

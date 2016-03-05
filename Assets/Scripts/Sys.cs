@@ -32,15 +32,15 @@ public class Sys : MonoBehaviour {
 
     }
 
-    public Text UI;
-    public Text SquidUI;
-    public Text PopUI;
+    //public Text UI;
+    //public Text SquidUI;
+    //public Text PopUI;
 
-     void Update() {
+    // void Update() {
 
-         UI.text = " Unit Count : " + NetMan.UnitCount;
+    //     UI.text = " Unit Count : " + NetMan.UnitCount;
 
-     }
+    // }
     /*
     NetServer Server;
     NetClient Client;*/

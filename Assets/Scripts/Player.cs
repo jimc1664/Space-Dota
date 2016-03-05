@@ -90,8 +90,8 @@ public class Player : NetBehaviour {
         if (!isLocalPlayer)  return;
         
         var sys = Sys.get();
-        sys.SquidUI.text = "" + Mathf.FloorToInt(Squids);
-        sys.PopUI.text = "" + Pop +" / "+MaxPop;
+        //sys.SquidUI.text = "" + Mathf.FloorToInt(Squids);
+        //sys.PopUI.text = "" + Pop +" / "+MaxPop;
 
         RaycastHit hit;
         Selectable nHl = null;
