@@ -173,12 +173,27 @@ public class Player : NetBehaviour {
         //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
             //RaycastHit hit;
-             int lm = 1 << LayerMask.NameToLayer("Map");
+            int lm = 1 << LayerMask.NameToLayer("Map");
+
+            bool sapper = false;
+            foreach( var s in FindObjectsOfType<Sapper>() ) {///todo - i hate this...
+                if(s.Owner == this && s.GetComponent<Selectable>().selected) {
+                    sapper = true;
+                    break;
+                }
+            }
+
+            TurretSpindle ts = null;
             if(Highlighted != null && Highlighted.U.Owner != null && (EnemyMask.value & (1<<Highlighted.U.Owner.Layer)) != 0 ) {
                 foreach(var s in FindObjectsOfType<Selectable>()) {
                     if(s.selected && s.U.Owner == this)
                         Cmd_attackUnit(s.gameObject, Highlighted.gameObject );
                 }
+            } else if(sapper && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << LayerMask.NameToLayer("TurretSpindle") ) && (ts = hit.collider.GetComponentInParent<TurretSpindle>()) != null ) {
+                var t = Instantiate( sys.TurretCtorDialog).transform;
+                t.parent = ts.transform;
+                t.localPosition = Vector3.zero;
+                    
             } else if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, lm)) {
                 //Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
                 //todo -- this is unbelievably wrong

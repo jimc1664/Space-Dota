@@ -50,7 +50,7 @@ public class Mv_Wheeled  {
         Body.velocity = Vector2.Lerp(Body.velocity, fwd * speed, u.Friction * Time.deltaTime);
     }
     */
-
+    float EndTimer =0;
     struct State {
 
         public float Ang, AngVel, Mag;
@@ -67,14 +67,17 @@ public class Mv_Wheeled  {
 
             Vec = U.SmoothPath[spi] - Pos;
             Mag = Vec.magnitude;
+
         }
 
-        public void step( float t, ref float movBias, ref float rotBias, ref int spi, ref bool pathActive ) {
+        public void step(float t, ref float movBias, ref float EndTimer, ref float rotBias, ref int spi, ref bool pathActive) {
 
             var oAng = Ang;
             Vector2 oFwd = Fwd;
             float desSpeed = 0, dt, oSpeed = Vector2.Dot(Vel, oFwd);
 
+            var oEt = EndTimer;
+            EndTimer = 0;
             for(; ; ) {
                 if(spi < U.SmoothPath.Count - 1) {
                     var v2 = U.SmoothPath[spi + 1] - Pos;
@@ -88,14 +91,17 @@ public class Mv_Wheeled  {
                 } else {
                     Mag = Vec.magnitude;
                     if(Mag < U.RoughRadius + 0.3f)
+                        EndTimer = oEt + t;
+                    if(EndTimer > 0.5f )
                         pathActive = false;
                     break;
                 }
             }
 
+
             for(;;) {
 
-                dt = Vector3.Dot(oFwd, Vec);
+                dt = Vector3.Dot(oFwd, Vec*2);
                 desSpeed = Mathf.Clamp(dt, -U.MaxSpeed / 2, U.MaxSpeed); ;//
 
                 if(dt != desSpeed ) break;  //we clamped.. so full speed.. 
@@ -353,7 +359,8 @@ public class Mv_Wheeled  {
                     sn.RBias = sn.CurRBias = bias[i, 1];
                     sn.Col = cols[i];
                     bool pa = false;
-                    sn.St.step(timeStep, ref sn.CurMBias, ref sn.CurRBias, ref sn.Spi, ref pa);
+                    float et = 1;
+                    sn.St.step(timeStep, ref sn.CurMBias, ref sn.CurRBias, ref et, ref sn.Spi, ref pa);
                     sn.T = timeStep;
                     var key = sn.St.Mag / u.MaxSpeed + timeStep * 1.1f - Vector2.Dot(sn.St.Fwd, sn.St.Vec / sn.St.Mag);
                 //    Debug.Log("key " + key);
@@ -382,7 +389,8 @@ public class Mv_Wheeled  {
 
                     cur.T += timeStep *1.1f;
                     bool pa = false;
-                    cur.St.step(timeStep, ref cur.CurMBias, ref cur.CurRBias, ref cur.Spi, ref pa);
+                    float et = 1;
+                    cur.St.step(timeStep, ref cur.CurMBias, ref cur.CurRBias, ref et, ref cur.Spi, ref pa);
 #if DRAW_STEER_LINES
                     gizmo.line(cur.St.Pos, lp, col);
 
@@ -458,7 +466,7 @@ public class Mv_Wheeled  {
 #if DRAW_STEER_LINES
             Debug.DrawLine(Trnsfrm.position, u.SmoothPath[SPi], Color.yellow );
 #endif
-            st1.step(Time.deltaTime, ref CMBias, ref CRBias, ref SPi, ref PathActive);
+            st1.step(Time.deltaTime, ref CMBias, ref CRBias, ref EndTimer, ref SPi, ref PathActive);
         } else {
             st1.stopStep(Time.deltaTime);
 

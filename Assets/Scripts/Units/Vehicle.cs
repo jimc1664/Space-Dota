@@ -16,11 +16,12 @@ public class Vehicle : Unit {
     const float SteerDelay = 1.5f;
     bool SteerUpdate = false;
 
+   // public bool IsSapper = false;
+
     void FixedUpdate() {
 
         updatePath();
         // localAvoidance();
-
 
         //SyncO.PathActive = PathActive = true;
         // Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);

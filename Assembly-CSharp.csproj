@@ -67,10 +67,13 @@
      <Compile Include="Assets\Scripts\Team.cs" />
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Turret.cs" />
+     <Compile Include="Assets\Scripts\TurretCtorMenu.cs" />
+     <Compile Include="Assets\Scripts\TurretSpindle.cs" />
      <Compile Include="Assets\Scripts\Units\Carrier.cs" />
      <Compile Include="Assets\Scripts\Units\Helio.cs" />
      <Compile Include="Assets\Scripts\Units\Infantry.cs" />
      <Compile Include="Assets\Scripts\Units\Mv_Wheeled.cs" />
+     <Compile Include="Assets\Scripts\Units\Sapper.cs" />
      <Compile Include="Assets\Scripts\Units\Unit.cs" />
      <Compile Include="Assets\Scripts\Units\UnitSpawn_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\UnitSync_Hlpr.cs" />
