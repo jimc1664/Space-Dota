@@ -71,14 +71,26 @@ public class Carrier : Vehicle {
         BuildTimer -= Time.deltaTime;
         if( BuildTimer > 0 ) return;
 
-        for(int i = SpawnDat.Count; i-- > 0;  ) {
+        ManageInput();
+    }
+
+
+    void ManageInput() {
+        for(int i = SpawnDat.Count; i-- > 0; ) {
             SpawnData sd = SpawnDat[i];
             if(Input.GetKeyUp(sd.Key)) {  //todo getkeyup should be reference to real ui
-                Owner.Cmd_createFrom((byte) i, gameObject );  //more than 256 ?? nah
-                BuildTimer = sd.ConstructTime;  //todo -- verify
-                Debug.Log("Cmd_createFrom please??");
+                spawnUnit(i);
             }
+
         }
+    }
+
+
+    public void spawnUnit(int i) {
+        SpawnData sd = SpawnDat[i];
+        Owner.Cmd_createFrom((byte)i, gameObject);  //more than 256 ?? nah
+        BuildTimer = sd.ConstructTime;  //todo -- verify
+        Debug.Log("Cmd_createFrom please??");
     }
 
     [Command]
