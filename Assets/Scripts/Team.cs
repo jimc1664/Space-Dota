@@ -14,9 +14,13 @@ public class Team {
     public List<Player> Members;
 
     public Transform SpawnLoc;
+    public LayerMask EnemyMask;  //AllyMask
 
-    void Start() {
-
-         ColPoolI = Random.Range( 0, ColorPool.Count );
+    public const int Team1i = 10, TeamC = 8;
+    public int Layer = 0;
+    public void start( int teamI ) {
+        Layer = Team1i + teamI;
+        EnemyMask = (((1 << TeamC * 2) - 1) ^ ((1 << teamI) | (1 << teamI + TeamC))) << Team1i;    //playing with ma bits -- (hashtag) real programmerz
+        ColPoolI = Random.Range( 0, ColorPool.Count );
     }
  }

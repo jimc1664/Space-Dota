@@ -59,20 +59,25 @@ public class Targeting : NetBehaviour {
 
     [ServerCallback]
     void Update() {
-        if(U.Owner == null) return;
+       // if(U.Owner == null) return;
         if( (Time.time - Timer)  > Cycle) {
             Timer = Time.time;
 
             TargetList.Clear();
-            if(U.Target) {
-                TargetList.Add(0,U.Target);
+            var uk = U as Unit_Kinematic;
+            if(uk != null && uk.Target) {
+                TargetList.Add(0, uk.Target);
                 Timer -= Cycle * 0.5f;
                 return;
             }
-            var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, U.Owner.EnemyMask );
+            var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, U.Tm.EnemyMask );
             foreach(var c in cols) {
-                if( c.attachedRigidbody == null ) continue;
-                var u = c.attachedRigidbody.GetComponent<Unit>();
+                Unit u;
+                if(c.attachedRigidbody != null) {
+                    u = c.attachedRigidbody.GetComponent<Unit>();
+                } else {
+                    u = c.GetComponentInParent<Unit>();
+                }
                 if( u == null ) continue;
                 if(u == U) continue; //== this
 

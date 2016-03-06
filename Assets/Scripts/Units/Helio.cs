@@ -5,11 +5,10 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 
 
-public class Helio : Unit {
+public class Helio : Unit_Kinematic {
 
     void OnEnable() {
         base.OnEnable();
-
 
         CurHoverDistance = VisDat.transform.position.z;
     }
@@ -87,7 +86,7 @@ public class Helio : Unit {
 
         if((Time.time - HeightCastTimer) > 0.2f) {
             HeightCastTimer = Time.time;
-            var layerM = (1 << (Player.Team1i + Player.TeamC)) - 1;
+            var layerM = (1 << (Team.Team1i + Team.TeamC)) - 1;
             RaycastHit hit;
             
 

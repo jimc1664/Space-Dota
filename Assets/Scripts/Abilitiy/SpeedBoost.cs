@@ -37,8 +37,8 @@ public class SpeedBoost : NetBehaviour {
         Car.Owner.Squids -= Cost;
         Timer = Time.time;
 
-        Car.buff(Unit.Buffable.MaxSpeed, SpdFactor, Duration);
-        Car.buff(Unit.Buffable.Acceleration, AccFactor, Duration);
+        Car.buff(Unit_Kinematic.Buffable.MaxSpeed, SpdFactor, Duration);
+        Car.buff(Unit_Kinematic.Buffable.Acceleration, AccFactor, Duration);
     }
 
     //[ClientCallback]

@@ -15,19 +15,33 @@ public class Selectable : MonoBehaviour {
     public Unit U;
     public Transform Projector;
     public Transform LocalUI;
-   
+
+    public Player getOwner() {
+        var uk = GetComponent<Unit_Kinematic>();
+        if(uk == null) return null;
+        return uk.Owner;
+    }
     
     void Awake() {
         U = GetComponent<Unit>();
     }
 
+    
     void Update () {
+        //NOTE!!!!   -- NetID..  assetId  for double click --maybe ??
 
-        if(U.Owner == null) return;
 
-        if(selected || Highlighted) 
+       // if(U.Owner == null) return;
+        bool proj = false, health = selected || Highlighted;
+        if(selected) {
+            var uk = GetComponent<Unit_Kinematic>();
+            if( uk != null )
+            proj = uk.Owner.isLocalPlayer;
+        }
+
+        if(health) 
             LocalUI.rotation = Quaternion.LookRotation(-Camera.main.transform.forward, Vector3.forward);
-        if(selected && U.Owner.isLocalPlayer )
+        if(proj)
             Projector.localEulerAngles += new Vector3(0, 0, 10.0f) * Time.deltaTime;
 /*
         if ( Input.GetMouseButtonUp(0))  {
@@ -36,8 +50,8 @@ public class Selectable : MonoBehaviour {
             selected = BoxSelector.selection.Contains(camPos);  //todo radius
         }
         */
-        Projector.gameObject.SetActive(selected && U.Owner.isLocalPlayer);
-        LocalUI.gameObject.SetActive(selected || Highlighted );
+        if( Projector != null ) Projector.gameObject.SetActive(proj);
+        LocalUI.gameObject.SetActive(health);
 
         if(lSelected != selected) {       
             lSelected = selected;

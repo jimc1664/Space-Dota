@@ -49,6 +49,9 @@
      <Compile Include="Assets\RTS_Camera\Demo\TargetSelector.cs" />
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
      <Compile Include="Assets\Scripts\Abilitiy\SpeedBoost.cs" />
+     <Compile Include="Assets\Scripts\Building\Build_Hlpr.cs" />
+     <Compile Include="Assets\Scripts\Building\TurretStrct.cs" />
+     <Compile Include="Assets\Scripts\Building\Unit_Structure.cs" />
      <Compile Include="Assets\Scripts\CannonShell.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\BoxSelector.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\MenuManager.cs" />
@@ -77,6 +80,7 @@
      <Compile Include="Assets\Scripts\Units\Unit.cs" />
      <Compile Include="Assets\Scripts\Units\UnitSpawn_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\UnitSync_Hlpr.cs" />
+     <Compile Include="Assets\Scripts\Units\Unit_Kinematic.cs" />
      <Compile Include="Assets\Scripts\Units\Vehicle.cs" />
      <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />

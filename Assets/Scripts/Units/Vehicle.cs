@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Vehicle : Unit {
+public class Vehicle : Unit_Kinematic {
 
 
 

@@ -44,10 +44,19 @@ public class Sys : MonoBehaviour {
     public List<GameObject> CarrierSpecUI;
 
     public GameObject TurretCtorDialog;
+    public List<GameObject> TurretOptions;
+
+    public List<TurretSpindle> Spindles;
 
     public bool Started = false;
 
     NetMan NetM;
+
+    void Start() {
+
+        for(int i = Teams.Count; i-- > 0; )
+            Teams[i].start(i);
+    }
     void Update() {
 
          UI.text = " Unit Count : " + NetMan.UnitCount;
@@ -62,6 +71,12 @@ public class Sys : MonoBehaviour {
 
                  foreach(var p in players)
                      p.spawn();
+
+                 foreach(var t in FindObjectsOfType<TurretSpindle>()) {
+                     if(t.InitSel != -1) {
+                         t.create(t.InitSel, t.Ti, 0, 1 );
+                     }
+                 }
                  return;
              }
          }

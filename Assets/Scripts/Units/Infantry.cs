@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class Infantry : Unit {
+public class Infantry : Unit_Kinematic {
     //TODO --- copied and pasted lots from turret!!  bad !! fix!!
 
     Animator Anim;

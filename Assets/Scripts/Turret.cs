@@ -105,7 +105,7 @@ public class Turret : MonoBehaviour {
         Trgtn = GetComponentInParent<Targeting>();
     }
     void Start() {
-        EngageRange = Range - ((Vector2)Trnsfrm.position - Trgtn.U.Body.position).magnitude * 1.1f;  //world space cos lazy
+        EngageRange = Range - ((Vector2)Trnsfrm.position - (Vector2)Trgtn.U.Trnsfrm.position).magnitude * 1.1f;  //world space cos lazy
     }
     void OnDrawGizmos() {
         var t = transform;

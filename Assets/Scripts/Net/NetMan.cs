@@ -33,7 +33,7 @@ public class NetMan : NetworkManager {
                                 ///
             public UnitDat() {
             }
-            public UnitDat(Unit u) {
+            public UnitDat(Unit_Kinematic u) {
                 Uo = u.gameObject;
                 Pos = u.Body.position;
                 Ang = u.Body.rotation;
@@ -69,7 +69,7 @@ public class NetMan : NetworkManager {
 
         foreach(var ud in msg.Objs) {
             if(ud.Uo == null) continue; //possible cos we send this unreliable
-            var us = ud.Uo.GetComponent<Unit>().SyncO;
+            var us = ud.Uo.GetComponent<Unit_Kinematic>().SyncO;
             if( us == null ) continue;
             us.Body.position = ud.Pos;
             us.Body.rotation = ud.Ang;
@@ -97,7 +97,7 @@ public class NetMan : NetworkManager {
 
     class Msg_Unit : MessageBase, IMsg {
         public Msg_Unit() { }
-        public Msg_Unit( Unit u ) {
+        public Msg_Unit(Unit_Kinematic u) {
             Uo =u.gameObject;
             Debug.Log(" uu " + u.GetInstanceID() +"  name"+u.name + "  o " + u.Owner);
             OwnerObj = u.Owner.gameObject;
@@ -122,7 +122,7 @@ public class NetMan : NetworkManager {
         public short getId() { return Id; }
     };
     void recv(Msg_Unit m) {
-        Unit u = m.Uo.GetComponent<Unit>();
+        Unit_Kinematic u = m.Uo.GetComponent<Unit_Kinematic>();
         u.init( m.OwnerObj.GetComponent<Player>() );
         u.Body.MoveRotation( m.Ang );
         u.Body.velocity = m.Vel;
@@ -178,7 +178,7 @@ public class NetMan : NetworkManager {
         foreach(var p in FindObjectsOfType<Player>()) {
             conn.Send(Msg_Player.Id, new Msg_Player(p));
         }
-        foreach(var u in FindObjectsOfType<Unit>()) {
+        foreach(var u in FindObjectsOfType<Unit_Kinematic>()) {
             conn.Send(Msg_Unit.Id, new Msg_Unit(u));
         }
     }
@@ -244,7 +244,7 @@ public class NetMan : NetworkManager {
 
 
             //FIRE EVERYTHING   -- todo not fireing everything
-            var us = FindObjectsOfType<Unit>();
+            var us = FindObjectsOfType<Unit_Kinematic>();
             var msg = new Msg_SyncDat();
             msg.Frame = SynDat_Frame++;
             msg.Objs = new Msg_SyncDat.UnitDat[us.GetLength(0)];
@@ -255,7 +255,7 @@ public class NetMan : NetworkManager {
 
             foreach(var conn in NetworkServer.connections) {
                 if(conn == null) continue; ///todo investigate why i need this
-                if(conn.hostId >= 0) {
+                if(conn.hostId >= 0 && conn.playerControllers.Count >0  ) {
                     var pc = conn.playerControllers[0];
                     var p = pc.gameObject.GetComponent<Player>();
 

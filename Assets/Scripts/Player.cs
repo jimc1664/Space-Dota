@@ -63,12 +63,13 @@ public class Player : NetBehaviour {
         c.GetComponent<Carrier>().Rpc_init(this.gameObject);
     }
 
+    public int ColI;
     public Color Col;
   //  public Material Mat;
     public Team Tm;
 
-    public int Layer = 0;
-    public LayerMask EnemyMask, SelectionMask;  //AllyMask
+    
+    public LayerMask SelectionMask;  //AllyMask
 
 
     //todo - sync these properly every now and then
@@ -77,15 +78,14 @@ public class Player : NetBehaviour {
     public float Squids = 50, UnrefSquids = 0;
 
 
-    public const int Team1i = 10, TeamC = 8;
+   
     public void init(byte teamI, byte colI) {
         Tm = Sys.get().Teams[teamI];
-        Col = Tm.ColorPool[colI];
+        Col = Tm.ColorPool[ColI=colI];
         Tm.Members.Add(this);
 
-        Layer = teamI + Team1i;
-        EnemyMask = (((1 << TeamC*2) - 1) ^ ( (1 << teamI) | (1 << teamI+TeamC) ) ) << Team1i;    //playing with ma bits -- (hashtag) real programmerz
-        SelectionMask = (((1 << TeamC*2) - 1)<< Team1i)  | 1; 
+
+        SelectionMask = (((1 << Team.TeamC * 2) - 1) << Team.Team1i) | 1; 
 
         if(isLocalPlayer) {
             var sui = Sys.get().StartUI;
@@ -155,9 +155,9 @@ public class Player : NetBehaviour {
             var shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool bs = Mathf.Abs(BoxSelector.selection.width * BoxSelector.selection.height) > 8;
             foreach(var s in FindObjectsOfType<Selectable>()) {
-                if(s.selected && (!shift || s.U.Owner != this)) s.selected = false;
+                if(s.selected && (!shift || s.getOwner() != this)) s.selected = false;
 
-                if(bs && s.U.Owner == this ) {
+                if(bs && s.getOwner() == this) {
                     Vector3 camPos = Camera.main.WorldToScreenPoint(s.U.VisDat.transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
                     camPos.y = BoxSelector.ScreenToRectSpace(camPos.y);  //more efficent to transform rect to screen space  (not that it makes any real difference) 
                     s.selected |= BoxSelector.selection.Contains(camPos);  //todo radius
@@ -165,122 +165,186 @@ public class Player : NetBehaviour {
             }
 
             if(!bs && Highlighted != null) {
-                if( Highlighted.U.Owner == this ||  !shift ) //todo --- or have nothing selected
+                if(Highlighted.getOwner() == this || !shift) //todo --- or have nothing selected
                     Highlighted.selected = !Highlighted.selected;
             }
             BoxSelector.selection = new Rect(Input.mousePosition.x, BoxSelector.ScreenToRectSpace(Input.mousePosition.y), 0, 0);
         }
+
         //if(Selected == null) return;
         if(Input.GetMouseButtonUp(1)) {
             //RaycastHit hit;
-            int lm = 1 << LayerMask.NameToLayer("Map");
-
-            bool sapper = false;
-            foreach( var s in FindObjectsOfType<Sapper>() ) {///todo - i hate this...
-                if(s.Owner == this && s.GetComponent<Selectable>().selected) {
-                    sapper = true;
-                    break;
-                }
-            }
-
-            TurretSpindle ts = null;
-            if(Highlighted != null && Highlighted.U.Owner != null && (EnemyMask.value & (1<<Highlighted.U.Owner.Layer)) != 0 ) {
-                foreach(var s in FindObjectsOfType<Selectable>()) {
-                    if(s.selected && s.U.Owner == this)
-                        Cmd_attackUnit(s.gameObject, Highlighted.gameObject );
-                }
-            } else if(sapper && Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << LayerMask.NameToLayer("TurretSpindle") ) && (ts = hit.collider.GetComponentInParent<TurretSpindle>()) != null ) {
-                var t = Instantiate( sys.TurretCtorDialog).transform;
-                t.parent = ts.transform;
-                t.localPosition = Vector3.zero;
-                    
-            } else if(Physics.Raycast( Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, lm)) {
-                //Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
-                //todo -- this is unbelievably wrong
-
-                Vector2 cp = hit.point;
-                var n =  FindObjectOfType<NavMesh>().findNode(cp);
-
-                Vector2 yAx = Vector2.up;
-                Vector2 xAx = Vector2.right;
-                float rad = 1.1f;
-
-                int r = 0, c = 0, cm = 1, rm = 0;
-                bool fr = false;
-
-                Selectable cs = null;
-                if(Car != null && n != null ) {
-                    cs = Car.GetComponent<Selectable>();
-                    if(cs.selected == true) {
-                        c = 2; cm = 2; rm = 1;
-                        Cmd_moveUnit(Car.gameObject, cp );
-                    }
-                }
-
-                int maxAttempt = 50;
-//                List<Selectable> selection = new List<Selectable>();
-                foreach(var s in FindObjectsOfType<Selectable>()) {
-                    if(!s.selected || s.U.Owner != this) continue;
-                    
-                    bool isHeli = (s.U as Helio) != null;
-                    if(n == null && !isHeli) continue;
-                    if(cs == s) continue;
-
-                    maxAttempt += 10;
-                    for(; maxAttempt-- > 0 ;) {
-                        var off = c * xAx + r * yAx;
-                        var p = cp + off * rad;
-
-                        if(c > 0) c = -c;
-                        else if(-c == cm) {
-                            if(r > 0) {
-                                if(fr) c = 0;
-                                else c = -c;
-                                r = -r;
-                            } else if(-r == rm) {
-                                if(rm >= cm) {
-                                    c = ++cm;
-                                    r = 0;
-                                    fr = false;
-                                } else {
-                                    r = ++rm;
-                                    c = 0;
-                                    fr = true;
-                                }
-                            } else {
-                                r = -r + 1;
-                                c = -c;
-                            }
-                        } else c = -c + 1;
-
-                        if( isHeli || Physics2D.OverlapCircle(p, rad * 0.8f, lm) == null) {
-                            Cmd_moveUnit(s.gameObject, p );
-                            break;
-                        } 
-                    }
-                        
-                }
-            }
-
+            bool commanded = tryAttack_Command()
+                || trySapperTask_Command()
+                || tryMove_Command();
         }
 
     }
 
+    bool tryMove_Command() {
+        RaycastHit hit;
+        int lm = 1 << LayerMask.NameToLayer("Map");
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, lm )) {
+            //Debug.Log("move? " + hit.collider.gameObject + "    " + hit.point);
+            //todo -- this is unbelievably wrong
+
+            Vector2 cp = hit.point;
+            var n = FindObjectOfType<NavMesh>().findNode(cp);
+
+            Vector2 yAx = Vector2.up;
+            Vector2 xAx = Vector2.right;
+            float rad = 1.1f;
+
+            int r = 0, c = 0, cm = 1, rm = 0;
+            bool fr = false;
+
+            Selectable cs = null;
+            if(Car != null && n != null) {
+                cs = Car.GetComponent<Selectable>();
+                if(cs.selected == true) {
+                    c = 2; cm = 2; rm = 1;
+                    Cmd_moveUnit(Car.gameObject, cp);
+                }
+            }
+
+            int maxAttempt = 50;
+            //                List<Selectable> selection = new List<Selectable>();
+            foreach(var s in FindObjectsOfType<Selectable>()) {
+                if(!s.selected || s.getOwner() != this) continue;
+
+                bool isHeli = (s.U as Helio) != null;
+                if(n == null && !isHeli) continue;
+                if(cs == s) continue;
+
+                maxAttempt += 10;
+                for(; maxAttempt-- > 0; ) {
+                    var off = c * xAx + r * yAx;
+                    var p = cp + off * rad;
+
+                    if(c > 0) c = -c;
+                    else if(-c == cm) {
+                        if(r > 0) {
+                            if(fr) c = 0;
+                            else c = -c;
+                            r = -r;
+                        } else if(-r == rm) {
+                            if(rm >= cm) {
+                                c = ++cm;
+                                r = 0;
+                                fr = false;
+                            } else {
+                                r = ++rm;
+                                c = 0;
+                                fr = true;
+                            }
+                        } else {
+                            r = -r + 1;
+                            c = -c;
+                        }
+                    } else c = -c + 1;
+
+                    if(isHeli || Physics2D.OverlapCircle(p, rad * 0.8f, lm) == null) {
+                        clearSapTask(s);
+                        Cmd_moveUnit(s.gameObject, p);
+                        break;
+                    }
+                }
+
+            }
+            return true;
+        }
+        return false;
+    }
+    bool tryAttack_Command() {
+
+        if(Highlighted != null && (Tm.EnemyMask.value & (1 << Highlighted.U.Tm.Layer)) != 0) {
+              
+            foreach(var s in FindObjectsOfType<Selectable>()) {
+                if(s.selected && s.getOwner() == this)
+                    Cmd_attackUnit(s.gameObject, Highlighted.gameObject );
+            }
+            return true;
+        }
+        return false;
+    }
+    bool trySapperTask_Command() {
+
+        bool sapper = false;
+        foreach( var s in FindObjectsOfType<Sapper>() ) {///todo - i hate this...
+            if(s.Owner == this && s.GetComponent<Selectable>().selected) {
+                sapper = true;
+                break;
+            }
+        }
+        if(!sapper ) return false;
+         RaycastHit hit;
+        if( !Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << LayerMask.NameToLayer("TurretSpindle") )) return false;
+        var ts = hit.collider.GetComponentInParent<TurretSpindle>();
+        if(ts ==null ) return false;
+        TurretCtorMenu task = null;
+        int bs = -1;
+        if( ts.Structure == null ) {        
+            var dp = ts.DropPoint;
+            var p = dp.position;
+            var sys = Sys.get();
+            var t = Instantiate(sys.TurretCtorDialog).transform;
+            t.parent = ts.transform;
+            t.localPosition = Vector3.zero;
+            task = t.GetComponent<TurretCtorMenu>();
+            task.Spindle = ts;
+        } else {
+            var bh = ts.Structure.GetComponent<Build_Hlpr>();
+
+            if(bh == null || bh.Cost <= bh.Recv )  return false;
+
+            bs = ts.Structure.Ind;
+        }
+
+        foreach(var s in FindObjectsOfType<Selectable>()) {
+            if(!s.selected || s.getOwner() != this) continue;
+            var sap = s.U as Sapper;
+            if(sap == null) continue;
+            sap.Task = task;
+            Cmd_taskSapper( s.gameObject, ts.Index, bs );
+        }
+        return true;
+    }
+
+    void clearSapTask( Selectable s ) {
+        var sap = s.U as Sapper;
+        if( sap != null ) {
+            sap.Task = null;
+            sap.BuildSelection = -1;
+            sap.TargetSite = null;
+        }
+    }
+
     [Command]
-    public void Cmd_moveUnit(GameObject uo, Vector3 p) {
+    public void Cmd_moveUnit(GameObject uo, Vector2 p) {
         if(uo == null) return;
-        var u = uo.GetComponent<Unit>();
+        var u = uo.GetComponent<Unit_Kinematic>();
         if(u == null) return;
         u.Rpc_DesPos(p);
         //  Debug.Log("move unit " + u.name + "  to - " + p);
     }
+
+    [Command]
+    public void Cmd_taskSapper(GameObject uo, int tsi, int bs ) {
+        if(uo == null) return;
+        var sap = uo.GetComponent<Sapper>();
+        if(sap == null || (uint)tsi >= (uint)Sys.get().Spindles.Count ) return;
+
+        sap.BuildSelection = bs;
+        sap.TargetSite = Sys.get().Spindles[tsi];
+        sap.Rpc_DesPos(sap.TargetSite.DropPoint.position);
+    }
+
     [Command]
     public void Cmd_attackUnit(GameObject uo, GameObject trgt ) {
         if(uo == null || trgt == null ) return;
-        var u = uo.GetComponent<Unit>();
-        if(u == null || trgt.GetComponent<Unit>() == null ) return;
+        var u = uo.GetComponent<Unit_Kinematic>();
+        if(u == null || trgt.GetComponent<Unit>() == null) return;
         u.Rpc_attackUnit(trgt);
-        //  Debug.Log("move unit " + u.name + "  to - " + p);
     }
 
 
@@ -291,7 +355,7 @@ public class Player : NetBehaviour {
         if(c== null || c.Owner != this) return; //todo - zomg cheater .. ban-hammer  or possibly error..
       //  Debug.Log("Cmd_createFrom");
         var sd = c.SpawnDat[i];
-        var ud = sd.Fab.GetComponent<Unit>();
+        var ud = sd.Fab.GetComponent<Unit_Kinematic>();
         if(ud.PopCost + Pop > MaxPop) return; //todo...feed back 
         if(ud.SquidCost > Mathf.FloorToInt(Squids) ) return; //todo...feed back 
 

@@ -12,9 +12,9 @@ public class UnitSpawn_Hlpr : NetBehaviour {
     [HideInInspector] public float D;
 
 
-    Unit U;
+    Unit_Kinematic U;
     void Awake() {
-        U = GetComponent<Unit>();
+        U = GetComponent<Unit_Kinematic>();
         U.enabled = false;
         if(U.enabled == true) Debug.LogError("err");
         U.VisDat.SetActive(false);
