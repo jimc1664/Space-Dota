@@ -53,6 +53,7 @@
      <Compile Include="Assets\Scripts\Building\TurretStrct.cs" />
      <Compile Include="Assets\Scripts\Building\Unit_Structure.cs" />
      <Compile Include="Assets\Scripts\CannonShell.cs" />
+     <Compile Include="Assets\Scripts\Gfx\FoW.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\BoxSelector.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\MenuManager.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\ParticleRotation.cs" />
@@ -86,7 +87,9 @@
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_DepthOfField\SeparableWeightedBlurDof34.shader" />
+     <None Include="Assets\Scripts\Gfx\ScreenSpaceRaytrace.cginc" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\ShowAlphaChannel.shader" />
+     <None Include="Assets\Scripts\Gfx\frag_ao.cginc" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\SunShaftsComposite.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\ColorCorrectionCurves.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\ScreenSpaceAmbientObscurance.shader" />
@@ -160,6 +163,7 @@
      <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAdd.shader" />
      <None Include="Assets\Scripts\PathFinding\NavMeshGenTest.cs.txt" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_Antialiasing\FXAA3Console.shader" />
+     <None Include="Assets\Scripts\Gfx\Fow.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_Antialiasing\FXAAPreset2.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlurAndFlares.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendForBloom.shader" />

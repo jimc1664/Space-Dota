@@ -129,7 +129,18 @@ public class Unit_Kinematic : Unit {
     public Unit_SyncHelper SyncO;  //todo client only
 
     virtual protected bool desPos(Vector2 dp) {
-        var n = NavMsh.findNode(dp, TargetNode);
+        var n = NavMsh.findNode(dp, TargetNode); //err here 
+
+            //double click
+            //re targeting
+            //nodes
+            //turrets... create
+          //  squids - desync...
+            //unit menu fucks up
+            //sapper control ifffy 
+            //pathfinding
+            //turrets under powered
+
         if(n == null) return false;
         TargetNode = n;
         TargetP = dp;
