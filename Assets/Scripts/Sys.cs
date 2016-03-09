@@ -10,8 +10,8 @@ public class Sys : MonoBehaviour {
 
     public List<Team> Teams = new List<Team>();
 
-   // public GameObject HealthBarFab, CanvasObj;
-
+    // public GameObject HealthBarFab, CanvasObj;
+    
 
     public Material BaseColMat;
     //public int ActiveTeams = 2;
@@ -32,6 +32,15 @@ public class Sys : MonoBehaviour {
         Singleton = this;
         NetM = FindObjectOfType<NetMan>();
     }
+
+    //Reference to Minimap Cam
+    [SerializeField ]
+    GameObject minimap;
+    //Reference to netmanager hud script
+    [SerializeField]
+    GameObject netManager;
+    NetworkManagerHUD netHUD;
+
 
     public Text UI;
     public Text SquidUI, Squid_Unref_UI, Squid_Cap_UI;
@@ -56,6 +65,9 @@ public class Sys : MonoBehaviour {
 
         for(int i = Teams.Count; i-- > 0; )
             Teams[i].start(i);
+
+        netHUD = netManager.GetComponent<NetworkManagerHUD>();
+
     }
     void Update() {
 
@@ -83,15 +95,16 @@ public class Sys : MonoBehaviour {
      }
 
      public void startGame() {
-        if(Started) return;
+        if (Started)
+            return;
+       
         Started = true;
-
         GameUI.SetActive(true);
         StartUI.SetActive(false);
-
-
-
-     }
+        minimap.SetActive(true);
+        netHUD.enabled = false;
+       
+    }
     /*
     NetServer Server;
     NetClient Client;*/
