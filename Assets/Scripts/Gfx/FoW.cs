@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
@@ -265,5 +265,215 @@ public class FoW : MonoBehaviour {
         Debug.Log (table);
     }
     */
+
+   // public int Dim = 40;
+
+    public Transform Eye;
+    public float Rad = 2;
+    public float Step = 0.2f;
+    public float D1 =1, D2 = 5;
+
+    public Vector2 Tl = -new Vector2(30,30), Size = new Vector2(60,60);
+
+    struct Cell {
+        public byte Col;
+        public float D;
+    };
+    Cell[] Map;
+
+
+    public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
+        public int Compare( K x, K y ) {
+            int result = x.CompareTo(y);
+            if(result == 0) return 1;
+            else return -result;  // (-) invert 
+        }
+    }
+    class SearchNode {
+        //public float D;
+        public int I, X, Y;
+        public int L_Di;
+        public float Dm = 1;
+        public int Dir;
+    };
+    public bool Regen = false;
+
+
+    bool sub(  SortedList<float,SearchNode> search, int i, int x, int y, float nk, int di) {
+        if(Map[i].Col == 0 && Map[i].D < nk) {
+            Map[i].D = nk;
+            if(nk > Step) {
+                SearchNode sn1 = new SearchNode();
+                sn1.I = i;
+                sn1.X = x; sn1.Y = y;
+                sn1.L_Di = di;
+                // sn1.Dm = nDm;
+                sn1.Dir = 1 << di;
+                search.Add(nk, sn1);
+            }
+            return true;
+        }
+        return false;
+    }
+    void gen() {
+
+        Vector3 sz = Vector3.one *0.8f *Rad;
+        Color col = Color.blue;
+        Gizmos.color = col;
+
+        /*Vector2 cp = transform.position;
+        Vector2 yAx = transform.up;
+        Vector2 xAx = transform.right;*/
+        Vector2 cp = Tl;
+        Vector2 yAx = Vector2.up;
+        Vector2 xAx = Vector2.right;
+
+        int lm = 1 << LayerMask.NameToLayer("Map");
+
+        int dx = Mathf.CeilToInt(Size.x/Rad);
+        int dy = Mathf.CeilToInt(Size.y/Rad);
+
+        Map = new Cell[dx*dy];
+        for(int x = dx; x-- > 0; )
+            for(int y = dy; y-- > 0; ) {
+                int i = x +y *dx;
+                var off = (float)x *xAx + (float)y*yAx;
+                var p = cp +off *Rad;
+                if(Physics2D.OverlapCircle(p, Rad *0.8f, lm) == null) {
+                    Map[i].Col = 0;
+                } else {
+                    Map[i].Col = 1;
+                }
+                Map[i].D = 0;
+            }
+
+        var ep = ((Vector2)Eye.position - Tl)/Rad;
+
+        int ex = Mathf.RoundToInt(ep.x);
+        int ey = Mathf.RoundToInt(ep.y);
+
+
+        SortedList<float, SearchNode> search = new SortedList<float, SearchNode>(new DuplicateKeyComparer<float>());
+        Map[ex +ey*dx].D  =1;
+        SearchNode sn = new SearchNode();
+        sn.I = ex +ey*dx;
+        sn.X = ex; sn.Y = ey;
+        sn.L_Di = 8;
+        sn.Dir = 1;
+
+        int m1 = -1;
+        search.Add(1, sn);
+        //unchecked {  //just so i can    (uint)-1
+        int[,] da = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 }, { 1, 1 }, };
+
+        float[,] dm = new float[9, 8];
+
+        int[, ,] adj = { { { 3, 4 }, { 2,6 }  } }; 
+ 
+        for(int i1 = 8; i1-- >0; ) {
+
+            for(int i2 = 8; i2-- >0; ) {
+                Vector2 v1 = new Vector2(da[i1, 0], da[i1, 1]).normalized,
+                    v2 = new Vector2(da[i2, 0], da[i2, 1]).normalized;
+
+                float dt = Vector2.Dot(v1, v2);  //-1 -> 1
+                dt =  (dt-1)*-0.5f;   //0 ->  1
+               // dt = dt *dt;
+                dt = D1 + dt*(D2-D1);
+                
+                dm[i1, i2] = dt;
+                
+                Debug.Log(" dt   " +dt+  " v1   " +v1+  " v2   " +v2+  " x   " +(da[i2, 0])+  " y   " + (da[i2, 1]));
+            }
+            dm[8, i1]=1;
+        }
+
+        for(; ; ) {
+            var iter = search.GetEnumerator();
+            if(!iter.MoveNext()) break;
+            var pair = iter.Current;
+            var key = pair.Key;
+            var cur = pair.Value;
+            // if(key > bestD * 1.2f) break;
+            search.RemoveAt(0);
+            if(key   !=  Map[cur.I ].D)
+                continue;
+
+            // Debug.Log("s  " + cur.X +"   y " + cur.Y+"   k " + key);
+
+
+
+            for(int di = 4; di-- >0; ) {
+                if(((1 << di) & cur.Dir) == 0) continue;
+                int x = cur.X + da[di, 0];
+                int y = cur.Y + da[di, 1];
+                float dm2 = 1;
+                //if(di >= 4)
+                //    dm2 = 1.42f;
+                float nk = key - (Step);//*dm2;
+
+                float nDm = cur.Dm*0.5f + dm[cur.L_Di, di] *0.5f;
+                //Debug.Log("    n  " + x +"   y " + y);
+                if((uint)x >= (uint)dx || (uint)y >= (uint)dy) continue;
+                int i = x +y *dx;
+                if( !sub( search, i, x,y,nk,di ) ) continue;
+
+
+                
+                int adjI = 0;
+                int ndi = adj[di, adjI, 0];
+                int nx = cur.X + da[ndi, 0];
+                int ny = cur.Y + da[ndi, 1];
+                if((uint)nx >= (uint)dx || (uint)ny >= (uint)dy) continue;
+                int ni = nx +ny *dx;
+                if(Map[ni].Col != 0) continue;
+
+                int n2x = x + da[ndi, 0];
+                int n2y = y + da[ndi, 1];
+                sub(search, n2x + n2y * dx, n2x, n2y, nk, 9 );
+
+            }
+        }
+    // }
+    }
+    void OnDrawGizmos() {
+
+        if(Map == null || Regen) {
+            gen();
+            Regen = false;
+        }
+
+        Vector3 sz = Vector3.one *0.8f *Rad;
+        Color col = Color.blue;
+        Gizmos.color = col;
+
+        /*Vector2 cp = transform.position;
+        Vector2 yAx = transform.up;
+        Vector2 xAx = transform.right;*/
+        Vector2 cp = Tl;
+        Vector2 yAx = Vector2.up;
+        Vector2 xAx = Vector2.right;
+
+        int lm = 1 << LayerMask.NameToLayer("Map");
+
+        uint dx = (uint)Mathf.CeilToInt(Size.x/Rad);
+        uint dy = (uint)Mathf.CeilToInt(Size.y/Rad);
+        for(uint x = dx; x-- > 0; )
+        for(uint y = dy; y-- > 0; ) {
+            uint i = x +y *dx;
+            var off = (float)x *xAx + (float)y*yAx;
+            var p = cp +off *Rad;
+            if( Map[i].D > 0 ) {
+                Gizmos.color = new Color( 0, Map[i].D ,0 );
+            } else if(Map[i].Col == 0 ) {
+                Gizmos.color = Color.blue;
+            } else {
+                Gizmos.color = Color.red;
+            }
+            Gizmos.DrawWireCube(p, sz);
+        }
+
+
+    }
 }
 

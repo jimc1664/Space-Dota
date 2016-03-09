@@ -144,9 +144,10 @@ half4 frag( v2f i ) : SV_Target {
 	float4 wsDir = depth * i.interpolatedRay;
 	float4 wsPos = _CameraWS + wsDir;
 
+
+
 	wsPos.x *= -1;
 	half2 uv = wsPos.xy /64 +half2(0.5,0.5f);
-
 
 
 	float nMod = dot( depthnormal.rgb, float3(0,0,-1) );
@@ -155,11 +156,12 @@ half4 frag( v2f i ) : SV_Target {
 
 	nMod = 0.5 +0.5*nMod;
 	float los = tex2D (_Fow, uv ).r;
-	
+		
+	if( wsPos.z > 0.3  && nMod > 0.8f) 
+		los = 0;
 	//c.rgb = (c.rgb + los*2)/3;
 
-	//nMod = 1;
-	//half3 p2 = pow( c.rgb, 0.5);
+
 	half3 p2 = min( c.rgb, float3(1,1,1)*0.5 );
 	float avgM = 20.0/( p2.r+p2.b+p2.r +0.3)  ; 
 	float3 grey = float3(1,1,1)/avgM  +0.01 +  (1-nMod) *0.3f;

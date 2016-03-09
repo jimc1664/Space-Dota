@@ -54,6 +54,7 @@
      <Compile Include="Assets\Scripts\Building\Unit_Structure.cs" />
      <Compile Include="Assets\Scripts\CannonShell.cs" />
      <Compile Include="Assets\Scripts\Gfx\FoW.cs" />
+     <Compile Include="Assets\Scripts\Gfx\FowTest.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\BoxSelector.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\MenuManager.cs" />
      <Compile Include="Assets\Scripts\Kieran&apos;s Scripts\Test Versions\ParticleRotation.cs" />
@@ -100,6 +101,7 @@
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\VignetteShader.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_DepthOfField\DepthOfFieldScatter.shader" />
      <None Include="Assets\RTS_Camera\Demo\Projectors\Guidelines.txt" />
+     <None Include="Assets\Scripts\Gfx\FowTest - Copy.cs_old.txt" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\MotionBlur.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\MobileBloom.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\Contrast Stretch\MinMaxReduction.shader" />
