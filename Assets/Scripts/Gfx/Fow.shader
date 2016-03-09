@@ -163,7 +163,7 @@ half4 frag( v2f i ) : SV_Target {
 
 
 	half3 p2 = min( c.rgb, float3(1,1,1)*0.5 );
-	float avgM = 20.0/( p2.r+p2.b+p2.r +0.3)  ; 
+	float avgM = 20.0/( p2.r+p2.b+p2.r +0.8); 
 	float3 grey = float3(1,1,1)/avgM  +0.01 +  (1-nMod) *0.3f;
 	c.rgb = lerp ( grey, c.rgb,los*0.9 );
 

@@ -13,7 +13,7 @@ public class FowTest : MonoBehaviour {
     public Vector2 Tl = -new Vector2(30, 30), Size = new Vector2(60, 60);
 
     struct Cell {
-        public byte Col;
+        public float Col;
         public float D, Dm;
     };
     Cell[] Map;
@@ -59,7 +59,7 @@ public class FowTest : MonoBehaviour {
         return false;
     }
     public int MaxIter = 1000;
-    public float TypRange = 12;
+    public float TypRange = 12, MaxCol = 4;
 
     public Transform FowContainer;
     public GameObject Prefab;
@@ -88,10 +88,27 @@ public class FowTest : MonoBehaviour {
                 int i = x + y * dx;
                 var off = (float)x * xAx + (float)y * yAx;
                 var p = cp + off * Rad;
-                if(Physics2D.OverlapCircle(p, Rad * 0.3f, lm) == null) {
-                    Map[i].Col = 0;
-                } else {
+
+                float rt = 1.0f;
+                if(Physics2D.OverlapCircle(p, Rad*0.5f * rt, lm) == null) {
                     Map[i].Col = 1;
+                } else {
+                 //   Map[i].Col = 2;
+                     rt = 0.1f;
+                     if(Physics2D.OverlapCircle(p, Rad*0.5f * rt, lm) != null) {
+                         Map[i].Col = 2;
+                     } else {
+                         float high = 1.0f, low = rt;
+                         for(int iter = 4; iter-- >0; ) {
+                             rt = (low +high) *0.5f;
+                             if(Physics2D.OverlapCircle(p, Rad*0.5f * rt, lm) == null) {
+                                 low = rt;
+                             } else
+                                 high = rt;
+                           
+                         }
+                         Map[i].Col = 2.0f - low;
+                     }
                 }
                 Map[i].D = 0;
                 Map[i].Dm = 99;
@@ -177,15 +194,17 @@ public class FowTest : MonoBehaviour {
                 int y = cur.Y + da[di, 1];
                 if((uint)x >= (uint)dx || (uint)y >= (uint)dy) continue;
                 int i = x + y * dx;
+                //todo -- no x y  --- rely on map for no wrapping
 
-                if(Map[i].Col != 0) continue;
+
+                if(Map[i].Col >= 2) continue;
 
                 float dm2 = 1;
                 if(di >= 4)
                     dm2 = 1.42f;
 
                 float nDm = dm[cur.L_Di, di] *cur.Dm;
-                float nk = key - (Rad) * dm2  * Mathf.Max( nDm, 1.0f );
+                float nk = key - (Rad) * dm2  * Mathf.Max(nDm, 1.0f)*Map[i].Col;
                 int fails = cur.Fails;
                 //Debug.Log("    n  " + x +"   y " + y);
                 if(Map[i].D < nk) {
@@ -196,7 +215,7 @@ public class FowTest : MonoBehaviour {
                     if( fails-- <- 0 ) continue;
                     if(nk < (Rad) * Mathf.Max(nDm, 1.0f)) continue;
 
-                    float nnk1 = Map[i].D - (Rad) * Mathf.Max(Map[i].Dm * D2 * D2, 1.0f);
+                    float nnk1 = Map[i].D - (Rad) * Mathf.Max(Map[i].Dm * D2 * D2, 1.0f) ;
                     float nnk2 = nk - (Rad) * Mathf.Max(nDm * D1, 1.0f);
                     if(nnk1 > nnk2) continue;
 
@@ -288,10 +307,10 @@ public class FowTest : MonoBehaviour {
                 var p = cp + off * Rad;
                 if(Map[i].D > 0) {
                     Gizmos.color = new Color(0, Map[i].D / TypRange, 0);
-                } else if(Map[i].Col == 0) {
+                } else if(Map[i].Col == 1 ) {
                     Gizmos.color = Color.blue;
                 } else {
-                    Gizmos.color = Color.red;
+                    Gizmos.color = new Color(2-Map[i].Col, 0, 0);
                 }
                 Gizmos.DrawWireCube(p, sz);
             }
