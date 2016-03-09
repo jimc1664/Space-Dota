@@ -11,7 +11,7 @@ public class Sapper : Vehicle {
 
 
    // [ServerCallback]
-    void Update() {
+    new void Update() {
         base.Update();
 
 

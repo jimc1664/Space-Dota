@@ -157,8 +157,12 @@ half4 frag( v2f i ) : SV_Target {
 	nMod = 0.5 +0.5*nMod;
 	float los = tex2D (_Fow, uv ).r;
 		
-	if( wsPos.z > 0.3  && nMod > 0.8f) 
-		los = 0;
+	float hn = 0.8, h1 = 1.0f, h2 = 1.3f;
+	float hMod =  1-saturate(  (( nMod - hn) /(1-hn) ) * (  (wsPos.z-h1)/(h2-h1) ) ) ;
+	//if( wsPos.z > 0.3  && nMod > 0.8f) 
+	//	los = 0;
+	//los *= hMod;
+
 	//c.rgb = (c.rgb + los*2)/3;
 
 

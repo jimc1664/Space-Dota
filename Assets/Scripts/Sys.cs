@@ -101,7 +101,7 @@ public class Sys : MonoBehaviour {
         Started = true;
         GameUI.SetActive(true);
         StartUI.SetActive(false);
-        minimap.SetActive(true);
+       // minimap.SetActive(true);
         netHUD.enabled = false;
        
     }

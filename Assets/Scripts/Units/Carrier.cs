@@ -20,7 +20,7 @@ public class Carrier : Vehicle {
 
     public float MaxSquidCap = 300, SquidGenRate = 3, SquidRefineRate = 10, SquidRefineEff = 0.5f, SquidMineRate = 50;
 
-    void Update() {
+    new void Update() {
 
         base.Update();
         if(Owner == null || ( !Owner.isLocalPlayer && !isServer) ) return;
@@ -129,7 +129,7 @@ public class Carrier : Vehicle {
             res.Carriers--;
         }
     }
-    void OnDisable() {
+    new void OnDisable() {
         base.OnDisable();
         foreach(var r in ResFields)
             if(r != null)
@@ -138,7 +138,7 @@ public class Carrier : Vehicle {
     }
 
     [ClientRpc]
-    public void Rpc_init(GameObject oo) {
+    new public void Rpc_init(GameObject oo) {
         // if(isServer) return; //better way..
         init(oo.GetComponent<Player>());
 

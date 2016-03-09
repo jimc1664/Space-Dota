@@ -182,7 +182,7 @@ public class Unit_Kinematic : Unit {
         SyncO.PathActive = true;    
     }
 
-    protected void Awake() {
+      new protected void Awake() {
         base.Awake();
         Body = GetComponent<Rigidbody2D>();
 
@@ -190,7 +190,8 @@ public class Unit_Kinematic : Unit {
             cacheVal = baseVal;
         });
     }
-    protected void Start() {
+    new protected void Start() {
+        base.Start();
     //    DesPos = transform.position;
         NavMsh = FindObjectOfType<NavMesh>();
         TargetNode = CurNode = NavMsh.findNode(Trnsfrm.position);
@@ -231,7 +232,7 @@ public class Unit_Kinematic : Unit {
         init(oo.GetComponent<Player>());
     }
 
-    protected void OnEnable() {
+    new protected void OnEnable() {
         base.OnEnable();
         SmoothPath = new List<Vector2>();
         SmoothPath.Add(TargetP = Trnsfrm.position);
@@ -254,7 +255,7 @@ public class Unit_Kinematic : Unit {
         }
     }
 
-    protected void OnDisable() {
+    new protected void OnDisable() {
         base.OnDisable();
 
         if(SyncO != null) Destroy(SyncO.gameObject);
@@ -300,7 +301,7 @@ public class Unit_Kinematic : Unit {
         Body.angularVelocity = angV;
     }
 
-    protected void Update() {
+    new protected void Update() {
             base.Update();
         if(BuffsDirty || ReBuff < Time.time)
             rebuff();

@@ -53,6 +53,7 @@ public class Unit : NetBehaviour {
     [HideInInspector]
     public Transform Trnsfrm;
 
+    public float Vision = 10;
 
     public GameObject VisDat;
 
@@ -76,11 +77,19 @@ public class Unit : NetBehaviour {
         Trnsfrm = transform;
         Trgtn = GetComponent<Targeting>();  //could be null...
 
+
+    }
+    protected void Start() {
+       
+
     }
 
     public void init(Team t) {
 
         Tm = t;
+
+        if(Tm.IsLocalTeam)
+            FowTest.get().register(this);
         var l = Tm.Layer; if((this as Helio) != null) l += Team.TeamC;
         // Debug.Log("helio? " + l );
         foreach(var c in GetComponentsInChildren<Collider2D>()) {
@@ -97,6 +106,8 @@ public class Unit : NetBehaviour {
         }
     
     }
+
+    //public bool InVisionList;
     protected void OnEnable() {
         NetMan.UnitCount++;
         if(Trgtn != null) Trgtn.enabled = true;

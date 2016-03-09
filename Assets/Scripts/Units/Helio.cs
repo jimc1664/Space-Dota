@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Helio : Unit_Kinematic {
 
-    void OnEnable() {
+    new void OnEnable() {
         base.OnEnable();
 
         CurHoverDistance = VisDat.transform.position.z;
@@ -81,7 +81,7 @@ public class Helio : Unit_Kinematic {
 
     float HeightCastTimer = 0;
     float HoverPseudoTimer = 0;
-    void Update() {
+    new void Update() {
         base.Update();
 
         if((Time.time - HeightCastTimer) > 0.2f) {

@@ -47,7 +47,7 @@ public class Vehicle : Unit_Kinematic {
         SteerTimer = Mathf.Min(SteerTimer, Time.time - SteerDelay / 3);
     }
 
-    protected void OnDrawGizmos() {
+    new protected void OnDrawGizmos() {
         base.OnDrawGizmos();
 
         Steering_FB.draw();

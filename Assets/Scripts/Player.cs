@@ -55,6 +55,7 @@ public class Player : NetBehaviour {
         var s = Sys.get();
         s.startGame();
 
+        
         //  Debug.Log("wtf");
         Vector3 sp = Tm.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
         GameObject c = (GameObject)Instantiate( s.Carriers[CarrierSelection], sp, Tm.SpawnLoc.rotation);
@@ -88,6 +89,7 @@ public class Player : NetBehaviour {
         SelectionMask = (((1 << Team.TeamC * 2) - 1) << Team.Team1i) | 1; 
 
         if(isLocalPlayer) {
+            Tm.IsLocalTeam = true;
             var sui = Sys.get().StartUI;
             sui.SetActive(true);
             sui.GetComponentInChildren<UnityEngine.UI.Image>().color = Col;

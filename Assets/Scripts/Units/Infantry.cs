@@ -29,7 +29,7 @@ public class Infantry : Unit_Kinematic {
         SubTarget = FireTarget.HitTargets[Random.Range(0, FireTarget.HitTargets.Count)];
         TargetOff = Random.insideUnitSphere;
     }
-    void Awake() {
+    new void Awake() {
         base.Awake();
         Anim = VisDat.GetComponentInChildren<Animator>();
         
@@ -112,7 +112,7 @@ public class Infantry : Unit_Kinematic {
     }
 
     float FiredTimer = 0;
-    void Update() {
+    new void Update() {
         base.Update();
 
         float spd =  Body.velocity.magnitude / MaxSpeed;
