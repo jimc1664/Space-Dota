@@ -385,6 +385,7 @@ public class FowTest : MonoBehaviour {
             for(int x = Dx; x-- > 0; )
                 for(int y = Dy; y-- > 0; ) {
                     int i = x + y * Dx;
+                   // Map[i].Dh = Mathf.Max( Map[i].Dh, Map[i].D ) ;
                     Map[i].D += (OldMap[i].D - Map[i].D) * 0.6f;
                     Map[i].Dh += (OldMap[i].Dh - Map[i].Dh) * 0.6f;
                 }

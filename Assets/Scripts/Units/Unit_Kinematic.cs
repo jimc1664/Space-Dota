@@ -230,29 +230,33 @@ public class Unit_Kinematic : Unit {
     public void Rpc_init(GameObject oo) {
         // if(isServer) return; //better way..
         init(oo.GetComponent<Player>());
+
     }
 
-    new protected void OnEnable() {
-        base.OnEnable();
-        SmoothPath = new List<Vector2>();
-        SmoothPath.Add(TargetP = Trnsfrm.position);
-
+    public void initSyncO() {
 
         var go = new GameObject();
         go.name = name + "  syncO";
         SyncO = go.AddComponent<Unit_SyncHelper>();
         SyncO.Body = go.AddComponent<Rigidbody2D>(Body);
-        for( int i = 0; i < Trnsfrm.childCount; i++ ) {
+        for(int i = 0; i < Trnsfrm.childCount; i++) {
             var t = Trnsfrm.GetChild(i);
             if(t.GetComponentInChildren<Collider2D>() == null) continue;
             var go2 = Instantiate(t.gameObject);
-            go2.transform.parent =SyncO.Trnsfrm;
+            go2.transform.parent = SyncO.Trnsfrm;
         }
 
         var l = 31; if((this as Helio) != null) l--;
         foreach(Transform t in SyncO.GetComponentInChildren<Transform>()) {
             t.gameObject.layer = l;
         }
+    }
+    new protected void OnEnable() {
+        base.OnEnable();
+        SmoothPath = new List<Vector2>();
+        SmoothPath.Add(TargetP = Trnsfrm.position);
+
+        if(SyncO == null) initSyncO();
     }
 
     new protected void OnDisable() {

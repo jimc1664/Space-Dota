@@ -85,12 +85,8 @@ public class Unit : NetBehaviour {
 
     }
 
-    public void init(Team t) {
+    public void fixColliders() {
 
-        Tm = t;
-
-        if(Tm.IsLocalTeam)
-            FowTest.get().register(this);
         var l = Tm.Layer; if((this as Helio) != null) l += Team.TeamC;
         // Debug.Log("helio? " + l );
         foreach(var c in GetComponentsInChildren<Collider2D>()) {
@@ -102,6 +98,15 @@ public class Unit : NetBehaviour {
         foreach(var c in GetComponentsInChildren<Collider>()) {
             c.gameObject.layer = l;
         } 
+    }
+    public void init(Team t) {
+
+        Tm = t;
+
+        if(Tm.IsLocalTeam && FowTest.get() != null )
+            FowTest.get().register(this);
+
+        fixColliders();
         foreach(var c in GetComponents<SpeedBoost>()) { //todo base class
             c.enabled = true;
         }

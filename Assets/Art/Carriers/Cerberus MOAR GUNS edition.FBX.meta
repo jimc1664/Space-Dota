@@ -1,0 +1,204 @@
+fileFormatVersion: 2
+guid: 4693383388dd85e41b7da4f99097c5d9
+timeCreated: 1457719122
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Barrel
+    100002: Barrel001
+    100004: Barrel002
+    100006: Barrel003
+    100008: Barrel004
+    100010: Barrel005
+    100012: Barrel006
+    100014: Barrel007
+    100016: Barrel008
+    100018: Barrel009
+    100020: Barrel010
+    100022: Barrel011
+    100024: Box001
+    100026: Box002
+    100028: Box003
+    100030: Box004
+    100032: Box005
+    100034: Carrier body
+    100036: //RootNode
+    100038: Plane001
+    100040: Super cannon
+    100042: Wheel
+    100044: Wheel001
+    100046: Wheel002
+    100048: Wheel003
+    100050: Wheel004
+    100052: Wheel005
+    400000: Barrel
+    400002: Barrel001
+    400004: Barrel002
+    400006: Barrel003
+    400008: Barrel004
+    400010: Barrel005
+    400012: Barrel006
+    400014: Barrel007
+    400016: Barrel008
+    400018: Barrel009
+    400020: Barrel010
+    400022: Barrel011
+    400024: Box001
+    400026: Box002
+    400028: Box003
+    400030: Box004
+    400032: Box005
+    400034: Carrier body
+    400036: //RootNode
+    400038: Plane001
+    400040: Super cannon
+    400042: Wheel
+    400044: Wheel001
+    400046: Wheel002
+    400048: Wheel003
+    400050: Wheel004
+    400052: Wheel005
+    2300000: Barrel
+    2300002: Barrel001
+    2300004: Barrel002
+    2300006: Barrel003
+    2300008: Barrel004
+    2300010: Barrel005
+    2300012: Barrel006
+    2300014: Barrel007
+    2300016: Barrel008
+    2300018: Barrel009
+    2300020: Barrel010
+    2300022: Barrel011
+    2300024: Box001
+    2300026: Box002
+    2300028: Box003
+    2300030: Box004
+    2300032: Box005
+    2300034: Carrier body
+    2300036: Plane001
+    2300038: Super cannon
+    2300040: Wheel
+    2300042: Wheel001
+    2300044: Wheel002
+    2300046: Wheel003
+    2300048: Wheel004
+    2300050: Wheel005
+    3300000: Barrel
+    3300002: Barrel001
+    3300004: Barrel002
+    3300006: Barrel003
+    3300008: Barrel004
+    3300010: Barrel005
+    3300012: Barrel006
+    3300014: Barrel007
+    3300016: Barrel008
+    3300018: Barrel009
+    3300020: Barrel010
+    3300022: Barrel011
+    3300024: Box001
+    3300026: Box002
+    3300028: Box003
+    3300030: Box004
+    3300032: Box005
+    3300034: Carrier body
+    3300036: Plane001
+    3300038: Super cannon
+    3300040: Wheel
+    3300042: Wheel001
+    3300044: Wheel002
+    3300046: Wheel003
+    3300048: Wheel004
+    3300050: Wheel005
+    4300000: Plane001
+    4300002: Carrier body
+    4300004: Wheel
+    4300006: Wheel001
+    4300008: Wheel002
+    4300010: Super cannon
+    4300012: Wheel003
+    4300014: Wheel004
+    4300016: Wheel005
+    4300018: Barrel
+    4300020: Barrel001
+    4300022: Barrel002
+    4300024: Barrel003
+    4300026: Barrel004
+    4300028: Barrel005
+    4300030: Barrel006
+    4300032: Barrel007
+    4300034: Barrel008
+    4300036: Barrel009
+    4300038: Barrel010
+    4300040: Barrel011
+    4300042: Box001
+    4300044: Box002
+    4300046: Box003
+    4300048: Box004
+    4300050: Box005
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

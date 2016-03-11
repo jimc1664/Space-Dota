@@ -38,7 +38,7 @@ public class Player : NetBehaviour {
         for(int i = 0; i < s.Teams.Count; i++)
             if(s.Teams[i].Members.Count < s.Teams[ti].Members.Count)
                 ti = i;
-
+        ti  = 1;
         Team t = s.Teams[ti];
         int colI = (t.ColPoolI++)%t.ColorPool.Count;
         Col = t.ColorPool[colI];
@@ -361,12 +361,18 @@ public class Player : NetBehaviour {
         if(ud.PopCost + Pop > MaxPop) return; //todo...feed back 
         if(ud.SquidCost > Mathf.FloorToInt(Squids) ) return; //todo...feed back 
 
+        int spi = c.getSpawnPointI(i);
+        if(spi < 0) return;
+
         GameObject go = (GameObject)Instantiate(sd.Fab, Vector3.zero, Quaternion.identity);
 
         NetworkServer.Spawn(go);
         //todo -- SpawnPoints.Count  >= 256 == err
         Squids -= (float)ud.SquidCost;
         Pop += ud.PopCost;
-        go.GetComponent<UnitSpawn_Hlpr>().Rpc_init(muhCarrier, (byte)Random.Range(0, c.SpawnPoints.Count));
+
+        var ush = go.GetComponent<UnitSpawn_Hlpr>();
+        c.SpawnPoints[spi].CurSpwn = ush;
+        ush.Rpc_init(muhCarrier, (byte)spi );
     }
 }

@@ -14,15 +14,66 @@ public class Carrier : Vehicle {
     };
     public List<SpawnData> SpawnDat;
 
-    public List<GameObject> SpawnPoints;
+
+    [System.Serializable]
+    public class SpawnPoint {
+        public Transform FirstPoint;
+        public UnitSpawn_Hlpr CurSpwn;
+
+        public bool IsOpen, LastDes;
+    }
+    public List<SpawnPoint> SpawnPoints;
+
+    public int getSpawnPointI(byte sdi) {
+        int ret = -1;
+        int start = Random.Range(0, SpawnPoints.Count);
+        for(int i = 0; i < SpawnPoints.Count; i++ ) {
+            int cr = (start + i) % SpawnPoints.Count;
+            if(SpawnPoints[cr].CurSpwn == null) {
+                ret = cr;
+                break;
+            }
+        }
+        return ret;
+    }
 
     float BuildTimer = 0.5f; //initial delay
+    AnimFeedback Anim_FB;
 
     public float MaxSquidCap = 300, SquidGenRate = 3, SquidRefineRate = 10, SquidRefineEff = 0.5f, SquidMineRate = 50;
+
+    new void Start() {
+        base.Start();
+
+        Anim_FB = VisDat.GetComponent<AnimFeedback>();
+    }
 
     new void Update() {
 
         base.Update();
+
+        for(int i = SpawnPoints.Count; i-- > 0; ) {
+            var sp = SpawnPoints[i];
+            if( Anim_FB) {
+
+                bool desOpen = sp.CurSpwn != null;
+                if( desOpen != sp.LastDes ) {
+                    Anim_FB.Ctrl.SetFloat("Spwn" + (i + 1), desOpen ? 1 : -1);
+                    var st = Anim_FB.Ctrl.GetCurrentAnimatorStateInfo(i);
+
+                    if( st.normalizedTime < 0 )
+                        Anim_FB.Ctrl.Play(st.fullPathHash, i, 0);
+                    else if(st.normalizedTime > 0.3333f )
+                        Anim_FB.Ctrl.Play(st.fullPathHash, i, 1 );
+                   
+                    sp.LastDes = desOpen;
+                } 
+                sp.IsOpen = Anim_FB.getFlag(i);
+            } else 
+                sp.IsOpen = true;
+
+        }
+
         if(Owner == null || ( !Owner.isLocalPlayer && !isServer) ) return;
 
         if(ResFields.Count > 0 && (Owner.UnrefSquids + Owner.Squids < MaxSquidCap+0.001f) ) {
@@ -84,8 +135,6 @@ public class Carrier : Vehicle {
 
         }
     }
-
-
     public void spawnUnit(int i) {
         SpawnData sd = SpawnDat[i];
         Owner.Cmd_createFrom((byte)i, gameObject);  //more than 256 ?? nah
@@ -93,6 +142,7 @@ public class Carrier : Vehicle {
         Debug.Log("Cmd_createFrom please??");
     }
 
+    /*
     [Command]
     void Cmd_createFrom( byte i) {
         Debug.Log("Cmd_createFrom");
@@ -103,7 +153,7 @@ public class Carrier : Vehicle {
 
         //todo -- SpawnPoints.Count  >= 256 == err
         c.GetComponent<UnitSpawn_Hlpr>().Rpc_init(gameObject, (byte)Random.Range(0, SpawnPoints.Count));
-    }
+    }  */
 
     List<ResourceField> ResFields = new List<ResourceField>();
 

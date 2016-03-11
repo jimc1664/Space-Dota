@@ -34,86 +34,120 @@ public class UnitSpawn_Hlpr : NetBehaviour {
         foreach(Collider2D c2 in GetComponentsInChildren<Collider2D>()) {
             c2.enabled = true;
         }
+        U.fixColliders();
 
+        U.initSyncO();
+
+        var j = gameObject.AddComponent<DistanceJoint2D>();  //disble inter collision by magic
+        j.connectedBody = Car.Body;
+        j.maxDistanceOnly = true;
+        j.distance = 99999.0f;
+
+
+        j = U.SyncO.gameObject.AddComponent<DistanceJoint2D>();  //disble inter collision by magic
+        j.connectedBody = Car.SyncO.Body;
+        j.maxDistanceOnly = true;
+        j.distance = 99999.0f;       
     }
 
     float Timer = 0;
 
-
+    Carrier Car;
+    Carrier.SpawnPoint SP;
     [ClientRpc]
     public void Rpc_init(GameObject co, byte spI) {
        
-        var c = co.GetComponent<Carrier>();
-        if(c == null || (uint)spI >= (uint)c.SpawnPoints.Count) {  //note: in network functions we are unduly careful
+        Car = co.GetComponent<Carrier>();
+        if(Car == null || (uint)spI >= (uint)Car.SpawnPoints.Count) {  //note: in network functions we are unduly careful
             Destroy(gameObject);
-            Debug.LogError("Error in UnitSpawn_Hlpr::init  " + c + "  ---- " + (int)spI);
+            Debug.LogError("Error in UnitSpawn_Hlpr::init  " + Car + "  ---- " + (int)spI);
             return;
         }
 
-        Player o = c.Owner;
+        Player o = Car.Owner;
 
         if(o.isLocalPlayer && !isServer) {
             o.Squids -= (float) U.SquidCost;
             o.Pop += U.PopCost;
         }
-        activate();
+
         U.init(o);
 
-        var sp = c.SpawnPoints[spI];
-        Prev = sp.transform;
+        SP = Car.SpawnPoints[spI];
+        SP.CurSpwn = this;
+        Prev = SP.FirstPoint;
 
         if(Prev.childCount > 0) Next = Prev.GetChild(0);
        // U.Trnsfrm.parent = c.Trnsfrm;
-        U.Trnsfrm.position = Prev.position;
-        U.Trnsfrm.rotation = Prev.rotation;
+
 
         Timer = 1;
         //enabled = true;
         // gameObject.SetActive(true);
         
 
-        var j = gameObject.AddComponent<DistanceJoint2D>();  //disble inter collision by magic
-        j.connectedBody = c.Body;
-        j.maxDistanceOnly = true;
-        j.distance = 99999.0f;
-    }
 
+
+
+
+    }
+    bool Spawning = false;
     void Update() {
 
-        if(Timer <= 0) {  //created but not init-ed
-            if((Timer -= Time.deltaTime) < -3) {
-                Destroy( gameObject);               
+        if(!Spawning) {
+            if(Timer <= 0) {  //created but not init-ed
+                if((Timer -= Time.deltaTime) < -3) {
+                    Destroy(gameObject);
+                }
+                return;
             }
-            return;
-        }
-        
-        if( Next != null) {
-            float spd = U.MaxSpeed / 2;
-            float dis = (Next.position - Prev.position).magnitude;
+            if(Prev == null) { //carrier died??
 
-            D += spd * Time.deltaTime / dis;
-            if(D > 1.0f) {
-                Prev = Next;
-                if(Prev.childCount > 0) {
-                    Next = Prev.GetChild(0);
-                    D -= 1;
-                } else {
-                    Next = null;
-                    U.Trnsfrm.position = Prev.position;
-                }                
-            } 
-        }
-        if(Next != null) {
-            var p = Vector3.Lerp(Prev.position, Next.position, D);
-            U.Body.MovePosition(p);
-            U.Body.MoveRotation( Quaternion.Lerp(Prev.rotation, Next.rotation, D).eulerAngles.z );
-        } else { // our carrier == kaboom-boom  or just done..
-            U.enabled = true;
-            Destroy(GetComponent<DistanceJoint2D>());
-            Destroy(this);          
-            return;
-        } 
+                Destroy(gameObject);
+                return;
+            }
 
+            U.Trnsfrm.position = Prev.position;
+            U.Trnsfrm.rotation = Prev.rotation;
+
+            if(SP.IsOpen) {
+                activate();
+                Spawning = true; 
+            }
+
+        } else {
+            if(Next != null) {
+                float spd = U.MaxSpeed / 2;
+                float dis = (Next.position - Prev.position).magnitude;
+
+                D += spd * Time.deltaTime / dis;
+                if(D > 1.0f) {
+                    Prev = Next;
+                    if(Prev.childCount > 0) {
+                        Next = Prev.GetChild(0);
+                        D -= 1;
+                    } else {
+                        Next = null;
+                        U.Trnsfrm.position = Prev.position;
+                    }
+                }
+            }
+            if(Next != null) {
+                var p = Vector3.Lerp(Prev.position, Next.position, D);
+                U.Trnsfrm.position = p;
+                U.Body.MovePosition(U.SyncO.Body.position);
+                U.SyncO.Body.MovePosition(p);
+                var r = Quaternion.Lerp(Prev.rotation, Next.rotation, D).eulerAngles.z;
+                U.Body.MoveRotation(U.SyncO.Body.rotation);
+                U.SyncO.Body.MoveRotation(r);
+            } else { // our carrier == kaboom-boom  or just done..
+                U.enabled = true;
+                Destroy(this);
+                Destroy(GetComponent<DistanceJoint2D>());
+                Destroy(U.SyncO.gameObject.GetComponent<DistanceJoint2D>());
+                return;
+            }
+        }
     }
 
 

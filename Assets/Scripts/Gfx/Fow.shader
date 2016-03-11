@@ -166,7 +166,9 @@ half4 frag( v2f i ) : SV_Target {
 
 	//c.rgb = (c.rgb + los*2)/3;
 
-	los = max( los, losM.g );
+	//los = max( los, losM.g );
+	los = los + losM.g;
+	if( los > 1 ) los = 1;
 
 	half3 p2 = min( c.rgb, float3(1,1,1)*0.5 );
 	float avgM = 20.0/( p2.r+p2.b+p2.r +0.8); 
