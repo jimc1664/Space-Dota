@@ -25,7 +25,7 @@ public class FowTest : MonoBehaviour {
 
     struct Cell {
        // public float Col;
-        public float D, Dm;
+        public float D, Dm, Dh;
     };
     Cell[] Map;
 
@@ -42,34 +42,24 @@ public class FowTest : MonoBehaviour {
         //public float D;
         public int I, X, Y;
         public int L_Di;
+        //  public int Adj;
+    };
+
+    class SearchNode_DBias  :  SearchNode {
+        //public float D;
+
         public float Dm = 1;
-        public int Dir;
-        public int Adj;
+        //  public int Adj;
         public int Fails;
-   };
+    };
+
 
     public float InitDm = 0.2f;
     public int MaxFail = 4;
     public bool Regen = false;
 
 
-    bool sub(SortedList<float, SearchNode> search, int i, int x, int y, float nk, int di, int adj ) {
-        if( Map[i].D < nk) {
-            Map[i].D = nk;
-            if(nk > Step) {
-                SearchNode sn1 = new SearchNode();
-                sn1.I = i;
-                sn1.X = x; sn1.Y = y;
-                sn1.L_Di = di;
-                // sn1.Dm = nDm;
-                sn1.Dir = 1 << di;
-                sn1.Adj = adj;
-                search.Add(nk, sn1);
-            }
-            return true;
-        }
-        return false;
-    }
+
     public int MaxIter = 1000;
     public float TypRange = 12, MaxCol = 4;
 
@@ -95,7 +85,6 @@ public class FowTest : MonoBehaviour {
         public int Dx, Dy;
         float D2, MaxCol; int MaxIter;
         float InitDm; int MaxFail;
-        SortedList<float, SearchNode> Search = new SortedList<float, SearchNode>(new DuplicateKeyComparer<float>());
 
         float[] Map_Col;
         Vector2 Tl;
@@ -174,13 +163,15 @@ public class FowTest : MonoBehaviour {
 
                 e.P = eye.Trnsfrm.position;
                 e.Rad = eye.Vision;
+                e.High = eye.IsHighAsFuckPal;
                 Entries.Add(e);
 
             }
         }
 
         struct Entry {
-            public Vector3 P;
+            public Vector2 P;
+            public bool High;
             public float Rad;
         }
         static List<Entry> Entries;
@@ -198,6 +189,8 @@ public class FowTest : MonoBehaviour {
             //Vector2 yAx = Vector2.up;
             //Vector2 xAx = Vector2.right;
 
+            SortedList<float, SearchNode_DBias> Search = new SortedList<float, SearchNode_DBias>(new DuplicateKeyComparer<float>());
+            SortedList<float, SearchNode> Search2 = new SortedList<float, SearchNode>(new DuplicateKeyComparer<float>());
 
             foreach(Entry e in Entries) {
                 var ep = ((Vector2)e.P - Tl) / Rad;
@@ -224,17 +217,31 @@ public class FowTest : MonoBehaviour {
                         int i = ex + ey * Dx;
                         //if(Map[i].D > range) continue;
                         range -= new Vector2(xm, ym).magnitude * Rad;
-                        Map[i].D = range;
-                        for(int di = 8; di-- > 0; ) {
-                            SearchNode sn = new SearchNode();
-                            sn.I = i;
-                            sn.X = ex; sn.Y = ey;
 
-                            sn.Dm = InitDm;
-                            sn.Fails = MaxFail;
-                            sn.L_Di = di;
-                            //sn.Dir = -1;
-                            Search.Add(range, sn);
+                        if( ! e.High ) {
+                            Map[i].D = range;
+                            for(int di = 8; di-- > 0; ) {
+                                var sn = new SearchNode_DBias();
+                                sn.I = i;
+                                sn.X = ex; sn.Y = ey;
+
+                                sn.Dm = InitDm;
+                                sn.Fails = MaxFail;
+                                sn.L_Di = di;
+                                //sn.Dir = -1;
+                                Search.Add(range, sn);
+                            }
+                        } else {
+                            
+                            Map[i].Dh = range;
+                            for(int di = 4; di-- > 0; ) {
+                                var sn = new SearchNode();
+                                sn.I = i;
+                                sn.X = ex; sn.Y = ey;
+
+                                sn.L_Di = di;
+                                Search2.Add(range, sn);
+                            }
                         }
                         ym = 1 - ym;
                     }
@@ -244,21 +251,6 @@ public class FowTest : MonoBehaviour {
             
             //unchecked {  //just so i can    (uint)-1
             int[,] da = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 }, { 1, 1 }, };
-
-            float[,] dm = new float[9, 8];
-
-            int[ ]  adj= {
-                (1<<0) | (1<<4) | (1<<6), 
-                (1<<1) | (1<<5) | (1<<7), 
-                (1<<2) | (1<<5) | (1<<6), 
-                (1<<3) | (1<<4) | (1<<7), 
-
-                (1<<4) | (1<<0) | (1<<3), 
-                (1<<5) | (1<<1) | (1<<2), 
-                (1<<6) | (1<<0) | (1<<2), 
-                (1<<7) | (1<<1) | (1<<3), 
-            };
-
 
             int[,] adj2 = {
                 {0, 4, 6}, 
@@ -271,28 +263,53 @@ public class FowTest : MonoBehaviour {
                 {6, 0, 2}, 
                 {7, 1, 3}, 
             };
+            for(int maxI = MaxIter; maxI-- > 0; ) {
+                var iter = Search2.GetEnumerator();
+                if(!iter.MoveNext()) break;
+                var pair = iter.Current;
+                var key = pair.Key;
+                var cur = pair.Value;
+                // if(key > bestD * 1.2f) break;
+                Search2.RemoveAt(0);
+                if(key != Map[cur.I].Dh)
+                    continue;
 
-            for(int i1 = 8; i1-- > 0; ) {
-                for(int i2 = 8; i2-- > 0; ) {
-                    Vector2 v1 = new Vector2(da[i1, 0], da[i1, 1]).normalized,
-                        v2 = new Vector2(da[i2, 0], da[i2, 1]).normalized;
+                // Debug.Log("s  " + cur.X +"   y " + cur.Y+"   k " + key);
 
-                    float dt = Vector2.Dot(v1, v2);  //-1 -> 1
-                    //dt = (dt - 1) * -0.5f;   //0 ->  1
-                    // dt = dt *dt;
-                    //dt = D1 + dt * (D2 - D1);
+                for(int ai = 3; ai-- > 0; ) {
+                    //for(int di = 8; di-- > 0; ) {
+                    //  if((cur.Dir & (1 << di)) == 0) continue;
+                    int di = adj2[cur.L_Di, ai];
+                    int x = cur.X + da[di, 0];
+                    int y = cur.Y + da[di, 1];
+                    if((uint)x >= (uint)Dx || (uint)y >= (uint)Dy) continue;
+                    int i = x + y * Dx;
+                    //todo -- no x y  --- rely on map for no wrapping
 
-                    if(dt > 0.95f) {
-                        dt = 1;
-                    } else dt = D2;
+                    float dm2 = 1;
+                    if(di >= 4)
+                        dm2 = 1.42f;
 
-                    dm[i1, i2] = dt;
+                    float nk = key - (Rad) * dm2;
 
-                  //  Debug.Log(" dt   " + dt + " v1   " + v1 + " v2   " + v2 + " x   " + (da[i2, 0]) + " y   " + (da[i2, 1]));
+                    //  if(nk > OldMap[i].D)
+                    //     nk += (OldMap[i].D - nk) * 0.3f;
+
+                    
+                    //Debug.Log("    n  " + x +"   y " + y);
+                    if(Map[i].Dh < nk) {
+                        Map[i].Dh = nk;
+
+                    } else {
+                        continue;
+                    }
+                    var sn1 = new SearchNode();
+                    sn1.I = i;
+                    sn1.X = x; sn1.Y = y;
+                    sn1.L_Di = di;
+                    Search2.Add(nk, sn1);
                 }
-                dm[8, i1] = 1;
             }
-           
 
             for(int maxI = MaxIter; maxI-- > 0; ) {
                 var iter = Search.GetEnumerator();
@@ -324,9 +341,10 @@ public class FowTest : MonoBehaviour {
                     if(di >= 4)
                         dm2 = 1.42f;
 
-                    float nDm = dm[cur.L_Di, di] *cur.Dm;
-                    float nk = key - (Rad) * dm2 * Mathf.Max(nDm, 1.0f) * Map_Col[i];
+                    float nDm = (( ai == 0 ) ? 1 : D2) * cur.Dm; 
 
+                    float nk = key - (Rad) * dm2 * Mathf.Max(nDm, 1.0f) * Map_Col[i];
+                    if(Map[i].Dh > nk) continue;
                   //  if(nk > OldMap[i].D)
                    //     nk += (OldMap[i].D - nk) * 0.3f;
 
@@ -351,8 +369,8 @@ public class FowTest : MonoBehaviour {
 
                 
                     Map[i].Dm = Mathf.Min(Map[i].Dm, nDm);
-                                            
-                    SearchNode sn1 = new SearchNode();
+
+                    var sn1 = new SearchNode_DBias();
                     sn1.I = i;
                     sn1.X = x; sn1.Y = y;
                     sn1.L_Di = di;
@@ -368,6 +386,7 @@ public class FowTest : MonoBehaviour {
                 for(int y = Dy; y-- > 0; ) {
                     int i = x + y * Dx;
                     Map[i].D += (OldMap[i].D - Map[i].D) * 0.6f;
+                    Map[i].Dh += (OldMap[i].Dh - Map[i].Dh) * 0.6f;
                 }
         }
 
@@ -396,7 +415,7 @@ public class FowTest : MonoBehaviour {
         for(int x = Pending.Dx; x-- > 0; )
             for(int y = Pending.Dy; y-- > 0; ) {
                 int i = x + y * Pending.Dx;
-                if(Map[i].D > 0) {
+                if(Map[i].D > 0 || Map[i].Dh > 0) {
                     var off = (float)x * xAx + (float)y * yAx;
                     var p = Tl + off * Rad;
 
@@ -421,10 +440,8 @@ public class FowTest : MonoBehaviour {
                     t.position = p;
                     SpriteRenderer sr = t.GetComponent<SpriteRenderer>() ;
 
-                    var cl = Color.white;
-                    cl *= Mathf.Min(Map[i].D/15, 1) ;
-                    cl.a = 1;
-                    sr.color = cl;
+                    float rscl = 15;
+                    sr.color = new Color(  Mathf.Min(Map[i].D/rscl, 1),  Mathf.Min( Mathf.Max( Map[i].D, Map[i].Dh)/rscl, 1), 0, 1);
             
                 } 
         

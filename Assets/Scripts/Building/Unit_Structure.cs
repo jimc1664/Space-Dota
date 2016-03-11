@@ -9,8 +9,10 @@ public class Unit_Structure : Unit {
     public Color C;
 
     new protected void OnEnable() {
+
         base.OnEnable();
-        fixCol_In(GetComponentInParent<TurretSpindle>().gameObject, C );         
+        fixCol_In(GetComponentInParent<TurretSpindle>().gameObject, C );
+        IsHighAsFuckPal = true;
     }
     new protected void OnDisable() {
         base.OnDisable();

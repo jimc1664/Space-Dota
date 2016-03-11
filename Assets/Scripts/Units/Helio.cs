@@ -97,7 +97,14 @@ public class Helio : Unit_Kinematic {
         }
 
         float hs = 5;
-        if(CurHoverDistance > DesHoverDistance) hs *= 0.3f;
+        if(CurHoverDistance > DesHoverDistance) {
+            hs *= 0.3f;
+            if(CurHoverDistance < 0.9f)
+                IsHighAsFuckPal = false;
+        } else {
+            if(CurHoverDistance > 1.0f)
+                IsHighAsFuckPal = true;
+        }
 
         CurHoverDistance += (DesHoverDistance - CurHoverDistance) * hs * Time.deltaTime;
 

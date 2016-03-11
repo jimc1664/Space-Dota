@@ -155,6 +155,7 @@ half4 frag( v2f i ) : SV_Target {
 	//c.rgb = -depthnormal.rgb;
 
 	nMod = 0.5 +0.5*nMod;
+	float2 losM = tex2D (_Fow, uv ).rg;
 	float los = tex2D (_Fow, uv ).r;
 		
 	float hn = 0.8, h1 = 1.0f, h2 = 1.3f;
@@ -165,6 +166,7 @@ half4 frag( v2f i ) : SV_Target {
 
 	//c.rgb = (c.rgb + los*2)/3;
 
+	los = max( los, losM.g );
 
 	half3 p2 = min( c.rgb, float3(1,1,1)*0.5 );
 	float avgM = 20.0/( p2.r+p2.b+p2.r +0.8); 

@@ -54,6 +54,7 @@ public class Unit : NetBehaviour {
     public Transform Trnsfrm;
 
     public float Vision = 10;
+    public bool IsHighAsFuckPal = false;
 
     public GameObject VisDat;
 
