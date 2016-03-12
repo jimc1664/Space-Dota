@@ -306,12 +306,13 @@ public class Unit_Kinematic : Unit {
     }
 
     new protected void Update() {
-            base.Update();
+        base.Update();
         if(BuffsDirty || ReBuff < Time.time)
             rebuff();
 
 
     }
+
         /*
     public bool RefreshLA = true;
    

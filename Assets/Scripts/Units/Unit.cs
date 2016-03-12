@@ -125,8 +125,9 @@ public class Unit : NetBehaviour {
     }
 
 
+    protected Color Col;
     public void fixCol( Color c ) {
-
+        Col = c;
         fixCol_In(VisDat, c);
     }
 
@@ -176,8 +177,108 @@ public class Unit : NetBehaviour {
 
         if(Invinciblity) Health = Mathf.Max(Health, 0.01f);
 
-        if(Health < 0) Destroy(gameObject);
+        if(Health < 0) {
+            if(Trgtn != null) {
+
+                foreach(var t in Trgtn.Turrets)
+                    Destroy(t);
+                Destroy(Trgtn);
+            }
+           // foreach(var t in HitTargets)
+            //    Destroy(t.gameObject);
+            foreach(var c in GetComponentsInChildren<Collider2D>()) {
+                Destroy(c);
+            }
+
+            foreach(var c in VisDat.GetComponentsInChildren<Collider>()) {
+                c.gameObject.layer = 0;
+            }
+
+
+
+            die();
+          
+            
+        }
     }
+
+    [System.Serializable]
+    public class DeathComponent {
+        public GameObject Go;
+        public float Chance = 0.2f;
+        public float Mass = 0.1f;
+
+    };
+    public List<DeathComponent> DeathParts;
+    public GameObject DeathStuff;
+
+    protected void die() {
+
+        var sel = GetComponent<Selectable>();
+        if( sel.Projector ) Destroy(sel.Projector.gameObject);
+        Destroy(sel.LocalUI.gameObject);
+        Destroy(sel);
+
+        var dh = gameObject.AddComponent<Death_Hlpr>();
+
+        dh.C = dh.C2 = Col;
+        dh.C2 *= 0.1f;
+        dh.C2.a = 1;
+
+        float mass = 1;
+        var vel = Vector2.zero;
+        var angVel = 0.0f;
+
+        var bdy = GetComponent<Rigidbody2D>();
+        if(bdy) {
+            mass = bdy.mass;
+            vel = bdy.velocity;
+            angVel = bdy.angularVelocity;
+            DestroyImmediate(bdy);
+        }
+        foreach(var c in GetComponentsInChildren<MeshCollider>())
+            if(!c.convex) {
+                c.convex = true;
+                Debug.Log("*ERR* -- fixing mesh collider..." + name);
+            }
+
+        //enabled = false;
+
+        var rb = gameObject.AddComponent<Rigidbody>();
+
+        Debug.Log(" vel " + vel);
+        rb.mass = mass;
+        rb.velocity = vel * 1.5f;
+        rb.angularVelocity = new Vector3(0, 0, angVel);
+
+        var off = Random.onUnitSphere * Random.Range(0.5f, 2.0f) * RoughRadius;
+        off.Scale(new Vector3(1, 0.2f, 1));
+        // rb.angularDrag =
+        rb.AddForceAtPosition((Random.onUnitSphere + Vector3.forward) * Random.Range(0.5f, 1.0f) * 30.0f * (1.0f + mass * 0.5f), rb.position + off);
+        rb.AddRelativeForce(off * (1.0f + mass * 0.5f));
+
+        foreach(Collider c in VisDat.GetComponentsInChildren<Collider>())
+            c.enabled = true;
+
+        dh.Parts.Add(Trnsfrm);
+        foreach(var dp in DeathParts) {
+            if(Random.value > dp.Chance) continue;
+            var rb2 = dp.Go.AddComponent<Rigidbody>();
+            dh.Parts.Add(dp.Go.transform);
+            rb2.mass = dp.Mass;
+            rb2.velocity = rb.GetPointVelocity(dp.Go.transform.position);
+            rb2.angularVelocity = rb.angularVelocity;
+
+
+        }
+        if(DeathStuff) {
+            DeathStuff.SetActive(true);
+            Unit.fixCol_In(DeathStuff, Col);
+        }
+
+        Destroy(this);
+    }
+
 
 
     protected void OnDrawGizmos() {

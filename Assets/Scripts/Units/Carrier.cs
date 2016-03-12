@@ -47,10 +47,14 @@ public class Carrier : Vehicle {
 
         Anim_FB = VisDat.GetComponent<AnimFeedback>();
     }
-
+   
     new void Update() {
 
         base.Update();
+
+
+        
+
 
         for(int i = SpawnPoints.Count; i-- > 0; ) {
             var sp = SpawnPoints[i];
@@ -83,7 +87,7 @@ public class Carrier : Vehicle {
             
             int pick = Random.Range(0, ResFields.Count);   //careful cos we doing naughty things around networking
 
-            var rp = ResFields[pick]; if(rp != null) rp.grab(ref r, fullR);
+            var rp = ResFields[pick]; if(rp != null) rp.grab(ref r, fullR, Trnsfrm);
             if(r > 0 ) {
                 for(int i = ResFields.Count; i-- > 0; ) {
                     var res = ResFields[i];
@@ -92,7 +96,7 @@ public class Carrier : Vehicle {
                         break;
                     }
                     if(i == pick) continue;
-                    res.grab(ref r, fullR);
+                    res.grab(ref r, fullR, Trnsfrm );
                     if(r == 0) break;
                 }
             }
