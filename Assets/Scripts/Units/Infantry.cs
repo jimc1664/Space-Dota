@@ -7,7 +7,8 @@ using UnityEngine.UI;
 public class Infantry : Unit_Kinematic {
     //TODO --- copied and pasted lots from turret!!  bad !! fix!!
 
-    Animator Anim;
+    [HideInInspector]
+    public Animator Anim;
 
    // Targeting Trgtn;
     public Transform MuzzelPoint;

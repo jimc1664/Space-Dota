@@ -14,11 +14,14 @@ public class Death_Hlpr : MonoBehaviour {
     public Color C, C2;
     float T;
 
+    public Animator Anim;
+
+
 	void Start () {
 	
 	}
 
-    float s1 = 2.5f, s2 = 6;
+    public float s1 = 2.5f, s2 = 6;
 	void FixedUpdate () {
 
 
@@ -47,6 +50,10 @@ public class Death_Hlpr : MonoBehaviour {
                 float t = T / s1;
                 var c = Color.Lerp(C, C2, t);
                 Unit.fixCol_In(Parts[0].gameObject, c);
+
+                if(Anim != null) {
+                    Anim.speed = (1 - t) * (1 - t);
+                }
             }
         } else {
             foreach(var trn in Parts)

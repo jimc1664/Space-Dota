@@ -211,6 +211,7 @@ public class Unit : NetBehaviour {
     };
     public List<DeathComponent> DeathParts;
     public GameObject DeathStuff;
+    public float DeathS1 = 2.5f;
 
     protected void die() {
 
@@ -229,12 +230,21 @@ public class Unit : NetBehaviour {
         var vel = Vector2.zero;
         var angVel = 0.0f;
 
+        dh.s1 = DeathS1;
+
+
         var bdy = GetComponent<Rigidbody2D>();
         if(bdy) {
             mass = bdy.mass;
             vel = bdy.velocity;
             angVel = bdy.angularVelocity;
             DestroyImmediate(bdy);
+
+            var inf = this as Infantry;
+            if(inf) {
+                dh.Anim = inf.Anim;
+            }
+
         }
         foreach(var c in GetComponentsInChildren<MeshCollider>())
             if(!c.convex) {
