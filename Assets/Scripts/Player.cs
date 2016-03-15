@@ -38,7 +38,7 @@ public class Player : NetBehaviour {
         for(int i = 0; i < s.Teams.Count; i++)
             if(s.Teams[i].Members.Count < s.Teams[ti].Members.Count)
                 ti = i;
-        ti  = 1;
+        //ti  = 1;
         Team t = s.Teams[ti];
         int colI = (t.ColPoolI++)%t.ColorPool.Count;
         Col = t.ColorPool[colI];
@@ -76,6 +76,7 @@ public class Player : NetBehaviour {
     //todo - sync these properly every now and then
     public int Pop, MaxPop = 80;
     public float MaxSquids = 0;
+    [SyncVar]  //fuck it
     public float Squids = 50, UnrefSquids = 0;
 
 
@@ -117,8 +118,8 @@ public class Player : NetBehaviour {
 
         if(!sys.Started) {
             if(!isLocalPlayer) return;
-            if( CarrierSelection!= -1 ) //move this
-                sys.CarrierSpecUI[CarrierSelection].SetActive(true);
+           // if( CarrierSelection!= -1 ) //move this
+          //      sys.CarrierSpecUI[CarrierSelection].SetActive(true);
 
             for(int i = 0; i < sys.Carriers.Count; i++) {
                 if(Input.GetKeyUp(KeyCode.Alpha1 + i)) {
@@ -283,7 +284,7 @@ public class Player : NetBehaviour {
         if(!sapper ) return false;
          RaycastHit hit;
         if( !Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, float.MaxValue, 1 << LayerMask.NameToLayer("TurretSpindle") )) return false;
-        var ts = hit.collider.GetComponentInParent<TurretSpindle>();
+        var ts = hit.collider.GetComponentInParent<BuildingSite>();
         if(ts ==null ) return false;
         TurretCtorMenu task = null;
         int bs = -1;
@@ -303,7 +304,7 @@ public class Player : NetBehaviour {
 
             bs = ts.Structure.Ind;
         }
-
+       // Debug.Log("1111111111");
         foreach(var s in FindObjectsOfType<Selectable>()) {
             if(!s.selected || s.getOwner() != this) continue;
             var sap = s.U as Sapper;
@@ -336,10 +337,10 @@ public class Player : NetBehaviour {
     public void Cmd_taskSapper(GameObject uo, int tsi, int bs ) {
         if(uo == null) return;
         var sap = uo.GetComponent<Sapper>();
-        if(sap == null || (uint)tsi >= (uint)Sys.get().Spindles.Count ) return;
+        if(sap == null || (uint)tsi >= (uint)Sys.get().Site.Count ) return;
 
         sap.BuildSelection = bs;
-        sap.TargetSite = Sys.get().Spindles[tsi];
+        sap.TargetSite = Sys.get().Site[tsi];
         sap.Rpc_DesPos(sap.TargetSite.DropPoint.position);
     }
 
@@ -375,6 +376,6 @@ public class Player : NetBehaviour {
 
         var ush = go.GetComponent<UnitSpawn_Hlpr>();
         c.SpawnPoints[spi].CurSpwn = ush;
-        ush.Rpc_init(muhCarrier, (byte)spi );
+        ush.Rpc_init(muhCarrier, (byte)spi, Squids, UnrefSquids  );
     }
 }

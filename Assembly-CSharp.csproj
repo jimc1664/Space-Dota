@@ -62,6 +62,7 @@
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
      <Compile Include="Assets\Scripts\Abilitiy\SpeedBoost.cs" />
      <Compile Include="Assets\Scripts\Building\Build_Hlpr.cs" />
+     <Compile Include="Assets\Scripts\Building\BuildingSite.cs" />
      <Compile Include="Assets\Scripts\Building\TurretStrct.cs" />
      <Compile Include="Assets\Scripts\Building\Unit_Structure.cs" />
      <Compile Include="Assets\Scripts\CannonShell.cs" />
@@ -88,7 +89,6 @@
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Turret.cs" />
      <Compile Include="Assets\Scripts\TurretCtorMenu.cs" />
-     <Compile Include="Assets\Scripts\TurretSpindle.cs" />
      <Compile Include="Assets\Scripts\Units\Carrier.cs" />
      <Compile Include="Assets\Scripts\Units\Death_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\Helio.cs" />

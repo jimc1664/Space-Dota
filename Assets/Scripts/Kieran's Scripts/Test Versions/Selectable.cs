@@ -32,11 +32,11 @@ public class Selectable : MonoBehaviour {
 
 
        // if(U.Owner == null) return;
-        bool proj = false, health = selected || Highlighted;
+        bool proj = false, health = U.FoW_Flag &&  (selected || Highlighted);
         if(selected) {
             var uk = GetComponent<Unit_Kinematic>();
             if( uk != null )
-            proj = uk.Owner.isLocalPlayer;
+            proj = U.FoW_Flag && uk.Owner.isLocalPlayer;
         }
 
         if(health) 

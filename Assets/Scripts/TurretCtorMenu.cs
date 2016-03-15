@@ -4,7 +4,7 @@ using System.Collections;
 public class TurretCtorMenu : MonoBehaviour {
 
     Transform Trnsfrm;
-    public TurretSpindle Spindle;
+    public BuildingSite Spindle;
 
     static TurretCtorMenu InTheEndThereCanBeOnlyOne;
     void Awake() {

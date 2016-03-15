@@ -130,17 +130,6 @@ public class Unit_Kinematic : Unit {
 
     virtual protected bool desPos(Vector2 dp) {
         var n = NavMsh.findNode(dp, TargetNode); //err here 
-
-            //double click
-            //re targeting
-            //nodes
-            //turrets... create
-          //  squids - desync...
-            //unit menu fucks up
-            //sapper control ifffy 
-            //pathfinding
-            //turrets under powered
-
         if(n == null) return false;
         TargetNode = n;
         TargetP = dp;
@@ -163,8 +152,8 @@ public class Unit_Kinematic : Unit {
         var tuk = tu as Unit_Kinematic;
         if(tuk == null) {
             var tb = tu as Unit_Structure;
-            TargetP = tb.Spindle.DropPoint.position;
-            TargetNode = tb.Spindle.Dp_Node;
+            TargetP = tb.Site.DropPoint.position;
+            TargetNode = tb.Site.Dp_Node;
         } else {
             TargetNode = tuk.CurNode;
             TargetP = tuk.Body.position;
@@ -202,7 +191,7 @@ public class Unit_Kinematic : Unit {
     public void init(Player o) {
         base.init(o.Tm);
         Owner = o;
-        Debug.Log(" init " + name + "    " + GetInstanceID() + "  o " + Owner);
+       // Debug.Log(" init " + name + "    " + GetInstanceID() + "  o " + Owner);
         /*  if(!Owner.isLocalPlayer) {
               var s = GetComponent<Selectable>();
               if(s != null) {
@@ -352,8 +341,8 @@ public class Unit_Kinematic : Unit {
                     TargetNode = tk.CurNode;
                 } else {
                     var tb = Target as Unit_Structure;
-                    TargetP = tb.Spindle.DropPoint.position;
-                    TargetNode = tb.Spindle.Dp_Node;
+                    TargetP = tb.Site.DropPoint.position;
+                    TargetNode = tb.Site.Dp_Node;
                 }
             } else {
                 TargetNode = CurNode;

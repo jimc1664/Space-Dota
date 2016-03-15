@@ -25,7 +25,7 @@ public class Build_Hlpr : NetBehaviour {
     [ClientRpc]
     public void Rpc_init( int tsI, int tmI, int ci, int fabI, int complete ) {
 
-        var tp = Sys.get().Spindles[tsI];
+        var tp = Sys.get().Site[tsI];
         var t = transform;
         t.parent = tp.transform;
         t.localPosition = Vector3.zero;
@@ -33,7 +33,7 @@ public class Build_Hlpr : NetBehaviour {
 
         if(complete != 0) Recv = Cost;
 
-        U.Spindle = tp;
+        U.Site = tp;
         tp.Structure = U;
         U.Ind = fabI;
         
@@ -66,5 +66,10 @@ public class Build_Hlpr : NetBehaviour {
         Destroy(this);
         Destroy(Scaffolding);
         Destroy(Anim);
+    }
+
+    public void anim_builtFull() {
+        Built = true;
+        anim_start();
     }
 }

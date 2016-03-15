@@ -4,14 +4,14 @@ using System.Collections;
 public class Unit_Structure : Unit {
 
     public int Ind;
-    public TurretSpindle Spindle;
+    public BuildingSite Site;
     public GameObject VisDat2;
     public Color C;
 
     new protected void OnEnable() {
-
         base.OnEnable();
-        fixCol_In(GetComponentInParent<TurretSpindle>().gameObject, C );
+        fixCol_In(Site.gameObject, C);
+       // Debug.Log("fix col?? " + C);
         IsHighAsFuckPal = true;
     }
     new protected void OnDisable() {

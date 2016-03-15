@@ -55,7 +55,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
     Carrier Car;
     Carrier.SpawnPoint SP;
     [ClientRpc]
-    public void Rpc_init(GameObject co, byte spI) {
+    public void Rpc_init(GameObject co, byte spI, float squids, float urSquids ) {
        
         Car = co.GetComponent<Carrier>();
         if(Car == null || (uint)spI >= (uint)Car.SpawnPoints.Count) {  //note: in network functions we are unduly careful
@@ -67,7 +67,9 @@ public class UnitSpawn_Hlpr : NetBehaviour {
         Player o = Car.Owner;
 
         if(o.isLocalPlayer && !isServer) {
-            o.Squids -= (float) U.SquidCost;
+        //    o.Squids -= (float) U.SquidCost;
+            o.Squids = squids;  //todo probably not correct place for these
+            o.UnrefSquids = urSquids;
             o.Pop += U.PopCost;
         }
 

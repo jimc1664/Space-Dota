@@ -57,6 +57,21 @@ public class Unit : NetBehaviour {
     public bool IsHighAsFuckPal = false;
 
     public GameObject VisDat;
+   /* int Visibility = 3;    
+    void setVisibility( int st, bool flag  ) {  //st   0 == base,  1 == FoW
+
+        bool oVis = Visibility == 3;
+        if(flag) {
+            Visibility |= 1 << st;
+        } else {
+            Visibility &= ~(1 << st);
+        }
+
+        bool vis = Visibility == 3 
+        VisDat.SetActive();
+    }*/
+
+    public bool FoW_Flag = true;
 
     public List<Transform> HitTargets;  //todo - very optimisable..
 
@@ -99,13 +114,24 @@ public class Unit : NetBehaviour {
             c.gameObject.layer = l;
         } 
     }
+
+
+    void fowRegisterCheck() {
+        if(!Fow_Registered && enabled && Tm != null )
+            if(Tm.IsLocalTeam && FowTest.get() != null) {
+                FowTest.get().register(this);
+                Fow_Registered = true;
+            }
+
+
+    }
+    bool Fow_Registered = false;
     public void init(Team t) {
 
         Tm = t;
 
-        if(Tm.IsLocalTeam && FowTest.get() != null )
-            FowTest.get().register(this);
 
+        fowRegisterCheck();
         fixColliders();
         foreach(var c in GetComponents<SpeedBoost>()) { //todo base class
             c.enabled = true;
@@ -117,6 +143,11 @@ public class Unit : NetBehaviour {
     protected void OnEnable() {
         NetMan.UnitCount++;
         if(Trgtn != null) Trgtn.enabled = true;
+
+        fowRegisterCheck();
+
+
+
     }
 
     protected void OnDisable() {
@@ -159,11 +190,28 @@ public class Unit : NetBehaviour {
     public Slider HealthBar;
    // public Transform Canvas;
 
+    public void updateFoW_Flag(bool f) {
+        if(f == FoW_Flag) return;
+        FoW_Flag = f;
+
+        foreach(var r in GetComponentsInChildren<Renderer>()) {
+            
+            r.enabled = FoW_Flag;
+        }
+    }
+
     protected void Update() {
 
-        HealthBar.value = 1 - Health; //todo move to Slectable
+        if( !Tm.IsLocalTeam ) {
+            updateFoW_Flag(FowTest.get().amVisible(Trnsfrm, RoughRadius, FoW_Flag ? 0.1f : 0.3f ));
+        }
+
+        HealthBar.value = 1 - Health; //todo move to Selectable
     }
+
+    [Server]
     public void damage(float dmg, float ap) {
+        if(this == null ) return;
         float effArmor = Mathf.Max(0, Armor - ap) * (1 + Random.Range(0.0f, 0.5f));
 
         float reduction = 0.025f+ 1.95f/ (1.0f + Mathf.Exp(  effArmor *0.5f ) );
@@ -177,28 +225,10 @@ public class Unit : NetBehaviour {
 
         if(Invinciblity) Health = Mathf.Max(Health, 0.01f);
 
-        if(Health < 0) {
-            if(Trgtn != null) {
+        if(Health < 0 && Health != float.MinValue) {
 
-                foreach(var t in Trgtn.Turrets)
-                    Destroy(t);
-                Destroy(Trgtn);
-            }
-           // foreach(var t in HitTargets)
-            //    Destroy(t.gameObject);
-            foreach(var c in GetComponentsInChildren<Collider2D>()) {
-                Destroy(c);
-            }
-
-            foreach(var c in VisDat.GetComponentsInChildren<Collider>()) {
-                c.gameObject.layer = 0;
-            }
-
-
-
-            die();
-          
-            
+            Rpc_die( Random.seed +GetInstanceID() );
+            Health = float.MinValue;
         }
     }
 
@@ -213,7 +243,30 @@ public class Unit : NetBehaviour {
     public GameObject DeathStuff;
     public float DeathS1 = 2.5f;
 
-    protected void die() {
+    [ClientRpc]
+    protected void Rpc_die( int seed ) {
+        if(this == null) return; //wtf -- 
+
+        int oSeed = Random.seed;
+        Random.seed = seed;
+        
+        if(Trgtn != null) {
+
+            foreach(var t in Trgtn.Turrets)
+                Destroy(t);
+          //  if(isServer) 
+                Destroy(Trgtn);
+        }
+        // foreach(var t in HitTargets)
+        //    Destroy(t.gameObject);
+        foreach(var c in GetComponentsInChildren<Collider2D>()) {
+            Destroy(c);
+        }
+
+        foreach(var c in VisDat.GetComponentsInChildren<Collider>()) {
+            c.gameObject.layer = 0;
+        }
+
 
         var sel = GetComponent<Selectable>();
         if( sel.Projector ) Destroy(sel.Projector.gameObject);
@@ -249,17 +302,24 @@ public class Unit : NetBehaviour {
         foreach(var c in GetComponentsInChildren<MeshCollider>())
             if(!c.convex) {
                 c.convex = true;
-                Debug.Log("*ERR* -- fixing mesh collider..." + name);
+             //   Debug.Log("*ERR* -- fixing mesh collider..." + name);
             }
 
         //enabled = false;
 
         var rb = gameObject.AddComponent<Rigidbody>();
-
-        Debug.Log(" vel " + vel);
         rb.mass = mass;
         rb.velocity = vel * 1.5f;
         rb.angularVelocity = new Vector3(0, 0, angVel);
+
+
+        //if(isServer) {
+       // var nrb = gameObject.AddComponent<NetworkTransform>();
+        //nrb.transformSyncMode = NetworkTransform.TransformSyncMode.SyncRigidbody3D;
+       // nrb.sendInterval *= 3;
+    // }
+        Debug.Log(" rb " + rb);
+
 
         var off = Random.onUnitSphere * Random.Range(0.5f, 2.0f) * RoughRadius;
         off.Scale(new Vector3(1, 0.2f, 1));
@@ -287,6 +347,8 @@ public class Unit : NetBehaviour {
         }
 
         Destroy(this);
+
+        Random.seed = oSeed;
     }
 
 

@@ -14,6 +14,82 @@ public class FowTest : MonoBehaviour {
     }
 
 
+    public bool amVisible(Transform t, float rad, float check = 0.1f ) {
+        //rad = (rad + 1.0f) * 0.33f;
+
+
+        int Dx = Mathf.CeilToInt(Size.x / Rad);
+        int Dy = Mathf.CeilToInt(Size.y / Rad);
+
+
+        rad /= Rad;
+        var ep = ((Vector2)t.position - Tl) / Rad;
+
+        Vector2 ec1 = new Vector2(Mathf.Floor(ep.x - rad), Mathf.Floor(ep.y - rad));
+        Vector2 ec2 = new Vector2(Mathf.Ceil(ep.x + rad), Mathf.Ceil(ep.y + rad));
+
+
+        int e1x = Mathf.Max( (int)ec1.x, 0 );
+        int e1y = Mathf.Max( (int)ec1.y, 0 );
+        int e2x = Mathf.Min( (int)ec2.x, Dx-1 );
+        int e2y = Mathf.Min((int)ec2.y, Dy - 1); 
+
+
+  
+        for(int x = e1x; x <= e2x; x++ ) {
+            for(int y = e1y; y <= e2y; y++ ) {
+                int i = x + y * Dx;
+                if(Map[i].Dh > check ) {
+                   // Debug.Log("x   " + x + "  y " + y + " d " + Map[i].Dh);
+                    return true;
+                }
+
+
+            }
+
+        }
+
+        return false;
+    }
+
+    public bool amVisible2(Transform t, float rad) {
+        rad = (rad + 1.0f) * 0.33f;
+
+
+        var ep = ((Vector2)t.position - Tl) / Rad;
+
+        Vector2 ec = new Vector2(Mathf.Floor(ep.x), Mathf.Floor(ep.y));
+
+        int Dx = Mathf.CeilToInt(Size.x / Rad);
+        int Dy = Mathf.CeilToInt(Size.y / Rad);
+
+        int e1x = (int)ec.x;
+        int e1y = (int)ec.y;
+
+        var em = ep - ec;
+
+        float val = 0;
+        float xm = 1 - em.x;
+        for(int x = 2; x-- > 0; ) {
+            int ex = e1x + x;
+            if((uint)ex >= Dx) continue;
+            float ym = 1 - em.y;
+            for(int y = 2; y-- > 0; ) {
+                int ey = e1y + y;
+                if((uint)ey >= Dy) continue;
+                int i = ex + ey * Dx;
+
+                val += Map[i].Dh * xm * ym;
+            }
+               
+            ym = 1 - ym;
+        }
+        xm = 1 - xm;
+
+        return val > rad;
+    }
+
+
     public Camera Cam;
     public List<Unit> Eyes;
 
@@ -388,6 +464,7 @@ public class FowTest : MonoBehaviour {
                    // Map[i].Dh = Mathf.Max( Map[i].Dh, Map[i].D ) ;
                     Map[i].D += (OldMap[i].D - Map[i].D) * 0.6f;
                     Map[i].Dh += (OldMap[i].Dh - Map[i].Dh) * 0.6f;
+                    Map[i].Dh = Mathf.Max(Map[i].D, Map[i].Dh);
                 }
         }
 
@@ -442,7 +519,7 @@ public class FowTest : MonoBehaviour {
                     SpriteRenderer sr = t.GetComponent<SpriteRenderer>() ;
 
                     float rscl = 15;
-                    sr.color = new Color(  Mathf.Min(Map[i].D/rscl, 1),  Mathf.Min( Mathf.Max( Map[i].D, Map[i].Dh)/rscl, 1), 0, 1);
+                    sr.color = new Color(  Mathf.Min(Map[i].D/rscl, 1),  Mathf.Min( Map[i].Dh/rscl, 1), 0, 1);
             
                 } 
         

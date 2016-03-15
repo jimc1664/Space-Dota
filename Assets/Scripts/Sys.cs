@@ -53,9 +53,17 @@ public class Sys : MonoBehaviour {
     public List<GameObject> CarrierSpecUI;
 
     public GameObject TurretCtorDialog;
-    public List<GameObject> TurretOptions;
 
-    public List<TurretSpindle> Spindles;
+
+    [System.Serializable]
+    public class BuildingSite_Dat {
+        public List<GameObject> Options;
+        public GameObject Menu;
+    }
+    public List<BuildingSite_Dat> SiteDat;
+
+    public List<BuildingSite> Site;
+
 
     public bool Started = false;
 
@@ -84,7 +92,7 @@ public class Sys : MonoBehaviour {
                  foreach(var p in players)
                      p.spawn();
 
-                 foreach(var t in FindObjectsOfType<TurretSpindle>()) {
+                 foreach(var t in FindObjectsOfType<BuildingSite>()) {
                      if(t.InitSel != -1) {
                          t.create(t.InitSel, t.Ti, 0, 1 );
                      }
