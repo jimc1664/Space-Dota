@@ -77,9 +77,26 @@ public class Sys : MonoBehaviour {
         netHUD = netManager.GetComponent<NetworkManagerHUD>();
 
     }
+    public float TimeRem = 10*60;
+
     void Update() {
 
-         UI.text = " Unit Count : " + NetMan.UnitCount;
+        if(Started) {
+            int s1 = Mathf.FloorToInt(Teams[0].Score);
+            int s2 = Mathf.FloorToInt(Teams[1].Score);
+            TimeRem -= Time.deltaTime;
+            UI.text ="Blue:  "+s2+"   Red: "+s1+"   Time Remaing "+TimeRem;
+
+            int max = 5000;
+            if(s1 > max || s2 > max || TimeRem < 0) {
+                Time.timeScale = 0;
+                if(s1 > s2)
+                    UI.text ="Red Wins (woo)";
+                else
+                    UI.text ="Blue Wins (woo)";
+            }
+
+        } else UI.text = ""; // Unit Count : " + NetMan.UnitCount;
 
          if(NetM.WeIsHosting) {
 
