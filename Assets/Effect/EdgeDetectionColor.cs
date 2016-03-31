@@ -6,6 +6,7 @@ namespace UnityStandardAssets.ImageEffects
 	[ExecuteInEditMode]
 	[RequireComponent (typeof (Camera))]
 	[AddComponentMenu ("Image Effects/Edge Detection/Edge Detection Color")]
+
 	public class EdgeDetectionColor : PostEffectsBase
 	{
 		public enum EdgeDetectMode
@@ -17,7 +18,7 @@ namespace UnityStandardAssets.ImageEffects
 //			TriangleLuminance = 4,
 		}
 		
-		
+	
 		public EdgeDetectMode mode = EdgeDetectMode.RobertsCrossDepthNormals;
 		public float sensitivityDepth = 1.0f;
 		public float sensitivityNormals = 1.0f;

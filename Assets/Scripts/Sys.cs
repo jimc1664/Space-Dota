@@ -6,40 +6,46 @@ using UnityEngine.Networking;
 
 //using System;
 
-public class Sys : MonoBehaviour {
+public class Sys : MonoBehaviour
+{
 
     public List<Team> Teams = new List<Team>();
 
     // public GameObject HealthBarFab, CanvasObj;
-    
+
 
     public Material BaseColMat;
     //public int ActiveTeams = 2;
-   // public int TeamInteractMask = 0;
+    // public int TeamInteractMask = 0;
 
-  //  public GameObject PlayerFab;
-  //  public GameObject CommanderFab;
+    //  public GameObject PlayerFab;
+    //  public GameObject CommanderFab;
 
     static Sys Singleton;
-    public static Sys get() {
+    public static Sys get()
+    {
 #if UNITY_EDITOR
-        if(Singleton == null) Singleton = FindObjectOfType<Sys>();
+        if (Singleton == null) Singleton = FindObjectOfType<Sys>();
 #endif //UNITY_EDITOR
         return Singleton;
     }
-    void Awake() {
-        if(Singleton != null && Singleton != this) Debug.LogError("Singleton violation");
+    void Awake()
+    {
+        if (Singleton != null && Singleton != this) Debug.LogError("Singleton violation");
         Singleton = this;
         NetM = FindObjectOfType<NetMan>();
     }
 
     //Reference to Minimap Cam
-    [SerializeField ]
+    [SerializeField]
     GameObject minimap;
     //Reference to netmanager hud script
     [SerializeField]
     GameObject netManager;
     NetworkManagerHUD netHUD;
+    //Reference to UI HUD (Overlay)
+    [SerializeField]
+    GameObject HUD;
 
 
     public Text UI;
@@ -56,7 +62,8 @@ public class Sys : MonoBehaviour {
 
 
     [System.Serializable]
-    public class BuildingSite_Dat {
+    public class BuildingSite_Dat
+    {
         public List<GameObject> Options;
         public GameObject Menu;
     }
@@ -69,66 +76,85 @@ public class Sys : MonoBehaviour {
 
     NetMan NetM;
 
-    void Start() {
+    void Start()
+    {
 
-        for(int i = Teams.Count; i-- > 0; )
+        for (int i = Teams.Count; i-- > 0;)
             Teams[i].start(i);
 
         netHUD = netManager.GetComponent<NetworkManagerHUD>();
 
     }
-    public float TimeRem = 10*60;
+    public float TimeRem = 10 * 60;
 
-    void Update() {
+    void Update()
+    {
 
-        if(Started) {
+        if (Started)
+        {
             int s1 = Mathf.FloorToInt(Teams[0].Score);
             int s2 = Mathf.FloorToInt(Teams[1].Score);
+
+            //UI Color Configuration
             TimeRem -= Time.deltaTime;
-            UI.text ="Blue:  "+s2+"   Red: "+s1+"   Time Remaing "+TimeRem;
+            UI.color = Color.white;
+            SquidUI.color = Color.white;
+            Squid_Unref_UI.color = Color.white;
+            Squid_Cap_UI.color = Color.white;
+            PopUI.color = Color.white;
+
+            UI.text = "Blue:  " + s2 + "   Red: " + s1 + "   Time Remaing " + TimeRem;
 
             int max = 5000;
-            if(s1 > max || s2 > max || TimeRem < 0) {
+            if (s1 > max || s2 > max || TimeRem < 0)
+            {
                 Time.timeScale = 0;
-                if(s1 > s2)
-                    UI.text ="Red Wins (woo)";
+                if (s1 > s2)
+                    UI.text = "Red Wins (woo)";
                 else
-                    UI.text ="Blue Wins (woo)";
+                    UI.text = "Blue Wins (woo)";
             }
 
-        } else UI.text = ""; // Unit Count : " + NetMan.UnitCount;
+        }
+        else UI.text = ""; // Unit Count : " + NetMan.UnitCount;
 
-         if(NetM.WeIsHosting) {
+        if (NetM.WeIsHosting)
+        {
 
-             if(!Started) {
-                 var players = FindObjectsOfType<Player>();
-                 foreach(var p in players)
-                     if((uint)p.CarrierSelection > (uint)Carriers.Count) return;
+            if (!Started)
+            {
+                var players = FindObjectsOfType<Player>();
+                foreach (var p in players)
+                    if ((uint)p.CarrierSelection > (uint)Carriers.Count) return;
 
 
-                 foreach(var p in players)
-                     p.spawn();
+                foreach (var p in players)
+                    p.spawn();
 
-                 foreach(var t in FindObjectsOfType<BuildingSite>()) {
-                     if(t.InitSel != -1) {
-                         t.create(t.InitSel, t.Ti, 0, 1 );
-                     }
-                 }
-                 return;
-             }
-         }
-     }
+                foreach (var t in FindObjectsOfType<BuildingSite>())
+                {
+                    if (t.InitSel != -1)
+                    {
+                        t.create(t.InitSel, t.Ti, 0, 1);
+                    }
+                }
+                return;
+            }
+        }
+    }
 
-     public void startGame() {
+    public void startGame()
+    {
         if (Started)
             return;
-       
+
         Started = true;
         GameUI.SetActive(true);
         StartUI.SetActive(false);
         minimap.SetActive(true);
         netHUD.enabled = false;
-       
+        HUD.SetActive(true);
+
     }
     /*
     NetServer Server;
@@ -136,7 +162,8 @@ public class Sys : MonoBehaviour {
 
 #if UNITY_EDITOR
 
-    void OnDrawGizmos() {
+    void OnDrawGizmos()
+    {
 
     }
 
