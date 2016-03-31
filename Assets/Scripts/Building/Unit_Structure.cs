@@ -27,8 +27,8 @@ public class Unit_Structure : Unit {
         base.Update();
         Health += Regen * Time.deltaTime / MaxHealth;
         if(Health > 1) Health = 1;
-        base.Update();
 
-
+        if( GetComponent<Build_Hlpr>() == null && name == "Node(Clone)"  && Tm != null)
+            Tm.Score += Time.deltaTime;
     }
 }

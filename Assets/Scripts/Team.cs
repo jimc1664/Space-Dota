@@ -18,6 +18,8 @@ public class Team {
     public const int Team1i = 10, TeamC = 8;
     public int Layer = 0;
 
+    public float Score = 0;
+
     public bool IsLocalTeam = false;
     public void start(int teamI) {
         IsLocalTeam = false;
