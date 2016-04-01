@@ -299,9 +299,14 @@ public class Unit : NetBehaviour {
             }
 
         }
+
+        //BAAAD -- todo 
+        foreach(Collider c in VisDat.GetComponentsInChildren<Collider>())
+            c.enabled = true;
         foreach(var c in GetComponentsInChildren<MeshCollider>())
             if(!c.convex) {
-                c.convex = true;
+                //c.convex = true;
+                c.enabled = false;
              //   Debug.Log("*ERR* -- fixing mesh collider..." + name);
             }
 
@@ -327,8 +332,7 @@ public class Unit : NetBehaviour {
         rb.AddForceAtPosition((Random.onUnitSphere + Vector3.forward) * Random.Range(0.5f, 1.0f) * 30.0f * (1.0f + mass * 0.5f), rb.position + off);
         rb.AddRelativeForce(off * (1.0f + mass * 0.5f));
 
-        foreach(Collider c in VisDat.GetComponentsInChildren<Collider>())
-            c.enabled = true;
+
 
         dh.Parts.Add(Trnsfrm);
         foreach(var dp in DeathParts) {

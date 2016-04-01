@@ -1,15 +1,15 @@
-﻿using UnityEngine;
+﻿    using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class Player : NetBehaviour {
 
 
     //[SyncVar]  ///lazy!
     public Carrier Car;
-
 
     /*
     static Player Singleton;
@@ -55,7 +55,6 @@ public class Player : NetBehaviour {
         var s = Sys.get();
         s.startGame();
 
-        
         //  Debug.Log("wtf");
         Vector3 sp = Tm.SpawnLoc.position + (Vector3)Random.insideUnitCircle.normalized; sp.z = 0;
         GameObject c = (GameObject)Instantiate( s.Carriers[CarrierSelection], sp, Tm.SpawnLoc.rotation);

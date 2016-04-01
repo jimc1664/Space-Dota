@@ -2,13 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Carrier : Vehicle {
+
+    //[SerializeField]
+    private List<GameObject> HUDButtons = new List<GameObject>();
+
+    public List<GameObject> HButtons
+    {
+        get { return HUDButtons; }
+    }
 
     [System.Serializable]
     public class SpawnData {
         public GameObject Fab;
         public KeyCode Key;
+        public Button unitButton;
         public float ConstructTime = 1;  // delay before can build summit else 
 
     };
@@ -42,18 +52,23 @@ public class Carrier : Vehicle {
 
     public float MaxSquidCap = 300, SquidGenRate = 3, SquidRefineRate = 10, SquidRefineEff = 0.5f, SquidMineRate = 50;
 
-    new void Start() {
+    new void Start()
+    {
         base.Start();
 
         Anim_FB = VisDat.GetComponent<AnimFeedback>();
 
-        if( !isServer )
-            foreach(var col in GetComponentsInChildren<CircleCollider2D>()) {
-                if(col.isTrigger)
+        if (!isServer)
+            foreach (var col in GetComponentsInChildren<CircleCollider2D>())
+            {
+                if (col.isTrigger)
                     Destroy(col.gameObject);
             }
+
+
+
     }
-   
+
     new void Update() {
 
         base.Update();
@@ -142,6 +157,30 @@ public class Carrier : Vehicle {
 
         }
     }
+
+    void ManageUIInput()
+    {
+        int specificUnit = 0;
+        Debug.Log("Buttons Assigned");
+        Debug.Log("HUD Buttons: " + HUDButtons.Count.ToString());
+
+        for (int j = 0; j < HUDButtons.Count; j++)
+        {
+            SpawnData sd = SpawnDat[j];
+            Debug.Log("Element " + j + ": " + SpawnDat[j].Fab.name);
+            SpawnDat[j].unitButton = HUDButtons[j].GetComponent<Button>();
+            HUDButtons[j].GetComponentInChildren<Text>().text = SpawnDat[j].Fab.name;
+            Debug.Log(specificUnit);
+        }
+
+        SpawnDat[0].unitButton.onClick.AddListener(() => spawnUnit(0));
+        SpawnDat[1].unitButton.onClick.AddListener(() => spawnUnit(1));
+        SpawnDat[2].unitButton.onClick.AddListener(() => spawnUnit(2));
+        SpawnDat[3].unitButton.onClick.AddListener(() => spawnUnit(3));
+        SpawnDat[4].unitButton.onClick.AddListener(() => spawnUnit(4));
+
+    }
+
     public void spawnUnit(int i) {
         SpawnData sd = SpawnDat[i];
         Owner.Cmd_createFrom((byte)i, gameObject);  //more than 256 ?? nah
@@ -212,12 +251,15 @@ public class Carrier : Vehicle {
                     s.CarrierSpecUI[i].SetActive(false);
 
             Sys.get().CarrierSpecUI[Owner.CarrierSelection].SetActive(true);
-          //  fucking shitty sync...
+            //  fucking shitty sync...
 
-         
-            for(int i = s.Carriers.Count; i-- > 0; )
-                if(name ==  s.Carriers[i].name+"(Clone)" )
-                    s.CarrierSpecUI[i].SetActive(true);
+
+            for (int i = s.Carriers.Count; i-- > 0;)
+            if (name == s.Carriers[i].name + "(Clone)")
+            {
+                s.CarrierSpecUI[i].SetActive(true);
+            }
+                   
 
 
             var ct = Camera.main.transform;
@@ -226,6 +268,18 @@ public class Carrier : Vehicle {
             p.y = -7;
             ct.position = p;
             Sys.get().startGame();
+
+
+            HUDButtons.Add(GameObject.Find("HUD/Jeep(Spawn)"));
+            HUDButtons.Add(GameObject.Find("HUD/Tank (Spawn)"));
+            HUDButtons.Add(GameObject.Find("HUD/AT Jeep"));
+            HUDButtons.Add(GameObject.Find("HUD/Laser Tank(Spawn)"));
+            HUDButtons.Add(GameObject.Find("HUD/Zapper"));
+
+            for(int i = 0; i < HUDButtons.Count; i++)
+                Debug.Log(HUDButtons[i].name);
+
+            ManageUIInput();
         }
     }
 }

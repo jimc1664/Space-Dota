@@ -94,6 +94,8 @@ public class UnitSpawn_Hlpr : NetBehaviour {
 
     }
     bool Spawning = false;
+
+    int Temp = 5;
     void Update() {
 
         if(!Spawning) {
@@ -118,7 +120,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
 
         } else {
             if(Next != null) {
-                float spd = U.MaxSpeed / 2;
+                float spd = U.MaxSpeed *0.8f;
                 float dis = (Next.position - Prev.position).magnitude;
 
                 D += spd * Time.deltaTime / dis;
@@ -132,8 +134,7 @@ public class UnitSpawn_Hlpr : NetBehaviour {
                         //U.Trnsfrm.position = Prev.position;
                         U.SyncO.Body.MovePosition(Prev.position);
                         U.Body.MovePosition(U.SyncO.Body.position);
-                        U.SyncO.Body.WakeUp();
-                        U.Body.WakeUp();
+
                     }
                 }
             }
@@ -146,12 +147,21 @@ public class UnitSpawn_Hlpr : NetBehaviour {
                 U.SyncO.Body.MoveRotation(r);
                 U.Body.MoveRotation(U.SyncO.Body.rotation);
             } else { // our carrier == kaboom-boom  or just done..
-                U.enabled = true;
+                if(U.enabled == false) {
+                    Destroy(GetComponent<DistanceJoint2D>());
+                    Destroy(U.SyncO.gameObject.GetComponent<DistanceJoint2D>());
+                    U.enabled = true;
+                 //   return;
+                }
+                U.SyncO.Trnsfrm.position = Prev.position;
+                //if( Temp-- <= 0 )
                 Destroy(this);
-                Destroy(GetComponent<DistanceJoint2D>());
-                Destroy(U.SyncO.gameObject.GetComponent<DistanceJoint2D>());
                 U.SyncO.Body.WakeUp();
-                U.Body.WakeUp();
+               // U.SyncO.Body.sleepMode = RigidbodySleepMode2D.StartAwake;
+               U.Body.WakeUp();
+             //   U.SyncO.Body.velocity = Prev.forward * U.MaxSpeed;
+
+                Car.SyncO.Body.WakeUp();
                 return;
             }
         }

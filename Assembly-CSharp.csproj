@@ -45,6 +45,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Effect\EdgeDetectionColor.cs" />
+     <Compile Include="Assets\Effect\PostEffectsBase.cs" />
      <Compile Include="Assets\FT_FreeSample\Scene\SampleSceneData\FTsample_ClickToSpawn.cs" />
      <Compile Include="Assets\FT_FreeSample\Script\FTEM_AnimationScrollTexture.cs" />
      <Compile Include="Assets\FT_FreeSample\Script\FTEM_AnimationSpriteSheet.cs" />
@@ -149,6 +151,7 @@
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\CameraMotionBlur.shader" />
      <None Include="Assets\Materials\Projector Additive Shader 2.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_Antialiasing\DLAA.shader" />
+     <None Include="Assets\Effect\EdgeDetectNormalsColor.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\NoiseAndGrainDX11.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BrightPassFilter2.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_DepthOfField\SeparableBlur.shader" />
