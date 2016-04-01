@@ -1,0 +1,291 @@
+fileFormatVersion: 2
+guid: 92ea26b78c8ec414baf95c255ba6f984
+timeCreated: 1459495443
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Cylinder001
+    100002: Destroyed Tower top
+    100004: Destroyed Tower001
+    100006: Dropship
+    100008: Dropship001
+    100010: Dropship002
+    100012: main
+    100014: //RootNode
+    100016: polySurface18
+    100018: polySurface19
+    100020: polySurface20
+    100022: polySurface21
+    100024: polySurface22
+    100026: polySurface23
+    100028: polySurface24
+    100030: polySurface25
+    100032: polySurface26
+    100034: polySurface27
+    100036: polySurface28
+    100038: polySurface29
+    100040: polySurface30
+    100042: polySurface31
+    100044: polySurface32
+    100046: polySurface33
+    100048: polySurface34
+    100050: polySurface5
+    100052: Rock 01
+    100054: Rock 011
+    100056: Rock 02
+    100058: Rock 03
+    100060: Rock 04
+    100062: Rock 05
+    100064: Rock wall 004
+    100066: Rock wall 005
+    100068: Rock wall 006
+    100070: Rock wall 007
+    100072: Rock wall 008
+    100074: Rock wall 01
+    100076: Rock wall 02
+    100078: Rock wall 03
+    100080: Surrounding wall
+    100082: Tower
+    100084: Tower01
+    100086: Tower02
+    100088: Tower03
+    100090: Tower04
+    400000: Cylinder001
+    400002: Destroyed Tower top
+    400004: Destroyed Tower001
+    400006: Dropship
+    400008: Dropship001
+    400010: Dropship002
+    400012: main
+    400014: //RootNode
+    400016: polySurface18
+    400018: polySurface19
+    400020: polySurface20
+    400022: polySurface21
+    400024: polySurface22
+    400026: polySurface23
+    400028: polySurface24
+    400030: polySurface25
+    400032: polySurface26
+    400034: polySurface27
+    400036: polySurface28
+    400038: polySurface29
+    400040: polySurface30
+    400042: polySurface31
+    400044: polySurface32
+    400046: polySurface33
+    400048: polySurface34
+    400050: polySurface5
+    400052: Rock 01
+    400054: Rock 011
+    400056: Rock 02
+    400058: Rock 03
+    400060: Rock 04
+    400062: Rock 05
+    400064: Rock wall 004
+    400066: Rock wall 005
+    400068: Rock wall 006
+    400070: Rock wall 007
+    400072: Rock wall 008
+    400074: Rock wall 01
+    400076: Rock wall 02
+    400078: Rock wall 03
+    400080: Surrounding wall
+    400082: Tower
+    400084: Tower01
+    400086: Tower02
+    400088: Tower03
+    400090: Tower04
+    2300000: Cylinder001
+    2300002: Destroyed Tower top
+    2300004: Destroyed Tower001
+    2300006: Dropship
+    2300008: Dropship001
+    2300010: Dropship002
+    2300012: polySurface18
+    2300014: polySurface19
+    2300016: polySurface20
+    2300018: polySurface21
+    2300020: polySurface22
+    2300022: polySurface23
+    2300024: polySurface24
+    2300026: polySurface25
+    2300028: polySurface26
+    2300030: polySurface27
+    2300032: polySurface28
+    2300034: polySurface29
+    2300036: polySurface30
+    2300038: polySurface31
+    2300040: polySurface32
+    2300042: polySurface33
+    2300044: polySurface34
+    2300046: Rock 01
+    2300048: Rock 011
+    2300050: Rock 02
+    2300052: Rock 03
+    2300054: Rock 04
+    2300056: Rock 05
+    2300058: Rock wall 004
+    2300060: Rock wall 005
+    2300062: Rock wall 006
+    2300064: Rock wall 007
+    2300066: Rock wall 008
+    2300068: Rock wall 01
+    2300070: Rock wall 02
+    2300072: Rock wall 03
+    2300074: Tower
+    2300076: Tower01
+    2300078: Tower02
+    2300080: Tower03
+    2300082: Tower04
+    3300000: Cylinder001
+    3300002: Destroyed Tower top
+    3300004: Destroyed Tower001
+    3300006: Dropship
+    3300008: Dropship001
+    3300010: Dropship002
+    3300012: polySurface18
+    3300014: polySurface19
+    3300016: polySurface20
+    3300018: polySurface21
+    3300020: polySurface22
+    3300022: polySurface23
+    3300024: polySurface24
+    3300026: polySurface25
+    3300028: polySurface26
+    3300030: polySurface27
+    3300032: polySurface28
+    3300034: polySurface29
+    3300036: polySurface30
+    3300038: polySurface31
+    3300040: polySurface32
+    3300042: polySurface33
+    3300044: polySurface34
+    3300046: Rock 01
+    3300048: Rock 011
+    3300050: Rock 02
+    3300052: Rock 03
+    3300054: Rock 04
+    3300056: Rock 05
+    3300058: Rock wall 004
+    3300060: Rock wall 005
+    3300062: Rock wall 006
+    3300064: Rock wall 007
+    3300066: Rock wall 008
+    3300068: Rock wall 01
+    3300070: Rock wall 02
+    3300072: Rock wall 03
+    3300074: Tower
+    3300076: Tower01
+    3300078: Tower02
+    3300080: Tower03
+    3300082: Tower04
+    4300000: Cylinder001
+    4300002: polySurface18
+    4300004: polySurface19
+    4300006: polySurface20
+    4300008: polySurface21
+    4300010: polySurface22
+    4300012: polySurface23
+    4300014: polySurface24
+    4300016: polySurface25
+    4300018: polySurface26
+    4300020: polySurface27
+    4300022: polySurface28
+    4300024: polySurface29
+    4300026: polySurface30
+    4300028: polySurface31
+    4300030: polySurface32
+    4300032: polySurface33
+    4300034: polySurface34
+    4300036: Rock 01
+    4300038: Rock 02
+    4300040: Rock 03
+    4300042: Rock 04
+    4300044: Rock 05
+    4300046: Dropship001
+    4300048: Tower
+    4300050: Destroyed Tower top
+    4300052: Destroyed Tower001
+    4300054: Tower03
+    4300056: Tower04
+    4300058: Tower02
+    4300060: Tower01
+    4300062: Rock wall 007
+    4300064: Dropship
+    4300066: Rock wall 02
+    4300068: Rock wall 006
+    4300070: Rock wall 004
+    4300072: Rock wall 005
+    4300074: Rock wall 03
+    4300076: Rock 011
+    4300078: Rock wall 008
+    4300080: Dropship002
+    4300082: Rock wall 01
+    7400000: Take 001
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
