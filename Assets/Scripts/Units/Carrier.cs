@@ -69,6 +69,7 @@ public class Carrier : Vehicle {
         HUDButtons.Add(GameObject.Find("HUD/Tank (Spawn)"));
         HUDButtons.Add(GameObject.Find("HUD/AT Jeep"));
         HUDButtons.Add(GameObject.Find("HUD/Laser Tank(Spawn)"));
+        HUDButtons.Add(GameObject.Find("HUD/Zapper"));
 
         for (int i = 0; i < HUDButtons.Count; i++)
             Debug.Log(HUDButtons[i].name);
@@ -181,11 +182,11 @@ public class Carrier : Vehicle {
             Debug.Log(specificUnit);
         }
 
-
         SpawnDat[0].unitButton.onClick.AddListener(() => spawnUnit(0));
         SpawnDat[1].unitButton.onClick.AddListener(() => spawnUnit(1));
         SpawnDat[2].unitButton.onClick.AddListener(() => spawnUnit(2));
         SpawnDat[3].unitButton.onClick.AddListener(() => spawnUnit(3));
+        SpawnDat[4].unitButton.onClick.AddListener(() => spawnUnit(4));
 
     }
 

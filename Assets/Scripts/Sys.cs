@@ -85,7 +85,17 @@ public class Sys : MonoBehaviour
         netHUD = netManager.GetComponent<NetworkManagerHUD>();
 
     }
-    public float TimeRem = 10 * 60;
+    public float TimeRem=300f;
+
+    public string CalcTime(float TimeRemaining)
+    {
+        int minutes = Mathf.FloorToInt(TimeRemaining / 60F);
+        int seconds = Mathf.FloorToInt(TimeRemaining-minutes* 60);
+
+        string formatedTime = string.Format("{0:0}:{1:00}", minutes, seconds);
+
+        return formatedTime;
+    }
 
     void Update()
     {
@@ -94,16 +104,15 @@ public class Sys : MonoBehaviour
         {
             int s1 = Mathf.FloorToInt(Teams[0].Score);
             int s2 = Mathf.FloorToInt(Teams[1].Score);
-
-            //UI Color Configuration
             TimeRem -= Time.deltaTime;
+            //UI Color Configuration
             UI.color = Color.white;
             SquidUI.color = Color.white;
             Squid_Unref_UI.color = Color.white;
             Squid_Cap_UI.color = Color.white;
             PopUI.color = Color.white;
 
-            UI.text = "Blue:  " + s2 + "   Red: " + s1 + "   Time Remaing " + TimeRem;
+            UI.text = "Blue: " + s2 + "      Red: " + s1 + "      Time Remaining: " + CalcTime(TimeRem);
 
             int max = 5000;
             if (s1 > max || s2 > max || TimeRem < 0)
