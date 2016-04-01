@@ -292,7 +292,8 @@ public class Player : NetBehaviour {
             var dp = ts.DropPoint;
             var p = dp.position;
             var sys = Sys.get();
-            var t = Instantiate(sys.TurretCtorDialog).transform;
+            //var t = Instantiate(sys.TurretCtorDialog).transform;
+            var t = Instantiate(sys.SiteDat[ts.InitOptionsI].Menu).transform;
             t.parent = ts.transform;
             t.localPosition = Vector3.zero;
             task = t.GetComponent<TurretCtorMenu>();

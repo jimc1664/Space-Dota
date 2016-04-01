@@ -145,7 +145,7 @@ public class FoW : MonoBehaviour {
         Vector3 bottomLeft = (camtr.forward * camNear - toRight - toTop);
         bottomLeft.Normalize();
         bottomLeft *= camScale;
-
+        //Debug.Log("bottomLeft  " + bottomLeft);
         frustumCorners.SetRow(0, topLeft);
         frustumCorners.SetRow(1, topRight);
         frustumCorners.SetRow(2, bottomRight);

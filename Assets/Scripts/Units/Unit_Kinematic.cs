@@ -230,7 +230,9 @@ public class Unit_Kinematic : Unit {
         SyncO.Body = go.AddComponent<Rigidbody2D>(Body);
         for(int i = 0; i < Trnsfrm.childCount; i++) {
             var t = Trnsfrm.GetChild(i);
-            if(t.GetComponentInChildren<Collider2D>() == null) continue;
+            var c = t.GetComponentInChildren<Collider2D>();
+            if( c== null || c.isTrigger ) continue;
+
             var go2 = Instantiate(t.gameObject);
             go2.transform.parent = SyncO.Trnsfrm;
         }

@@ -110,7 +110,6 @@ public class UnitSpawn_Hlpr : NetBehaviour {
             }
 
             U.Trnsfrm.position = Prev.position;
-            U.Trnsfrm.rotation = Prev.rotation;
 
             if(SP.IsOpen) {
                 activate();
@@ -130,23 +129,29 @@ public class UnitSpawn_Hlpr : NetBehaviour {
                         D -= 1;
                     } else {
                         Next = null;
-                        U.Trnsfrm.position = Prev.position;
+                        //U.Trnsfrm.position = Prev.position;
+                        U.SyncO.Body.MovePosition(Prev.position);
+                        U.Body.MovePosition(U.SyncO.Body.position);
+                        U.SyncO.Body.WakeUp();
+                        U.Body.WakeUp();
                     }
                 }
             }
             if(Next != null) {
                 var p = Vector3.Lerp(Prev.position, Next.position, D);
-                U.Trnsfrm.position = p;
-                U.Body.MovePosition(U.SyncO.Body.position);
+                //U.Trnsfrm.position = p;
                 U.SyncO.Body.MovePosition(p);
+                U.Body.MovePosition(U.SyncO.Body.position);
                 var r = Quaternion.Lerp(Prev.rotation, Next.rotation, D).eulerAngles.z;
-                U.Body.MoveRotation(U.SyncO.Body.rotation);
                 U.SyncO.Body.MoveRotation(r);
+                U.Body.MoveRotation(U.SyncO.Body.rotation);
             } else { // our carrier == kaboom-boom  or just done..
                 U.enabled = true;
                 Destroy(this);
                 Destroy(GetComponent<DistanceJoint2D>());
                 Destroy(U.SyncO.gameObject.GetComponent<DistanceJoint2D>());
+                U.SyncO.Body.WakeUp();
+                U.Body.WakeUp();
                 return;
             }
         }

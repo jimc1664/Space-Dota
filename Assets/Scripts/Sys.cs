@@ -52,7 +52,7 @@ public class Sys : MonoBehaviour {
     public List<GameObject> Carriers;
     public List<GameObject> CarrierSpecUI;
 
-    public GameObject TurretCtorDialog;
+    //public GameObject TurretCtorDialog;
 
 
     [System.Serializable]

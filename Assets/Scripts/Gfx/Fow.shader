@@ -26,6 +26,7 @@ struct v2f_ao {
 
 uniform float2 _NoiseScale;
 float4 _CameraDepthNormalsTexture_ST;
+uniform float4 _MainTex_TexelSize;
 
 
 
@@ -63,25 +64,33 @@ struct v2f {
 
 
 
-v2f vert (appdata_img v)
-{
+v2f vert (appdata_img v) {
 	v2f o;
 	half index = v.vertex.z;
+
+#ifdef UNITY_HALF_TEXEL_OFFSET
+	v.texcoord.y += _MainTex_TexelSize.y;
+#endif
+//#if SHADER_API_D3D9
+	//if (_MainTex_TexelSize.y < 0)
+	//	v.texcoord.y = 1.0 - v.texcoord.y;
+//#endif
+	//v.texcoord.y = 1.0 - v.texcoord.y;
 //	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 	o.uv[0] = MultiplyUV (UNITY_MATRIX_TEXTURE0, v.texcoord);
 	o.uv[1] = MultiplyUV (UNITY_MATRIX_TEXTURE0, v.texcoord);
 	//o.uv[1].y = 1- o.uv[1].y;
-	o.uv[0].y = 1- o.uv[0].y;
+	//o.uv[0].y = 1- o.uv[0].y;
 
 
 		v.vertex.z = 0.1;
 		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
-	/*	
-		#if UNITY_UV_STARTS_AT_TOP
-		if (_MainTex_TexelSize.y < 0)
-			o.uv.y = 1-o.uv.y;
-		#endif		
-*/
+
+	#if UNITY_UV_STARTS_AT_TOP
+	if (_MainTex_TexelSize.y < 0)
+		o.uv[0].y = 1 - o.uv[0].y;
+	#endif		
+
 	o.interpolatedRay = _FrustumCornersWS[(int)index];
 	o.interpolatedRay.w = index;
 
