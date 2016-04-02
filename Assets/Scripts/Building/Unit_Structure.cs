@@ -28,7 +28,8 @@ public class Unit_Structure : Unit {
         Health += Regen * Time.deltaTime / MaxHealth;
         if(Health > 1) Health = 1;
 
-        if( GetComponent<Build_Hlpr>() == null && name == "Node(Clone)"  && Tm != null)
-            Tm.Score += Time.deltaTime;
+        //if( isServer )
+            if( GetComponent<Build_Hlpr>() == null && name == "Node(Clone)"  && Tm != null)
+                Tm.Score += Time.deltaTime;
     }
 }
