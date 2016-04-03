@@ -10,6 +10,7 @@ public class Sys : MonoBehaviour
 {
 
     public List<Team> Teams = new List<Team>();
+    int noWaits = 0;
 
     // public GameObject HealthBarFab, CanvasObj;
 
@@ -98,8 +99,27 @@ public class Sys : MonoBehaviour
         return formatedTime;
     }
 
+    void UpdateNoWaiting()
+    {
+        var players = FindObjectsOfType<Player>();
+        noWaits = players.Length;
+
+        for (int i = 0; i < Teams.Count; i++)
+        {
+            foreach (Player p in Teams[i].Members)
+            {
+                if (p.readyUp)
+                    noWaits--;
+
+                ReadyFeedback.text = "Waiting on: " + noWaits + " players.";
+            }
+        }
+    }
+
     void Update()
     {
+        if (!Started)
+            UpdateNoWaiting();
 
         if (Started)
         {

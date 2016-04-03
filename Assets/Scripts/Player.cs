@@ -10,8 +10,8 @@ public class Player : NetBehaviour {
 
     //[SyncVar]  ///lazy!
     public Carrier Car;
-    [SerializeField]
-    bool readyUp = false;
+    [SyncVar]
+    public bool readyUp = false;
 
     /*
     static Player Singleton;
@@ -109,26 +109,25 @@ public class Player : NetBehaviour {
             CarrierSelection = cs; 
     }
 
+    [Command]
+    public void Cmd_ReadyPlayer(bool readyUp)
+    {
+        this.readyUp = readyUp;
+    }
+
     Selectable Highlighted = null;
     void Update() {
 
-
-
         var sys = Sys.get();
-
 
         if(!sys.Started) {
             if(!isLocalPlayer) return;
             // if( CarrierSelection!= -1 ) //move this
             //      sys.CarrierSpecUI[CarrierSelection].SetActive(true);
-            sys.ReadyFeedback.color = Color.white;
-            sys.ReadyFeedback.text = "Please Select Your Class. Waiting on: " + CalculateReadyUP() + " players.";
             for (int i = 0; i < sys.Carriers.Count; i++) {
                 if(Input.GetKeyUp(KeyCode.Alpha1 + i)) {
                     Cmd_setCarrierSelection(i);
-                    readyUp = true;
-                    sys.ReadyFeedback.text = "Selection Confirmed. Waiting on: " + CalculateReadyUP() + " players.";
-
+                    Cmd_ReadyPlayer(true);
                 }
             }
             return;
