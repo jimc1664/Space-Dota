@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿//#define DRAW_NAV_LINES
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -24,35 +26,35 @@ public class NavMesh : MonoBehaviour {
 
 
     // 'interface' 
-    public bool ReGen, Constant, BuildOuter; 
+    public bool ReGen, Constant, BuildOuter;
 
 
     //? Old debug stuff
     public int DebugI = 0;
     public bool Inc = false, Dec = false;
-   // int Tri;
-   // public Transform Obj1, Obj2;
+    // int Tri;
+    // public Transform Obj1, Obj2;
     void drawTri(Vector2 a, Vector2 b, Vector2 c) {
         Gizmos.DrawLine(a, b);
         Gizmos.DrawLine(c, b);
         Gizmos.DrawLine(a, c);
     }
 
-    void drawCross( Vector2 p ) {
+    void drawCross(Vector2 p) {
         Gizmos.DrawLine(p - Vector2.right, p + Vector2.right);
         Gizmos.DrawLine(p - Vector2.up, p + Vector2.up);
     }
-    void debugDrawCross( Vector2 p, Color c ) {
+    void debugDrawCross(Vector2 p, Color c) {
         Debug.DrawLine(p - Vector2.right, p + Vector2.right, c);
         Debug.DrawLine(p - Vector2.up, p + Vector2.up, c);
     }
 
-   // [SerializeField]
+    // [SerializeField]
     List<Vector2> Verts = new List<Vector2>();
 
 
     //a POLYGON of the NavMesh
-  //  [System.Serializable]
+    //  [System.Serializable]
     public class Node {
 
         public Node(TNode tn) {
@@ -60,10 +62,10 @@ public class NavMesh : MonoBehaviour {
             Vi = new int[vc];
             Nbrs = new Node[vc];
             Edge = new Vector2[vc];
-            Tris = new Tri[vc-2];
+            Tris = new Tri[vc - 2];
 
 
-            for(int i = tn.Count; i-- > 0; ) {
+            for(int i = tn.Count; i-- > 0;) {
                 var e = tn[i];
                 Vi[i] = e.Vi;
                 //Nbrs[i] = e.Nbr;
@@ -73,14 +75,14 @@ public class NavMesh : MonoBehaviour {
 
         public void linkTri(Tri t) {
             int i = 0;
-            while(Tris[i] != null ) i++;
+            while(Tris[i] != null) i++;
             Tris[i] = t;
         }
 
         public void linkNbrs(TNode tn) {
-            for(int i = tn.Count; i-- > 0; ) {
+            for(int i = tn.Count; i-- > 0;) {
                 var e = tn[i];
-                if( e.Nbr != null )
+                if(e.Nbr != null)
                     Nbrs[i] = e.Nbr.Nd;
             }
         }
@@ -100,7 +102,7 @@ public class NavMesh : MonoBehaviour {
          */
 
     };
- //   [SerializeField]
+    //   [SerializeField]
     List<Node> Nodes = new List<Node>();
 
 
@@ -130,7 +132,7 @@ public class NavMesh : MonoBehaviour {
         public Tri T;
         public int I;
 
-        public int Vi { get { return T.Vi[I]; } set { }  }
+        public int Vi { get { return T.Vi[I]; } set { } }
         public Tri Nbr { get { return T.Nbrs[I]; } private set { } }
         public Vector2 Edge { get { return T.Edge[I]; } private set { } }
         public int NbrId { get { if(Nbr != null) return Nbr.GetHashCode(); else return 0; } private set { } }
@@ -150,11 +152,11 @@ public class NavMesh : MonoBehaviour {
         t.Edge[1] = (Verts[b] + Verts[a]) * 0.5f;
         t.Edge[2] = (Verts[c] + Verts[b]) * 0.5f;
 
-        for(int i = Tris.Count; i-- > 0; ) {
+        for(int i = Tris.Count; i-- > 0;) {
             var o = Tris[i];
 
             for(int j1 = 0, j2 = 2; j1 < 3; j2 = j1++) {
-                int v1 = t.Vi[j1], v2 =t.Vi[j2];
+                int v1 = t.Vi[j1], v2 = t.Vi[j2];
                 for(int k1 = 3, k2 = 0; k1-- > 0; k2 = k1) {
                     if(o.Vi[k1] != v1 || o.Vi[k2] != v2) continue;
 
@@ -166,7 +168,7 @@ public class NavMesh : MonoBehaviour {
                 }
             }
 
-            label_doubleBreak: ;
+            label_doubleBreak:;
         }
 
 
@@ -175,7 +177,7 @@ public class NavMesh : MonoBehaviour {
 
 
     //generates the navmesh  -   == false  means it failed somehow...  likely incorrect input - possible bug
-    bool gen() {  
+    bool gen() {
 
         //outer boundary
         PolygonCollider2D col = GetComponent<PolygonCollider2D>();
@@ -198,31 +200,31 @@ public class NavMesh : MonoBehaviour {
         List<List<int>> islands = new List<List<int>>();
 
 
-		//obstacles - subtract thse from outline poly gon - overlaps not handled
-		var gos = GameObject.FindGameObjectsWithTag("NavMesh");
+        //obstacles - subtract thse from outline poly gon - overlaps not handled
+        var gos = GameObject.FindGameObjectsWithTag("NavMesh");
 
-		foreach (GameObject go in gos) 	{
-			foreach (var subCol in go.GetComponents<PolygonCollider2D>()) {
-				trns = go.transform;
+        foreach(GameObject go in gos) {
+            foreach(var subCol in go.GetComponents<PolygonCollider2D>()) {
+                trns = go.transform;
 
-				List<int> ni = new List<int>(subCol.points.GetLength(0));
+                List<int> ni = new List<int>(subCol.points.GetLength(0));
 
-				for (int i = 0; i < subCol.points.GetLength(0); i++) {
-					ni.Add(Verts.Count);
-					Verts.Add(trns.TransformPoint(subCol.points[i]));
-				}
-				// for(int i = col.points.GetLength( 0); i-- > 0; ) ni.Add(trns.TransformPoint(col.points[i]));
+                for(int i = 0; i < subCol.points.GetLength(0); i++) {
+                    ni.Add(Verts.Count);
+                    Verts.Add(trns.TransformPoint(subCol.points[i]));
+                }
+                // for(int i = col.points.GetLength( 0); i-- > 0; ) ni.Add(trns.TransformPoint(col.points[i]));
 
-				islands.Add(ni);
-			}
-		}
+                islands.Add(ni);
+            }
+        }
 
 
         //this loop runs through all the islands (obstacles) and adds them in keyhole fashion to the current polygon 
         //  - adds two edges to and from a vert on the island from an outer vert
-        for( ; islands.Count > 0; ) {
+        for(; islands.Count > 0;) {
             bool change = true;
-            for(int islI = islands.Count; islI-- > 0; ) {
+            for(int islI = islands.Count; islI-- > 0;) {
                 List<int> ni = islands[islI];
                 // Debug.Log("vi.c " + vi.Count);
                 for(int i = vi.Count, pi = 0; i-- > 0; pi = i) {
@@ -230,7 +232,7 @@ public class NavMesh : MonoBehaviour {
                     int i2 = i - 1; if(i2 < 0) i2 += vi.Count;
                     int ai = vi[i];
                     Vector2 a = Verts[ai], c = Verts[vi[pi]], d = Verts[vi[i2]];
-                    for(int j = ni.Count; j-- > 0; ) {
+                    for(int j = ni.Count; j-- > 0;) {
                         var bi = ni[j];
                         var b = Verts[bi];
                         if(Util.sign(b, a, d) < 0) continue;
@@ -264,7 +266,7 @@ public class NavMesh : MonoBehaviour {
                         vi = new List<int>(oi.Count + ni.Count + 2);
 
                         for(int l = 0; l <= i; l++) vi.Add(oi[l]);
-                        for(int l = j; ; ) {
+                        for(int l = j; ;) {
                             vi.Add(ni[l]);
                             if(l-- == 0) l = ni.Count - 1;
 
@@ -273,26 +275,26 @@ public class NavMesh : MonoBehaviour {
                                 break;
                             }
                         }
-                        for(int l = i; ; ) {
+                        for(int l = i; ;) {
                             vi.Add(oi[l]);
                             if(++l == oi.Count) break;
                             //  if( l == i ) break;
                         }
 
                         //  Debug.Log( "a  "+vi.Count+"  b "+(oi.Count+ni.Count+2));
-                       // Debug.DrawLine(a, b, Color.black);
+                        // Debug.DrawLine(a, b, Color.black);
 
 
                         // I like to use goto's and label's as composite breaks / continues for nested loops 
                         //  aslong as you only jump forward and out there is no problems 
                         //  yes - i could do the same by flags or  function-ify-ing the inner loop - i think this is neater and eaier to read
                         goto label_jumpout;
-                        label_breakContinue1: ;
+                        label_breakContinue1:;
                     }
                 }
                 //Debug.Log("fail");
                 continue;
-                label_jumpout: ;
+                label_jumpout:;
 
                 islands.RemoveAt(islI);
                 change = true;
@@ -315,8 +317,8 @@ public class NavMesh : MonoBehaviour {
 
         //Gizmos.color = new Color(0, 0, 1, 0.7f);
 
-        for(int i = Verts.Count; --i > 0; ) {
-            for(int j = i; j-- > 0; ) {
+        for(int i = Verts.Count; --i > 0;) {
+            for(int j = i; j-- > 0;) {
                 var d = (Verts[i] - Verts[j]).sqrMagnitude;
                 if(d < 0.1f) {
 
@@ -331,7 +333,7 @@ public class NavMesh : MonoBehaviour {
         //this is the actual ear clipping - we go round the edge and remove any ears we come across and add them to the NavMesh
         //  - when an ear is created it creates an internal edge - we keep track of this for easy adjacancy data 
         // - unoptimal  - not a priority
-        for(int iter = 1; iter-- > 0; )
+        for(int iter = 1; iter-- > 0;)
             for(int i = vi.Count, j = 0, k = 1; i-- > 0; k = j, j = i) {
 
                 int ia = vi[i], ib = vi[j], ic = vi[k];
@@ -359,7 +361,7 @@ public class NavMesh : MonoBehaviour {
                     goto label_breakContinue2;
                 }
 
-                for(int l = Verts.Count; l-- > 0; ) {
+                for(int l = Verts.Count; l-- > 0;) {
                     if(ia == l || ib == l || ic == l) continue;
                     if(Util.pointInTriangle(Verts[l], a, b, c)) {
                         /*
@@ -425,9 +427,9 @@ public class NavMesh : MonoBehaviour {
                 k = (i + 2) % vi.Count;
 
                 iter = 1;
-                label_breakContinue2: ;
+                label_breakContinue2:;
 
-              //  if(Tri == DebugI) return false;
+                //  if(Tri == DebugI) return false;
             }
 
         if(vi.Count > 2) {
@@ -445,30 +447,30 @@ public class NavMesh : MonoBehaviour {
             float key = -1;
             t._TNode = new TNode();
             for(int i = 3, j = 0, k = 1; i-- > 0; k = j, j = i) {
-                float dt = Mathf.Abs( Vector2.Dot( (Verts[t.Vi[k]] - Verts[t.Vi[j]]).normalized, (Verts[ t.Vi[i]] - Verts[t.Vi[j]]).normalized) );
+                float dt = Mathf.Abs(Vector2.Dot((Verts[t.Vi[k]] - Verts[t.Vi[j]]).normalized, (Verts[t.Vi[i]] - Verts[t.Vi[j]]).normalized));
                 key = Mathf.Max(key, dt);
                 EdgeRef e = new EdgeRef(); e.T = t; e.I = i;
                 t._TNode.Add(e);
-               // Debug.Log("sign  " + Util.sign(Verts[t.Vi[i]],Verts[t.Vi[j]], Verts[t.Vi[k]]));
+                // Debug.Log("sign  " + Util.sign(Verts[t.Vi[i]],Verts[t.Vi[j]], Verts[t.Vi[k]]));
             }
             tNodes.Add(t._TNode);
             search.Add(key, t._TNode);
-          //  Debug.Log( "key " +tNodes.GetEnumerator().Current.Key
+            //  Debug.Log( "key " +tNodes.GetEnumerator().Current.Key
 
         }
 
 
 
-        for(int itCnt = 0; search.Count > 0; ) {
-          
+        for(int itCnt = 0; search.Count > 0;) {
+
             var iter = search.GetEnumerator(); iter.MoveNext();
             var k = iter.Current.Key;
             var n = iter.Current.Value;
             search.RemoveAt(0);
 
-            if( n.Count == 0 ) continue;
+            if(n.Count == 0) continue;
 
-            for(int i = n.Count, j = 0; i-- > 0; j = i ) {
+            for(int i = n.Count, j = 0; i-- > 0; j = i) {
                 var e = n[i];
 
                 if(itCnt++ == DebugI) {
@@ -477,7 +479,7 @@ public class NavMesh : MonoBehaviour {
 
 
                 if(itCnt == DebugI) {
-                    
+
                     foreach(var tn in tNodes) {
 
                         //  Debug.Log("n ");
@@ -485,7 +487,7 @@ public class NavMesh : MonoBehaviour {
                         for(int i3 = tn.Count, j3 = 0, k3 = 1; i3-- > 0; k3 = j3, j3 = i3) {
                             var t = tn[i3].T;
 
-                            for(int i2 = 3; i2-- > 0; ) {
+                            for(int i2 = 3; i2-- > 0;) {
                                 Debug.DrawLine(Verts[t.Vi[i2]], Verts[t.Vi[(i2 + 1) % 3]], new Color(0.0f, 0.0f, 1, 0.1f));
                             }
 
@@ -502,12 +504,12 @@ public class NavMesh : MonoBehaviour {
                     centre /= n.Count;
                     foreach(var r in n) Debug.DrawLine(Verts[r.Vi], centre, Color.green);
 
-                    var mid = (Verts[e.Vi] + Verts[n[j].Vi])*0.5f;
+                    var mid = (Verts[e.Vi] + Verts[n[j].Vi]) * 0.5f;
                     Debug.DrawLine(mid, centre, Color.black);
 
                     Debug.Log("---------------------------------------");
                     Debug.Log("---------------------------------------");
-                    Debug.Log(" key "+k+"  pre  " + i);
+                    Debug.Log(" key " + k + "  pre  " + i);
                     foreach(var r in n) Debug.Log(" >> vi " + r.Vi + "  t " + r.T.GetHashCode() + "  nbr " + r.NbrId);
                 }
 
@@ -516,20 +518,20 @@ public class NavMesh : MonoBehaviour {
                     continue;
                 }
                 var on = e.Nbr._TNode;
-                if( on.Count == 0 ) {
+                if(on.Count == 0) {
                     if(itCnt == DebugI) Debug.Log("on.Count == 0");
                     Debug.LogError("on ==  n");
                     continue;  //todo this should not be needed...
                 }
-                if(on ==  n) {
-                    if(itCnt == DebugI)  Debug.Log("on ==  n");
-                    Debug.LogError( "on ==  n");
-                   
+                if(on == n) {
+                    if(itCnt == DebugI) Debug.Log("on ==  n");
+                    Debug.LogError("on ==  n");
+
                     continue; // ???
                 }
 
                 if(itCnt == DebugI) {
-                    Debug.Log("  --  " );
+                    Debug.Log("  --  ");
                     foreach(var r in on) Debug.Log(" >> vi " + r.Vi + "  t " + r.T.GetHashCode() + "  nbr " + r.NbrId);
 
                     Vector2 centre = Vector2.zero, c2 = Vector2.zero;
@@ -539,7 +541,7 @@ public class NavMesh : MonoBehaviour {
                     Debug.DrawLine(c2, centre, Color.black);
                 }
 
-                var oi = on.Count -1;
+                var oi = on.Count - 1;
                 for(; oi >= 0; oi--) {
                     if(on[oi].Nbr == e.T) goto label_jumpOut_findSuccess;
                 }
@@ -548,14 +550,14 @@ public class NavMesh : MonoBehaviour {
                     Debug.LogError("failed to match..");
                 }
                 continue;
-               
-                label_jumpOut_findSuccess: ;
 
-                var oj = oi == on.Count-1 ? 0 : oi + 1;
+                label_jumpOut_findSuccess:;
+
+                var oj = oi == on.Count - 1 ? 0 : oi + 1;
                 var ins = oi == 0 ? on.Count - 1 : oi - 1;
 
                 if(itCnt == DebugI) {
-                    Debug.Log("oi  " + oi + "oj  " + oj + "  ins " + ins + " ins.Vi " + on[ins].Vi );
+                    Debug.Log("oi  " + oi + "oj  " + oj + "  ins " + ins + " ins.Vi " + on[ins].Vi);
                 }
 
                 if(n[i].Vi != on[oj].Vi || n[j].Vi != on[oi].Vi)
@@ -574,13 +576,13 @@ public class NavMesh : MonoBehaviour {
                     Debug.Log("oj   " + oj + "  on[oj].I " +on[oj].I + "   on[oj].T.Vi.Length   "+ on[oj].T.Vi.Length);
                     return false;
                 } */
-                    /*
-                if(n[j].Vi 
-                    != on[oj].Vi) {
-                    oi = oj;
-                    j = i == 0 ? n.Count-1 : i - 1;
-                }  else
-                    oi = oj == 0 ? on.Count - 1 : oj - 1; */
+                /*
+            if(n[j].Vi 
+                != on[oj].Vi) {
+                oi = oj;
+                j = i == 0 ? n.Count-1 : i - 1;
+            }  else
+                oi = oj == 0 ? on.Count - 1 : oj - 1; */
 
                 //if(Util.sign(Verts[n[i].Vi], Verts[ e.T.Vi[oi]], Verts[n[j].Vi]) < 0) continue;
                 int fi = i;
@@ -595,26 +597,26 @@ public class NavMesh : MonoBehaviour {
                         Debug.Log(" into ");
                         foreach(var r in n) Debug.Log(" >> " + r.Vi);
                     }
-                    for(; ; ) {
+                    for(;;) {
                         n.Insert(j, on[ins]);
-                        if( fi > j ) fi++;
+                        if(fi > j) fi++;
                         if(ins == 0) ins = on.Count - 1;
                         else ins--;
                         if(ins == oj) break;
                     }
                 } else {
                     n.Insert(j, on[ins]);
-                    if(fi > j) fi++;                    
+                    if(fi > j) fi++;
                 }
-               // Debug.Log("post ");
-              //  foreach(var r in n) Debug.Log(" >> " + r.Vi);
+                // Debug.Log("post ");
+                //  foreach(var r in n) Debug.Log(" >> " + r.Vi);
 
 
                 float key = -1; int ki = -1;
-                for(int i2 = n.Count, j2 = 0, k2 = 1; i2-- > 0; k2  =j2, j2 = i2) {
+                for(int i2 = n.Count, j2 = 0, k2 = 1; i2-- > 0; k2 = j2, j2 = i2) {
                     float dt = Mathf.Abs(Vector2.Dot((Verts[n[k2].Vi] - Verts[n[j2].Vi]).normalized, (Verts[n[i2].Vi] - Verts[n[j2].Vi]).normalized));
                     if(dt > key) ki = i2;
-                    key = Mathf.Max( key, dt );
+                    key = Mathf.Max(key, dt);
                     if(Util.sign(Verts[n[i2].Vi], Verts[n[j2].Vi], Verts[n[k2].Vi]) < 0) {
                         if(on.Count > 3) {
                             n.Clear();
@@ -628,7 +630,7 @@ public class NavMesh : MonoBehaviour {
                         } else {
                             if(itCnt == DebugI) {
                                 Debug.Log("FAIL " + i2);
-                                foreach(var r in n) Debug.Log(" >> " + r.Vi);       
+                                foreach(var r in n) Debug.Log(" >> " + r.Vi);
                             };
                             n.RemoveAt(j);
                         }
@@ -647,9 +649,9 @@ public class NavMesh : MonoBehaviour {
                 n[fi] = on[oj];
 
                 on.Clear();
-                
+
                 tNodes.Remove(on);
-                search.Add( key, n );
+                search.Add(key, n);
 
                 if(itCnt == DebugI) {
                     Debug.Log("  success   nk" + key);
@@ -659,21 +661,21 @@ public class NavMesh : MonoBehaviour {
                     if(j2 < 0) j2 += n.Count;
                     if(k2 < 0) k2 += n.Count;
 
-                   // Debug.DrawLine(Verts[n[i2].Vi], Verts[n[i2].Vi], Color.black);
+                    // Debug.DrawLine(Verts[n[i2].Vi], Verts[n[i2].Vi], Color.black);
                 }
                 break;
-                label_breakContinue: ;
+                label_breakContinue:;
             }
-            
-            
-           // break;
+
+
+            // break;
         }
 
         foreach(var tn in tNodes) {
-            tn.Nd = new Node(tn); 
-            Nodes.Add( tn.Nd );
+            tn.Nd = new Node(tn);
+            Nodes.Add(tn.Nd);
         }
-        foreach(var t in Tris ) {
+        foreach(var t in Tris) {
             t.Nd = t._TNode.Nd;
             t.Nd.linkTri(t);
         }
@@ -681,11 +683,11 @@ public class NavMesh : MonoBehaviour {
 
         foreach(var n in tNodes) {
 
-            for(int i = n.Count, j = 0, k = 1; i-- > 0; k  =j, j = i ) {
+            for(int i = n.Count, j = 0, k = 1; i-- > 0; k = j, j = i) {
                 var t = n[i].T;
 
-                for(int i2 = 3; i2-- > 0; ) {
-                    Debug.DrawLine( Verts[t.Vi[i2]], Verts[t.Vi[(i2+1)%3]],  new Color(0.0f, 0.0f, 1, 0.1f) );
+                for(int i2 = 3; i2-- > 0;) {
+                    Debug.DrawLine(Verts[t.Vi[i2]], Verts[t.Vi[(i2 + 1) % 3]], new Color(0.0f, 0.0f, 1, 0.1f));
                 }
 
                 debugDrawCross(t.Centre, Color.white);
@@ -693,7 +695,7 @@ public class NavMesh : MonoBehaviour {
                 if(Util.sign(Verts[n[i].Vi], Verts[n[j].Vi], Verts[n[k].Vi]) < 0)
                     col2 = Color.yellow;
                 Debug.DrawLine(Verts[n[i].Vi], Verts[n[j].Vi], col2);
-            }   
+            }
 
 
         }
@@ -749,7 +751,7 @@ public class NavMesh : MonoBehaviour {
 
 
     //  stuff for A* search
-    public class DuplicateKeyComparer<K> :  IComparer<K> where K : System.IComparable {
+    public class DuplicateKeyComparer<K> : IComparer<K> where K : System.IComparable {
         public int Compare(K x, K y) {
             int result = x.CompareTo(y);
             if(result == 0) return 1;
@@ -762,12 +764,181 @@ public class NavMesh : MonoBehaviour {
         public Vector2 P;
         public float D;
         public SearchNode Prev;
-    }
 
+        public SearchNode TNext;
+        public Vector2 CurP;
+        public Vector2 E1, E2;
+        public SearchNode E1Sn, E2Sn;
+
+        public float BiasD;
+
+        public int Depth;
+    }
+    void rewindTo(ref SearchNode cur, SearchNode to) {
+
+        for(; cur != to;) {
+            cur.Prev.TNext = cur;
+            cur = cur.Prev;
+        }
+    }
+    public int TestPath_Iter = 5;
+
+
+    Vector2 smoothHelper(Vector2 edge, Vector2 at, bool flip) {  //todo think of better name...
+        Vector2 b = edge, aToC = edge - at, vec = aToC;
+        vec = Vector3.Cross(vec, Vector3.forward);  //lazy..
+        vec.Normalize();
+        if(flip) vec = -vec;
+
+        b += vec * 0.75f;
+
+        return b;
+    }
+    void smoothSubPath(SearchNode cur, SearchNode startN, Vector2 to, bool final, float biasD, Vector2 biasN) {
+        cur.TNext = null;
+        var top = cur;
+
+        top.CurP = startN.CurP;
+        top.E1 = startN.E1;
+        top.E2 = startN.E2;
+        top.E1Sn = startN.E1Sn;
+        top.E2Sn = startN.E2Sn;
+
+        top.D = startN.D;
+        top.BiasD = startN.BiasD;
+
+
+        rewindTo(ref cur, startN);
+        for(int iter = TestPath_Iter; iter-- > 0;) {
+            Vector2 cPos = top.CurP, cnrA = top.E1, cnrB = top.E2;
+            SearchNode e1Sn = top.E1Sn, e2Sn = top.E2Sn;
+
+            // Debug.Log("cur " + cur.P);
+            var n = cur.TNext;
+            if(n != null) {
+
+                int i = n.NbrI;
+                Vector2 p = n.P;
+                Vector2 em = cur.N.Edge[i];
+                Vector2 e1 = Verts[cur.N.Vi[i]];
+                Vector2 e2 = Verts[cur.N.Vi[(i + 1) % cur.N.Nbrs.Length]];
+
+                // Vector2 nCnrA = e1, nCnrB = e2;
+                Vector2 nCnrA = smoothHelper(e1, cur.CurP, true), nCnrB = smoothHelper(e2, cur.CurP, false);
+                /*
+                                Gizmos.color = Color.blue * new Color(1, 1, 1, 0.5f);
+                                //  Gizmos.DrawLine(cur.P, Vector2.Lerp(e2,em,0.1f ) );
+
+                                Gizmos.color = Color.red * new Color(1, 1, 1, 0.5f);
+                                // Gizmos.DrawLine(cur.P, Vector2.Lerp(e1, em, 0.1f));
+
+                                Gizmos.color = Color.black;
+                                // Gizmos.DrawLine(cur.P, em);
+                                Gizmos.color = Color.blue;
+                                // Gizmos.DrawLine(cPos, Vector2.Lerp(e2, em, 0.1f));
+
+                                Gizmos.color = Color.red;
+                                // Gizmos.DrawLine(cPos, Vector2.Lerp(e1, em, 0.1f));
+                                */
+                Vector2 tPos = cPos; SearchNode tSn = null;
+                float td = float.MaxValue;
+
+                if((nCnrA - cnrA).sqrMagnitude > 0.01f) {
+                    if(Util.sign(nCnrA, cPos, cnrA) >= 0) {
+                        if(Util.sign(cnrB, cPos, nCnrA) < 0) {
+                            tPos = cnrB;
+                            td = (tPos - cPos).sqrMagnitude;
+                            tSn = e2Sn;
+                        } else {
+                            cnrA = nCnrA;
+                            e1Sn = cur;
+                        }
+                    }
+                }
+                if((nCnrB - cnrB).sqrMagnitude > 0.01f) {
+                    if(Util.sign(cnrB, cPos, nCnrB) >= 0) {
+                        if(Util.sign(nCnrB, cPos, cnrA) < 0) {
+                            if((cPos - cnrA).sqrMagnitude < td) {
+                                tPos = cnrA;
+                                tSn = e1Sn;
+                                td = 0;
+                            }
+
+                        } else {
+                            cnrB = nCnrB;
+                            e2Sn = cur;
+                        }
+                    }
+                }
+                if(td != float.MaxValue) {
+
+                    //Gizmos.color = Color.black;
+                    //Gizmos.DrawLine(cPos, tPos);
+                    cPos = tPos;
+
+                    rewindTo(ref cur, tSn);
+
+                    top.E1Sn = null;
+                    top.E2Sn = null;
+                    //float od = top.D;
+                    //top.D += (top.CurP - cPos).magnitude;
+                    bias(ref top.D, ref top.BiasD, ref top.CurP, cPos, biasD, biasN);
+                    top.E1 = top.E2 = cPos;
+                    continue;
+                }
+
+                cur = n;
+                top.E1 = cnrA;
+                top.E2 = cnrB;
+                top.CurP = cPos;
+                top.E1Sn = e1Sn;
+                top.E2Sn = e2Sn;
+
+            } else {
+
+                if(!final) return;
+                Vector2 tPos = to;
+                var otp = tPos;
+                float td = float.MaxValue;
+                SearchNode tSn = null;
+                if(Util.sign(cnrB, cPos, tPos) < 0) {
+                    tPos = cnrB;
+                    td = (tPos - cPos).sqrMagnitude;
+                    tSn = e2Sn;
+                }
+                if(Util.sign(otp, cPos, cnrA) < 0) {
+                    if((cPos - cnrA).sqrMagnitude <= td) {
+                        tPos = cnrA;
+                        td = 0;
+                        tSn = e1Sn;
+                    }
+                }
+
+                // Gizmos.color = Color.black;
+                if(td != float.MaxValue) {
+                    //Gizmos.DrawLine(cPos, tPos);
+
+                    cPos = tPos;
+                    rewindTo(ref cur, tSn);
+                    n = cur.TNext;
+
+                    top.E1Sn = null;
+                    top.E2Sn = null;
+                    //float od = top.D;
+                    //top.D += (top.CurP - cPos).magnitude;
+                    bias(ref top.D, ref top.BiasD, ref top.CurP, cPos, biasD, biasN);
+                    top.E1 = top.E2 = cPos;
+                    continue;
+                } //else
+                  //Gizmos.DrawLine(cur.CurP, to);
+                return;
+            }
+        }
+    }
     public class SmoothNode {
         public Vector2 P;//, P2;
         public Vector2 E1, E2;
-        public Node N; 
+        public Node N;
     }
 
 
@@ -775,19 +946,65 @@ public class NavMesh : MonoBehaviour {
         public List<SmoothNode> Smooth;
     }
 
+    public int MaxDepth = 100;
+    void bias(ref float snD, ref float snBD, ref Vector2 snP, Vector2 to, float biasD, Vector2 biasN) {
+
+        var curP = snP;
+        snP = to;
+
+        float curD = snD;
+        var tv = snP - curP;
+        float add = tv.magnitude;
+        snD += add;
+        snBD += add;
+
+#if DRAW_NAV_LINES
+      //  Gizmos.color = Color.grey;
+        Gizmos.DrawLine(snP, curP);
+#endif
+        if(curD < biasD && add > 0.01f) {
+            tv /= add;
+            var td = Mathf.Min(snD, biasD) - curD;
+
+            add =  (tv - biasN).magnitude * td;
+            snBD += add;
+
+          //  Debug.Log("add " + add);
+            /*if(biasD > 1) {
+                Debug.DrawLine(curP, curP + tv * td, Color.black);
+                Debug.DrawLine(curP + biasN * td, curP + tv * td, Color.red);
+                Debug.DrawLine(curP + biasN * td, curP, Color.white);
+
+                //     UnityEditor.EditorApplication.isPaused = true;
+            } */
+           // return;
+#if DRAW_NAV_LINES
+            var c = Gizmos.color;
+            Gizmos.color = Color.black;
+            Gizmos.DrawLine(curP, curP + tv * td);
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(curP + biasN * td, curP + tv * td);
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(curP + biasN * td, curP);
+            Gizmos.color = c;
+#endif
+        }
+
+    }
 
     public Path getPath(Vector2 from, Vector2 biasedPosition, Vector2 to, Node toNode) {
 
-        if(Nodes.Count == 0 ) return null;
+        if(Nodes.Count == 0) return null;
 
         Node a = findNode(from), b = toNode;
         //Debug.Log("a  " + a+"  b  "+b );
-        if(a == null || b == null || a == b ) return null;
+        if(a == null || b == null || a == b) return null;
 
         SortedList<float, SearchNode> search = new SortedList<float, SearchNode>(new DuplicateKeyComparer<float>());
 
         var cur = new SearchNode();
-        cur.D = 0;
+        cur.D = cur.BiasD = 0;
+
         cur.N = a;
         cur.Prev = null;
         cur.P = biasedPosition;
@@ -796,10 +1013,11 @@ public class NavMesh : MonoBehaviour {
 
         float cD = float.MaxValue;
         SearchNode cP = null;
-        for(; ; ) {
+
+        for(;;) {
 
             var n = cur.N;
-            for(int i = n.Nbrs.Length; i-- > 0; ) {
+            for(int i = n.Nbrs.Length; i-- > 0;) {
                 var o = n.Nbrs[i];
                 if(o == null) continue;
 
@@ -807,7 +1025,7 @@ public class NavMesh : MonoBehaviour {
                     // var d = cur.D + (cur.P - sn.P).magnitude;
                     continue;
                 }
-               // Gizmos.DrawLine(cur.P, n.Edge[i]);
+                ///Gizmos.DrawLine(cur.P, n.Edge[i]);
 
                 var sn = new SearchNode();
                 sn.P = n.Edge[i];
@@ -823,7 +1041,7 @@ public class NavMesh : MonoBehaviour {
                 if(o == b) {
                     cD = d;
                     cP = sn;
-               //     Gizmos.DrawLine(sn.P, to);
+                    //Gizmos.DrawLine(sn.P, to);
                     continue;
                 }
                 search.Add(d, sn);
@@ -835,21 +1053,21 @@ public class NavMesh : MonoBehaviour {
 
             search.RemoveAt(search.Count - 1);
         }
-        foreach( Node n in Nodes ) n.SN =null;
+        foreach(Node n in Nodes) n.SN = null;
 
         if(cP == null) return null;
 
         Path ret = new Path();
         List<SmoothNode> smooth = ret.Smooth = new List<SmoothNode>();
 
-      //  Gizmos.color = Color.green;
+        //  Gizmos.color = Color.green;
 
         //Gizmos.DrawLine( desP, cP.P );
 
         SmoothNode smt = new SmoothNode();
-      //  smt.P2 = smt.P = to;
+        //  smt.P2 = smt.P = to;
         //smooth.Add(smt);
-        for(; ; ) {
+        for(;;) {
             var n = cP.Prev;
             if(n != null) {
                 //Gizmos.DrawLine( n.P, cP.P );
@@ -867,45 +1085,45 @@ public class NavMesh : MonoBehaviour {
             } else {
                 //Gizmos.DrawLine( strtP, cP.P );
 
-              //  smt = new SmoothNode();
-              //  smt.P2 = smt.P = from;
-              //  smooth.Add(smt);
+                //  smt = new SmoothNode();
+                //  smt.P2 = smt.P = from;
+                //  smooth.Add(smt);
                 break;
             }
         }
         return ret;
-        for(int iter = 60; iter-- > 0; ) {
+        for(int iter = 60; iter-- > 0;) {
 
-           /* for(int i = smooth.Count - 1; --i > 0; ) {
+            /* for(int i = smooth.Count - 1; --i > 0; ) {
+                 smt = smooth[i];
+                 smt.P2 = (smooth[i + 1].P + smooth[i - 1].P) * 0.5f;
+
+                 var vec = smt.P2 - smt.E1;
+                 var dt = Vector2.Dot(vec, smt.E2); dt /= smt.E2.sqrMagnitude;
+                 dt = Mathf.Clamp01(dt);
+                 //  Gizmos.DrawLine(  smt.E1,  smt.E1 + smt.E2 );
+                 smt.P2 = smt.E1 + smt.E2 * dt;
+             }
+             for(int i = smooth.Count - 1; --i > 0; ) {
+                 smt = smooth[i];
+                 smt.P = (smooth[i + 1].P2 + smooth[i - 1].P2) * 0.5f;
+
+                 var vec = smt.P - smt.E1;
+                 var dt = Vector2.Dot(vec, smt.E2); dt /= smt.E2.sqrMagnitude;
+                 dt = Mathf.Clamp01(dt);
+                 //  Gizmos.DrawLine(  smt.E1,  smt.E1 + smt.E2 );
+                 smt.P = smt.E1 + smt.E2 * dt;
+             }*/
+
+            for(int i = smooth.Count - 1; --i > 0;) {
                 smt = smooth[i];
-                smt.P2 = (smooth[i + 1].P + smooth[i - 1].P) * 0.5f;
-
-                var vec = smt.P2 - smt.E1;
-                var dt = Vector2.Dot(vec, smt.E2); dt /= smt.E2.sqrMagnitude;
-                dt = Mathf.Clamp01(dt);
-                //  Gizmos.DrawLine(  smt.E1,  smt.E1 + smt.E2 );
-                smt.P2 = smt.E1 + smt.E2 * dt;
-            }
-            for(int i = smooth.Count - 1; --i > 0; ) {
-                smt = smooth[i];
-                smt.P = (smooth[i + 1].P2 + smooth[i - 1].P2) * 0.5f;
-
-                var vec = smt.P - smt.E1;
-                var dt = Vector2.Dot(vec, smt.E2); dt /= smt.E2.sqrMagnitude;
-                dt = Mathf.Clamp01(dt);
-                //  Gizmos.DrawLine(  smt.E1,  smt.E1 + smt.E2 );
-                smt.P = smt.E1 + smt.E2 * dt;
-            }*/
-
-            for(int i = smooth.Count - 1; --i > 0; ) {
-                smt = smooth[i];
-                smt.P = (smt.P*0.5f + smooth[i + 1].P + smooth[i - 1].P) * 0.4f;
+                smt.P = (smt.P * 0.5f + smooth[i + 1].P + smooth[i - 1].P) * 0.4f;
 
                 var vec = smt.P - smt.E1;
                 var dt = Vector2.Dot(vec, smt.E2); dt /= smt.E2.sqrMagnitude;
 
                 float edge = 0.25f / smt.E2.magnitude;
-                dt = Mathf.Clamp(dt, edge, 1.0f-edge );
+                dt = Mathf.Clamp(dt, edge, 1.0f - edge);
                 //  Gizmos.DrawLine(  smt.E1,  smt.E1 + smt.E2 );
                 smt.P = smt.E1 + smt.E2 * dt;
                 break;
@@ -918,6 +1136,215 @@ public class NavMesh : MonoBehaviour {
             Gizmos.DrawLine(smooth[i + 1].P, smooth[i].P);
         } */
     }
+    public Path getPath2(Vector2 from, Vector2 biasedPosition, Vector2 to, Node toNode) {
+
+        if(Nodes.Count == 0) return null;
+
+        Node a = findNode(from), b = toNode;
+        //Debug.Log("a  " + a+"  b  "+b );
+        if(a == null || b == null || a == b) return null;
+
+        SortedList<float, SearchNode> search = new SortedList<float, SearchNode>(new DuplicateKeyComparer<float>());
+
+        var cur = new SearchNode();
+        cur.D = cur.BiasD = 0;
+        cur.N = a;
+        cur.Prev = null;
+        cur.P = from;
+        cur.N.SN = cur;
+        cur.Depth = MaxDepth;
+        var biasN = (biasedPosition - from);
+        float biasD = biasN.magnitude; biasN /= biasD;
+       //  Debug.Log("biasD " + biasD);
+       // biasD *= 3;
+        cur.E1 = cur.E2 = cur.CurP = from;
+
+        var startN = cur;
+        float cD = float.MaxValue;
+        SearchNode cP = null;
+
+        //Gizmos.color = Color.white;
+        Vector2 cPP = biasedPosition;
+        for(;;) {
+            var n = cur.N;
+            if(  n.SN == cur) 
+                for(int i = n.Nbrs.Length; i-- > 0;) {
+                    var o = n.Nbrs[i];
+                    if(o == null) continue;
+
+                    if(o.SN != null) {
+                        if(o.SN == cur.Prev ) continue;
+                        if(o.SN.BiasD < cur.BiasD) continue;
+                        // var d = cur.D + (cur.P - sn.P).magnitude;
+                        //continue;
+                    }
+
+#if DRAW_NAV_LINES
+                     Gizmos.color = Color.white;
+                     Gizmos.DrawLine(cur.P, n.Edge[i]);
+#endif
+
+                    Vector2 em = cur.N.Edge[i];
+                    Vector2 e1 = Verts[cur.N.Vi[i]];
+                    Vector2 e2 = Verts[cur.N.Vi[(i + 1) % cur.N.Nbrs.Length]];
+
+                    Vector2 nCnrA = e1, nCnrB = e2;
+                    //*
+
+
+                    var sn = new SearchNode();
+                    sn.P = n.Edge[i];
+                    //sn.D = cur.D + (cur.P - sn.P).magnitude;
+                    sn.N = o;
+                    sn.Prev = cur;
+                    //sn.N.SN = sn;
+                    sn.NbrI = i;
+                    sn.Depth = cur.Depth - 1;
+
+
+                    float d;
+                    //  Gizmos.color = Color.black;
+
+                    if(o == b) {
+
+    #if DRAW_NAV_LINES
+                        Gizmos.color = Color.black;
+    #endif
+
+                        smoothSubPath(sn, cur, to, true, biasD, biasN);
+
+                       // if(o.SN != null && o.SN.BiasD * 1.1f +0.1f < sn.BiasD) continue;
+                  
+                        // Gizmos.DrawLine(sn.CurP, to);
+
+                        // Gizmos.color = Color.blue * new Color(1, 1, 1, 0.5f);
+                        // Gizmos.DrawLine(sn.CurP, Vector2.Lerp(e2, em, 0.1f));
+
+                        //Gizmos.color = Color.red * new Color(1, 1, 1, 0.5f);
+                        // Gizmos.DrawLine(sn.CurP, Vector2.Lerp(e1, em, 0.1f));
+
+                        if(sn.BiasD > cD) continue;
+                        //bias(ref sn.D, sn.CurP, cur.D, cur.CurP, biasD, biasN);
+
+                        //d = sn.D + (to - sn.CurP).magnitude;
+                        var op = sn.CurP;
+                        bias(ref sn.D, ref sn.BiasD, ref sn.CurP, to, biasD, biasN);
+                        //sn.CurP = to;
+
+                        if(sn.BiasD > cD) continue;
+
+                        cPP = op;
+                        cP = sn;
+                        cD = sn.BiasD;
+                        sn.N.SN = sn;
+                        continue;
+                    } else {
+
+                        if(sn.Depth <= 0) {
+                            Debug.Log(" Max depth reached...");
+                            continue;
+                        }
+
+    #if DRAW_NAV_LINES
+                        Gizmos.color = Color.gray;
+#endif
+                            smoothSubPath(sn, cur, to, false, biasD, biasN);
+                        if(o.SN != null && o.SN.BiasD * 1.1f + 0.1f < sn.BiasD) continue;
+                        sn.N.SN = sn;
+                        // Gizmos.color = Color.blue * new Color(1, 1, 1, 0.5f);
+                        //Gizmos.DrawLine(sn.CurP, Vector2.Lerp(e2, em, 0.1f));
+
+                        //Gizmos.color = Color.red * new Color(1, 1, 1, 0.5f);
+                        //Gizmos.DrawLine(sn.CurP, Vector2.Lerp(e1, em, 0.1f));
+
+
+                        if(sn.BiasD > cD) continue;
+                        //bias(ref sn.D, sn.CurP, cur.D, cur.CurP, biasD, biasN);
+
+                        d = sn.BiasD;
+                        float td = sn.D;
+                        Vector2 cp = sn.CurP;
+                        if(sn.E1 == sn.E2) {
+                            //todo??  Debug.Log("err??");
+
+
+                            bias(ref td, ref d, ref cp, sn.E1, biasD, biasN);
+                            bias(ref td, ref d, ref cp, to, biasD, biasN);
+                            //Gizmos.color = Color.white;
+                            //drawCross(sn.E1);
+                        } else {
+                            //Gizmos.color = Color.gray;
+                            var mid = Util.lineLineIntersect_RetC1(sn.E1, sn.E2, sn.CurP, to);
+                            // Gizmos.DrawLine(mid, cur.CurP);
+                            bias(ref td, ref d, ref cp, mid, biasD, biasN);
+                            bias(ref td, ref d, ref cp, to, biasD, biasN);
+                        }
+                        if(d > cD) continue;
+
+                    }
+
+                   // if( cur == startN )
+                  //      Debug.Log("d " + d);
+                    search.Add(d, sn);
+                }
+
+                
+                if(search.Count == 0) break;
+
+                if(search.Keys[search.Count - 1] > cD) break;
+                cur = search.Values[search.Count - 1];
+
+                search.RemoveAt(search.Count - 1);
+            }
+        foreach(Node n in Nodes) n.SN = null;
+
+        if(cP == null) return null;
+
+        cur = cP;
+#if DRAW_NAV_LINES
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(cPP, to);
+#endif
+
+        Path ret = new Path();
+        List<SmoothNode> smooth = ret.Smooth = new List<SmoothNode>();
+
+        //Gizmos.color = Color.black;
+
+        //Gizmos.DrawLine( desP, cP.P );
+
+        SmoothNode smt = new SmoothNode();
+        //  smt.P2 = smt.P = to;
+        //smooth.Add(smt);
+
+        // Gizmos.DrawLine(to, cP.P);
+        for(;;) {
+            var n = cP.Prev;
+            if(n != null) {
+                // Gizmos.DrawLine( n.P, cP.P );
+
+                // Gizmos.DrawLine(Verts[ n.N.Vi[ cP.NbrI ] ],Verts[ n.N.Vi[ (cP.NbrI+2)%3 ] ] );
+
+                smt = new SmoothNode();
+                smt.P = cP.P;
+                smt.N = n.N;
+                smt.E1 = Verts[n.N.Vi[cP.NbrI]];
+                smt.E2 = Verts[n.N.Vi[(cP.NbrI + 1) % n.N.Nbrs.Length]];// -smt.E1;
+                smooth.Add(smt);
+
+                cP = n;
+            } else {
+                // Gizmos.DrawLine( to, cP.P );
+
+                //  smt = new SmoothNode();
+                //  smt.P2 = smt.P = from;
+                //  smooth.Add(smt);
+                break;
+            }
+        }
+        return ret;
+
+    }
 
     void Awake() {
         gen(); // ensure we have a NavMesh! just in case
@@ -926,12 +1353,15 @@ public class NavMesh : MonoBehaviour {
 
     public Transform T1, T2;
 
+    public bool Draw_Tris, Draw_Tris_Cross, Draw_Nodes, Draw_TestPath;
+    public float TestPathBias = 3;
+
     //OnDrawGizmo is a convient callback for doing stuff in scene - since it - in particular the  debug stuff I draw in it can then be definately turned off 
     //   aware of ExceuteInEditMode - I like this.
     //   custom inspector is of course a more proper way - but if the interface is very simple (variables will do) the the extra class is pretty superfluous 
     void OnDrawGizmos() {
 
-        if( !Application.isPlaying ) {
+        if(!Application.isPlaying) {
 
             if(Inc) {
                 ReGen = true;
@@ -944,7 +1374,7 @@ public class NavMesh : MonoBehaviour {
             }
 
 
-            if(ReGen || Constant || Nodes.Count == 0  ) {
+            if(ReGen || Constant || Nodes.Count == 0) {
                 ReGen = false;
                 gen();
             }
@@ -956,19 +1386,19 @@ public class NavMesh : MonoBehaviour {
                 BuildOuter = false;
 
                 var go = (GameObject)Instantiate(this.gameObject);
-                DestroyImmediate( go.GetComponent<NavMesh>() );
+                DestroyImmediate(go.GetComponent<NavMesh>());
                 go.transform.parent = transform.parent;
 
                 PolygonCollider2D pc1 = GetComponent<PolygonCollider2D>(), pc2 = go.GetComponent<PolygonCollider2D>();
                 pc2.points[0] = pc1.points[0];
-                Vector2 tl = new Vector2(float.MaxValue, float.MaxValue), br = new Vector2(float.MinValue, float.MinValue); 
-                float leftMost = float.MaxValue; int ci =0;
+                Vector2 tl = new Vector2(float.MaxValue, float.MaxValue), br = new Vector2(float.MinValue, float.MinValue);
+                float leftMost = float.MaxValue; int ci = 0;
 
-                var pnts = new Vector2[pc1.points.Length+4];
+                var pnts = new Vector2[pc1.points.Length + 4];
 
                 for(int i = pc1.points.Length, j = 0; i-- > 0; j++) {
                     pnts[i] = pc1.points[j];
-                  //  pnts[i] += new Vector2(1, 0);
+                    //  pnts[i] += new Vector2(1, 0);
 
                     float x = pnts[i].x;
                     if(x < leftMost) {
@@ -982,66 +1412,77 @@ public class NavMesh : MonoBehaviour {
                 tl -= new Vector2(2, 2);
                 br += new Vector2(2, 2);
 
-                for(int i = pc1.points.Length; i-- > ci; ) pnts[i + 4] = pnts[i];
+                for(int i = pc1.points.Length; i-- > ci;) pnts[i + 4] = pnts[i];
 
-                
+
                 pnts[ci] = new Vector2(tl.x, tl.y);
                 pnts[ci + 1] = new Vector2(tl.x, br.y);
                 pnts[ci + 2] = new Vector2(br.x, br.y);
                 pnts[ci + 3] = new Vector2(br.x, tl.y);
 
-               // pc2.CreatePrimitive(5);
+                // pc2.CreatePrimitive(5);
                 pc2.SetPath(0, pnts);
                 pc2.enabled = true;
             }
         }
 
-        foreach(Tri t in Tris) {
-            //break;
-            Gizmos.color = Color.white;
-            drawCross(t.Centre);
-            for(int i = 3; i-- > 0; ) {
-                var o = t.Nbrs[i];
-                Gizmos.color = new Color(0.5f, 0.5f, 1, 0.5f);
-                Gizmos.DrawLine( Verts[ t.Vi[i] ], Verts[ t.Vi[(i+1)%3]] );
-                if(o != null) {
-                    Gizmos.color = Color.white;
-                    Gizmos.DrawLine(t.Centre, o.Centre);
+
+        if(Draw_Tris)
+            foreach(Tri t in Tris) {
+                //break;
+                Gizmos.color = Color.white;
+                if(Draw_Tris_Cross) drawCross(t.Centre);
+                for(int i = 3; i-- > 0;) {
+                    var o = t.Nbrs[i];
+                    Gizmos.color = new Color(0.5f, 0.5f, 1, 0.5f);
+                    Gizmos.DrawLine(Verts[t.Vi[i]], Verts[t.Vi[(i + 1) % 3]]);
+                    if(Draw_Tris_Cross)
+                        if(o != null) {
+                            Gizmos.color = Color.white;
+                            Gizmos.DrawLine(t.Centre, o.Centre);
+                        }
                 }
             }
-        }
 
-        foreach(Node n in Nodes ) {
-            for(int i = n.Nbrs.Length; i-- > 0; ) {
-                Gizmos.color = new Color(0.0f, 1.0f, 0, 0.5f);
-                Gizmos.DrawLine(Verts[n.Vi[i]], Verts[n.Vi[(i + 1) % n.Nbrs.Length]]);
+        if(Draw_Nodes)
+            foreach(Node n in Nodes) {
+                for(int i = n.Nbrs.Length; i-- > 0;) {
+                    Gizmos.color = new Color(0.0f, 1.0f, 0, 0.5f);
+                    Gizmos.DrawLine(Verts[n.Vi[i]], Verts[n.Vi[(i + 1) % n.Nbrs.Length]]);
+                }
             }
-        }
+
+        if(Draw_TestPath)
+            if(!Application.isPlaying && T1 != null && T2 != null) {
 
 
-        if(!Application.isPlaying && T1 != null && T2 != null) {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(T1.position, T1.position + T1.up * TestPathBias);
 
-            var p = getPath(T1.position, T1.position, T2.position, findNode(T2.position));
-            Gizmos.color = Color.white;
-            Gizmos.DrawLine(T1.position, T2.position);
-            if(p != null) {
-             //   Debug.Log(" pc " + p.Smooth.Count);
-                Vector2 lastPos = T1.position;
-                for(int i = p.Smooth.Count; i-- > 0; ) {
+
+                var p = getPath2(T1.position, T1.position + T1.up * TestPathBias, T2.position, findNode(T2.position));
+
+                  return;
+                Gizmos.color = Color.white;
+                Gizmos.DrawLine(T1.position, T2.position);
+                if(p != null) {
+                    //   Debug.Log(" pc " + p.Smooth.Count);
+                    Vector2 lastPos = T1.position;
+                    for(int i = p.Smooth.Count; i-- > 0;) {
+                        Gizmos.color = Color.black;
+                        Gizmos.DrawLine(lastPos, p.Smooth[i].P);
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawLine(lastPos, p.Smooth[i].E1);
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawLine(lastPos, p.Smooth[i].E2);
+
+                        lastPos = p.Smooth[i].P;
+                    }
+
                     Gizmos.color = Color.black;
-                    Gizmos.DrawLine(lastPos, p.Smooth[i].P);
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawLine(lastPos, p.Smooth[i].E1);
-                    Gizmos.color =  Color.blue;
-                    Gizmos.DrawLine(lastPos, p.Smooth[i].E2 );
-
-                    lastPos = p.Smooth[i].P;
+                    Gizmos.DrawLine(lastPos, T2.position);
                 }
-
-                Gizmos.color = Color.black;
-                Gizmos.DrawLine(lastPos, T2.position );
             }
-        }
 
     }
 

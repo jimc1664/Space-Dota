@@ -150,6 +150,6 @@ public class Helio : Unit_Kinematic {
         update(SyncO.Trnsfrm, SyncO.Body, this, ref SyncO.SPi, ref SyncO.PathActive, drift );
         update(Trnsfrm, Body, this, ref SPi, ref PathActive, drift);
 
-        fUpdate_ReSync();
+        //fUpdate_ReSync();
     }
 }

@@ -62,6 +62,46 @@ public class Util  {
         return ua >= 0 && ub >= 0 && ua <= 1 && ub <= 1;
     }
 
+
+    public static Vector2 closestPointToLineSegemnt(Vector2 p1, Vector2 p2, Vector2 op ) {
+
+        var a = p2 - p1;
+        var b = new Vector2( a.y, -a.x );
+        var c = p1 - op;
+
+        var delta = b.y * a.x - b.x * a.y;
+
+        //if(Mathf.Abs(delta) <= 0.00001f) return false;   /////todo?  - does not handle overlapping parallel..
+        // only possible if p1 == p2 ... inavlid param..
+
+        delta = 1.0f / delta;
+        float ua = (b.x * c.y - b.y * c.x) * delta;
+        // float ub = (a.x * c.y - a.y * c.x) * delta;
+
+        if(ua >= 1) return p2;
+        else if(ua <= 0) return p1;
+        return p1 + a * ua;
+    }
+    public static Vector2 lineLineIntersect_RetC1(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4) {
+
+        var a = p2 - p1;
+        var b = p4 - p3;
+        var c = p1 - p3;
+
+        var delta = b.y * a.x - b.x * a.y;
+
+        if(Mathf.Abs(delta) <= 0.00001f) return p1 +a*0.5f;   /////todo?  - does not handle overlapping parallel..
+        delta = 1.0f / delta;
+        float ua = (b.x * c.y - b.y * c.x) * delta;
+        //float ub = (a.x * c.y - a.y * c.x) * delta;
+
+        if(ua >= 1) return p2;
+        else if(ua <= 0) return p1;
+        return p1 + a * ua;
+    }
+
+
+
     public static T cast<T>(object o) {
         return (T)o;
     }

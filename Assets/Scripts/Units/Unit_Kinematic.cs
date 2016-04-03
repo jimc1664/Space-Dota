@@ -228,6 +228,14 @@ public class Unit_Kinematic : Unit {
         go.name = name + "  syncO";
         SyncO = go.AddComponent<Unit_SyncHelper>();
         SyncO.Body = go.AddComponent<Rigidbody2D>(Body);
+        SyncO.Body.mass *= 10;
+        var rj = go.AddComponent<RelativeJoint2D>();
+        rj.correctionScale = 0.05f;
+        var dj = go.AddComponent<DistanceJoint2D>();
+        dj.distance = 0.5f;
+        dj.maxDistanceOnly = true;
+        dj.connectedBody = rj.connectedBody = Body;
+
         for(int i = 0; i < Trnsfrm.childCount; i++) {
             var t = Trnsfrm.GetChild(i);
             var c = t.GetComponentInChildren<Collider2D>();
@@ -265,14 +273,14 @@ public class Unit_Kinematic : Unit {
     void FixedUpdate() {
         updatePath();
 
-        fUpdate_ReSync();
+        //fUpdate_ReSync();
     }
     protected void fUpdate_ReSync() {
 
         //if(isClient) {  //todo -- leave for testing 
         float lerp = 10.0f * Time.deltaTime;
         float off = (Body.position - SyncO.Body.position).magnitude;
-
+//lerp *= off / OffsetSyncMax;
         if(off > OffsetSyncMax) {
             if(off > OffsetSyncMax * 2) {
                 lerp = 1;
@@ -283,6 +291,8 @@ public class Unit_Kinematic : Unit {
             } else {
                 lerp = Mathf.Max(lerp, 1.0f - OffsetSyncMax / off);
             }
+        } else {
+        //    
         }
         //  lerp = 1;
 
@@ -302,6 +312,7 @@ public class Unit_Kinematic : Unit {
             rebuff();
 
 
+       // fUpdate_ReSync();
     }
 
         /*
@@ -364,6 +375,10 @@ public class Unit_Kinematic : Unit {
 
         checkTarget();
 
+        Vector2 biasOff = (Vector2)Trnsfrm.up * RoughRadius*2 + Body.velocity / Acceleration;
+        //cPos = SyncO.Body.position
+        Debug.DrawLine(SyncO.Body.position + biasOff, SyncO.Body.position, Color.black);
+
         if(!PathActive) return;
 
         Vector2 tPos = TargetP, cPos = SyncO.Body.position;
@@ -390,7 +405,7 @@ public class Unit_Kinematic : Unit {
             }
 
             if(Path == null) {
-                Path = NavMsh.getPath(cPos, cPos+ (Vector2)Trnsfrm.forward *RoughRadius +Body.velocity*0.5f, tPos, TargetNode);
+                Path = NavMsh.getPath2(cPos, cPos+ biasOff, tPos, TargetNode);
                 if(Path != null) {
                     LTPos = tPos;
                     LTNode = TargetNode;
@@ -589,7 +604,7 @@ public class Unit_Kinematic : Unit {
                 Debug.DrawLine(nCnrB, cnrB, Color.cyan);
 #endif
                 if(Util.sign(cnrB, cPos, nCnrB) > 0) {
-                    if(Util.sign(cnrB, cPos, nCnrA) < 0) {
+                    if(Util.sign(nCnrB, cPos, cnrA) < 0) {
                         if((cPos - cnrA).sqrMagnitude < td) {
                             tPos = cnrA;
                             // tPos2 = (Path.Smooth[ci].E1 + Path.Smooth[ci].E2) * 0.5f;

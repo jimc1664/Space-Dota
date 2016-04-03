@@ -81,7 +81,7 @@ public class Mv_Wheeled  {
             for(; ; ) {
                 if(spi < U.SmoothPath.Count - 1) {
                     var v2 = U.SmoothPath[spi + 1] - Pos;
-                    if(Vector2.Dot(Vec, v2) < -0.1f || v2.sqrMagnitude < U.RoughRadius*1.2f ) {
+                    if(Vector2.Dot(Vec, v2) < -0.1f || v2.sqrMagnitude < Util.pow2( U.RoughRadius*0.6f ) ) {
                         spi++;
                         Vec = v2;
                     } else {

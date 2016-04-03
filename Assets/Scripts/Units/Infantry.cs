@@ -187,6 +187,6 @@ public class Infantry : Unit_Kinematic {
         update(Trnsfrm, Body, this, ref SPi, ref PathActive );
 
 
-        fUpdate_ReSync();
+       // fUpdate_ReSync();
     }
 }
