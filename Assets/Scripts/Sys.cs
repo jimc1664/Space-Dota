@@ -51,6 +51,7 @@ public class Sys : MonoBehaviour
     public Text UI;
     public Text SquidUI, Squid_Unref_UI, Squid_Cap_UI;
     public Text PopUI;
+    public Text ReadyFeedback;
 
     public GameObject StartUI;
     public GameObject GameUI;

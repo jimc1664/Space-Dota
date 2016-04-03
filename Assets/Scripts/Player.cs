@@ -10,6 +10,8 @@ public class Player : NetBehaviour {
 
     //[SyncVar]  ///lazy!
     public Carrier Car;
+    [SerializeField]
+    bool readyUp = false;
 
     /*
     static Player Singleton;
@@ -92,7 +94,7 @@ public class Player : NetBehaviour {
             Tm.IsLocalTeam = true;
             var sui = Sys.get().StartUI;
             sui.SetActive(true);
-            sui.GetComponentInChildren<UnityEngine.UI.Image>().color = Col;
+            //sui.GetComponentInChildren<UnityEngine.UI.Image>().color = Col;
         }
     }
      
@@ -117,17 +119,20 @@ public class Player : NetBehaviour {
 
         if(!sys.Started) {
             if(!isLocalPlayer) return;
-           // if( CarrierSelection!= -1 ) //move this
-          //      sys.CarrierSpecUI[CarrierSelection].SetActive(true);
-
-            for(int i = 0; i < sys.Carriers.Count; i++) {
+            // if( CarrierSelection!= -1 ) //move this
+            //      sys.CarrierSpecUI[CarrierSelection].SetActive(true);
+            sys.ReadyFeedback.color = Color.white;
+            sys.ReadyFeedback.text = "Please Select Your Class. Waiting on: " + CalculateReadyUP() + " players.";
+            for (int i = 0; i < sys.Carriers.Count; i++) {
                 if(Input.GetKeyUp(KeyCode.Alpha1 + i)) {
                     Cmd_setCarrierSelection(i);
+                    readyUp = true;
+                    sys.ReadyFeedback.text = "Selection Confirmed. Waiting on: " + CalculateReadyUP() + " players.";
+
                 }
             }
             return;
         }
-
 
         if (!isLocalPlayer)  return;
 
@@ -183,6 +188,19 @@ public class Player : NetBehaviour {
                 || tryMove_Command();
         }
 
+    }
+
+    int CalculateReadyUP()
+    {
+        int noReady = Tm.Members.Count;
+
+        foreach (Player p in Tm.Members)
+        {
+            if (p.readyUp)
+                noReady--;
+        }
+
+        return noReady;
     }
 
     bool tryMove_Command() {
