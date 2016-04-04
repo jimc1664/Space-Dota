@@ -119,6 +119,7 @@ public class Sys : MonoBehaviour
     void Update()
     {
         if (!Started)
+            
             UpdateNoWaiting();
 
         if (Started)
@@ -150,7 +151,7 @@ public class Sys : MonoBehaviour
 
         if (NetM.WeIsHosting)
         {
-
+            netHUD.enabled = false;
             if (!Started)
             {
                 var players = FindObjectsOfType<Player>();
