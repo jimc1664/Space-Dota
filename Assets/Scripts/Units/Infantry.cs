@@ -33,8 +33,9 @@ public class Infantry : Unit_Kinematic {
     new void Awake() {
         base.Awake();
         Anim = VisDat.GetComponentInChildren<Animator>();
-        
-        Trgtn.enabled = false;
+
+        foreach(var t in Trgtn)
+            t.enabled = false;
         
     }
     static void update(Transform Trnsfrm, Rigidbody2D Body, Infantry U, ref int SPi, ref bool PathActive) {
@@ -118,18 +119,18 @@ public class Infantry : Unit_Kinematic {
 
         float spd =  Body.velocity.magnitude / MaxSpeed;
 
-        if(Trgtn.enabled) {
+        if(Trgtn[0].enabled) {
             if(isServer && (Time.time - RofTimer) > RoF / 2) {
                 Unit nt = null;
-                if(Trgtn.TargetList.Count > 0) {
-                    nt = Trgtn.TargetList.Values[0];
+                if(Trgtn[0].TargetList.Count > 0) {
+                    nt = Trgtn[0].TargetList.Values[0];
                 }
                 if(nt != FireTarget) {
                     if(nt != null) {
                         Rpc_setTarget(nt.gameObject);
 
                     } else
-                        Rpc_setTarget(null );
+                        Rpc_setTarget(null);
                 }
                 if(JustFired) {
                     if(FireTarget != null) getSubTarget();
@@ -137,8 +138,8 @@ public class Infantry : Unit_Kinematic {
                 }
             }
 
-        
-            if( FireTarget != null ) {
+
+            if(FireTarget != null) {
 
                 var tp = SubTarget.TransformPoint(TargetOff);
 
@@ -147,10 +148,10 @@ public class Infantry : Unit_Kinematic {
 
                 TargetAng = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
                 if((Time.time - RofTimer) > RoF && (Trnsfrm.position - FireTarget.Trnsfrm.position).magnitude - FireTarget.RoughRadius < Range
-                    && Vector2.Dot( Trnsfrm.up,  vec.normalized ) > 0.9f  ) {  //todo - neaten?
+                    && Vector2.Dot(Trnsfrm.up, vec.normalized) > 0.9f) {  //todo - neaten?
 
                     RofTimer = Time.time;
-                    Instantiate(FireingAnim).GetComponent<CannonShell>().init(MuzzelPoint.position, tp );
+                    Instantiate(FireingAnim).GetComponent<CannonShell>().init(MuzzelPoint.position, tp);
                     JustFired = true;
                     FiredTimer = 0.2f + Time.deltaTime;
                     if(isServer) {
@@ -159,12 +160,16 @@ public class Infantry : Unit_Kinematic {
                         if(roll < acc)
                             FireTarget.damage(Dmg, AP);
                     }
-                }  
-            
+                }
+
             }
-            if(spd > 0.2f) Trgtn.enabled = false;
+            if(spd > 0.2f)
+                foreach(var t in Trgtn)
+                    t.enabled = false;
         } else {
-            if(spd < 0.1f || !PathActive) Trgtn.enabled = true;
+            if(spd < 0.1f || !PathActive)
+                foreach(var t in Trgtn)
+                    t.enabled = true;
         }
 
         if( FiredTimer > 0 ) {

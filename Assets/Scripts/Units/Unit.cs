@@ -83,15 +83,17 @@ public class Unit : NetBehaviour {
     public float RoughRadius = 1;
    
     virtual protected float calcEngageRange( Unit target ) {
-        if(Trgtn != null)
-            return Trgtn.calcEngageRange(target);
+        if(Trgtn.Length > 0 )
+            return Trgtn[0].calcEngageRange(target);
         return RoughRadius * 1.5f;
     }
-  
-    protected Targeting Trgtn;
+
+    // protected Targeting Trgtn;
+
+    protected Targeting[] Trgtn;
     protected void Awake() {
         Trnsfrm = transform;
-        Trgtn = GetComponent<Targeting>();  //could be null...
+        Trgtn = GetComponents<Targeting>();  //could be null...
 
 
     }
@@ -142,7 +144,9 @@ public class Unit : NetBehaviour {
     //public bool InVisionList;
     protected void OnEnable() {
         NetMan.UnitCount++;
-        if(Trgtn != null) Trgtn.enabled = true;
+
+        foreach( var t in Trgtn )
+            t.enabled = true;
 
         fowRegisterCheck();
 
@@ -152,7 +156,8 @@ public class Unit : NetBehaviour {
 
     protected void OnDisable() {
         NetMan.UnitCount--;
-        if(Trgtn != null) Trgtn.enabled = false;
+        foreach(var t in Trgtn)
+            t.enabled = false;
     }
 
 
@@ -183,7 +188,7 @@ public class Unit : NetBehaviour {
     public float Armor = 3;
 
     [SyncVar] //todo - lazy 
-    protected float Health = 1;
+    public float Health = 1;
     public bool Invinciblity = false;  //for very subtle cheating...
 
 
@@ -250,13 +255,14 @@ public class Unit : NetBehaviour {
         int oSeed = Random.seed;
         Random.seed = seed;
         
-        if(Trgtn != null) {
-
-            foreach(var t in Trgtn.Turrets)
+        
+        foreach(var t1 in Trgtn) {
+            foreach(var t in t1.Turrets)
                 Destroy(t);
-          //  if(isServer) 
-                Destroy(Trgtn);
+            //  if(isServer) 
+            Destroy(t1);
         }
+        
         // foreach(var t in HitTargets)
         //    Destroy(t.gameObject);
         foreach(var c in GetComponentsInChildren<Collider2D>()) {

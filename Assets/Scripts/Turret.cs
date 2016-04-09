@@ -9,7 +9,7 @@ public class Turret : MonoBehaviour {
     public GameObject FireingAnim;
 
     Transform Trnsfrm;
-    Targeting Trgtn;
+    [HideInInspector] public Targeting Trgtn;
 
     public float Range = 3, RoF = 1, Dmg = 500, AP = 0, Accuracy = 0.95f, InvTracking = 1;
     public float TurretSpeed = 10;
@@ -34,8 +34,11 @@ public class Turret : MonoBehaviour {
     bool JustFired = false;
 
 	void Update () {
-
+        if(Trgtn.Friendly)
+            Debug.Log("target count =  " + Trgtn.TargetList.Count + "   " + Trgtn.name);
         if(Trgtn.isServer && (Time.time - RofTimer ) > RoF/2 ) {
+
+
 
             Unit nt = null;
             if(Trgtn.TargetList.Count > 0) {
@@ -44,6 +47,7 @@ public class Turret : MonoBehaviour {
             if(nt != Target) {
 
                 if(nt != null) {
+                    Debug.Log("trgtn " + Trgtn.GetInstanceID());
                     Trgtn.Rpc_setTarget(nt.gameObject, (byte)MyInd);
                     
                 } else
@@ -102,9 +106,13 @@ public class Turret : MonoBehaviour {
 
     void Awake() {
         Trnsfrm = transform;
-        Trgtn = GetComponentInParent<Targeting>();
+       // Trgtn = GetComponentInParent<Targeting>();
     }
-    void Start() {
+    void OnEnable() {
+        if(Trgtn == null) {
+            enabled = false;
+            return;
+        }
         EngageRange = Range - ((Vector2)Trnsfrm.position - (Vector2)Trgtn.U.Trnsfrm.position).magnitude * 1.1f;  //world space cos lazy
     }
     void OnDrawGizmos() {

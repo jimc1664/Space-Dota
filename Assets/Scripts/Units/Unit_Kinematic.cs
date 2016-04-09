@@ -164,8 +164,8 @@ public class Unit_Kinematic : Unit {
         EngageRange = calcEngageRange(Target);
 
         EngageRange += tu.RoughRadius * 0.75f;
-        if(Trgtn != null)
-            Trgtn.Timer = 0;
+        foreach(var t in Trgtn)
+            t.Timer = 0;
 
         PathActive = true;
         SyncO.PathActive = true;    
