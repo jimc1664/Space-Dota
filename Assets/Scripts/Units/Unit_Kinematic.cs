@@ -228,14 +228,14 @@ public class Unit_Kinematic : Unit {
         go.name = name + "  syncO";
         SyncO = go.AddComponent<Unit_SyncHelper>();
         SyncO.Body = go.AddComponent<Rigidbody2D>(Body);
-        SyncO.Body.mass *= 10;
+        /*SyncO.Body.mass *= 10;
         var rj = go.AddComponent<RelativeJoint2D>();
         rj.correctionScale = 0.05f;
         var dj = go.AddComponent<DistanceJoint2D>();
         dj.distance = 0.5f;
         dj.maxDistanceOnly = true;
         dj.connectedBody = rj.connectedBody = Body;
-
+        */
         for(int i = 0; i < Trnsfrm.childCount; i++) {
             var t = Trnsfrm.GetChild(i);
             var c = t.GetComponentInChildren<Collider2D>();
@@ -312,7 +312,7 @@ public class Unit_Kinematic : Unit {
             rebuff();
 
 
-       // fUpdate_ReSync();
+        fUpdate_ReSync();
     }
 
         /*
