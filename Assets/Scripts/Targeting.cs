@@ -13,7 +13,7 @@ public class Targeting : NetBehaviour {
 
     [ClientRpc]
     public void Rpc_setTarget(GameObject tgo, byte ti ) {
-        Debug.Log("_this " + this.GetInstanceID());
+   //     Debug.Log("_this " + this.GetInstanceID());
 
         if( ti >= (byte)Turrets.Count ) return;
         var trt = Turrets[ti];
@@ -48,6 +48,7 @@ public class Targeting : NetBehaviour {
         for(int i = Turrets.Count; i-- > 0;) {
             Turrets[i].MyInd = i;
             Turrets[i].Trgtn = this;
+            Turrets[i].enabled = true;
         }
 
         TargetMask = Friendly ? U.Tm.AllyMask : U.Tm.EnemyMask;
@@ -82,7 +83,7 @@ public class Targeting : NetBehaviour {
             TargetMask = Friendly ? U.Tm.AllyMask : U.Tm.EnemyMask;
             var cols = Physics2D.OverlapCircleAll(U.Trnsfrm.position, Range, TargetMask );
             foreach(var c in cols) {
-                Debug.Log("target ?? " + c.name);
+               // Debug.Log("target ?? " + c.name);
                 Unit u;
                 if(c.attachedRigidbody != null) {
                     u = c.attachedRigidbody.GetComponent<Unit>();
@@ -94,17 +95,17 @@ public class Targeting : NetBehaviour {
 
                 if( TargetList.ContainsValue( u ) ) continue; //inefficent...   todo better list (or better use of this one)
                 float d = (U.Trnsfrm.position - u.Trnsfrm.position).sqrMagnitude;
-                Debug.Log("target a ?? " + u.name);
+              //  Debug.Log("target a ?? " + u.name);
 
                 if(Friendly) {
-                  //  if(u.Health >= 1.0f)
-                    //    continue;
+                    if(u.Health >= 1.0f)
+                        continue;
                     d *= (1.0f + u.Health *4.0f) ;
                 }
-                Debug.Log("target b ?? " + u.name);
+               // Debug.Log("target b ?? " + u.name);
                 TargetList.Add(d,u);
 
-                Debug.Log("target list cnt  " +TargetList.Count + "  "+name);
+              //  Debug.Log("target list cnt  " +TargetList.Count + "  "+name);
             }
         }
     }

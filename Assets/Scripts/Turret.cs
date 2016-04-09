@@ -34,8 +34,8 @@ public class Turret : MonoBehaviour {
     bool JustFired = false;
 
 	void Update () {
-        if(Trgtn.Friendly)
-            Debug.Log("target count =  " + Trgtn.TargetList.Count + "   " + Trgtn.name);
+       // if(Trgtn.Friendly)
+     //       Debug.Log("target count =  " + Trgtn.TargetList.Count + "   " + Trgtn.name);
         if(Trgtn.isServer && (Time.time - RofTimer ) > RoF/2 ) {
 
 
@@ -47,7 +47,7 @@ public class Turret : MonoBehaviour {
             if(nt != Target) {
 
                 if(nt != null) {
-                    Debug.Log("trgtn " + Trgtn.GetInstanceID());
+               //     Debug.Log("trgtn " + Trgtn.GetInstanceID());
                     Trgtn.Rpc_setTarget(nt.gameObject, (byte)MyInd);
                     
                 } else
