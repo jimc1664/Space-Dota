@@ -54,6 +54,9 @@
      <Compile Include="Assets\RTS_Camera\Demo\DemoScene.cs" />
      <Compile Include="Assets\RTS_Camera\Demo\TargetSelector.cs" />
      <Compile Include="Assets\RTS_Camera\Scripts\RTS_Camera.cs" />
+     <Compile Include="Assets\Scripts\Abilitiy\Ability.cs" />
+     <Compile Include="Assets\Scripts\Abilitiy\DamageBoost.cs" />
+     <Compile Include="Assets\Scripts\Abilitiy\HealthBoost.cs" />
      <Compile Include="Assets\Scripts\Abilitiy\SpeedBoost.cs" />
      <Compile Include="Assets\Scripts\Building\Build_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Building\BuildingSite.cs" />
@@ -85,6 +88,7 @@
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Turret.cs" />
      <Compile Include="Assets\Scripts\TurretCtorMenu.cs" />
+     <Compile Include="Assets\Scripts\UI\UiMain.cs" />
      <Compile Include="Assets\Scripts\Units\Carrier.cs" />
      <Compile Include="Assets\Scripts\Units\Death_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\Helio.cs" />

@@ -1136,6 +1136,8 @@ public class NavMesh : MonoBehaviour {
             Gizmos.DrawLine(smooth[i + 1].P, smooth[i].P);
         } */
     }
+
+    float Debug_MaxDepth_Log_Timer = 0;
     public Path getPath2(Vector2 from, Vector2 biasedPosition, Vector2 to, Node toNode) {
 
         if(Nodes.Count == 0) return null;
@@ -1241,7 +1243,10 @@ public class NavMesh : MonoBehaviour {
                     } else {
 
                         if(sn.Depth <= 0) {
+                            if(Debug_MaxDepth_Log_Timer > Time.time)
+                                continue;
                             Debug.Log(" Max depth reached...");
+                            Debug_MaxDepth_Log_Timer = Time.time + 2;
                             continue;
                         }
 

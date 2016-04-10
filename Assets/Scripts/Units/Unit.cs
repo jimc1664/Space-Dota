@@ -135,7 +135,7 @@ public class Unit : NetBehaviour {
 
         fowRegisterCheck();
         fixColliders();
-        foreach(var c in GetComponents<SpeedBoost>()) { //todo base class
+        foreach(var c in GetComponents<Ability>()) { 
             c.enabled = true;
         }
     
@@ -222,7 +222,10 @@ public class Unit : NetBehaviour {
         float reduction = 0.025f+ 1.95f/ (1.0f + Mathf.Exp(  effArmor *0.5f ) );
         dmg *= reduction;
 
+        dmg *= Tm.Glob_HealthBoost_Eff_Mitigation;
+
         Health -= (  dmg) / MaxHealth;
+        
 
        // Debug.Log("dmg " + dmg + "  reduction = " + reduction + "  effArmor = " + effArmor + "  Health = " + (Health * MaxHealth));
 

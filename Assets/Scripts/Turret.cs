@@ -34,9 +34,11 @@ public class Turret : MonoBehaviour {
     bool JustFired = false;
 
 	void Update () {
-       // if(Trgtn.Friendly)
-     //       Debug.Log("target count =  " + Trgtn.TargetList.Count + "   " + Trgtn.name);
-        if(Trgtn.isServer && (Time.time - RofTimer ) > RoF/2 ) {
+        // if(Trgtn.Friendly)
+        //       Debug.Log("target count =  " + Trgtn.TargetList.Count + "   " + Trgtn.name);
+
+        float effRof = RoF * Trgtn.U.Tm.Glob_DamageBoost_Eff_RoF;
+        if(Trgtn.isServer && (Time.time - RofTimer ) > effRof / 2 ) {
 
 
 
@@ -86,7 +88,7 @@ public class Turret : MonoBehaviour {
 
         //todo --- targeting improvement to get range to collider it hit
         //todo  vec.sqrMagnitude   -- for range - ---- but then need to pick smart sub target
-        if((Time.time - RofTimer) > RoF &&  (Trnsfrm.position - Target.Trnsfrm.position).magnitude - Target.RoughRadius < Range
+        if((Time.time - RofTimer) > effRof &&  (Trnsfrm.position - Target.Trnsfrm.position).magnitude - Target.RoughRadius < Range
             && Util.pow2(Mathf.DeltaAngle(rz, dz)) < coneSqr && Util.pow2(Mathf.DeltaAngle(rx, dx)) < coneSqr) {  //todo - neaten?
             
             RofTimer = Time.time;
@@ -97,7 +99,7 @@ public class Turret : MonoBehaviour {
                 float acc = Accuracy - Target.Dodge * InvTracking;  //todo - ensure doesn't go below 0... 
                 float roll = Random.Range(0.0f,1.0f);
                 if( roll < acc )
-                    Target.damage(Dmg, AP);
+                    Target.damage(Dmg * Trgtn.U.Tm.Glob_DamageBoost_Eff_Dmg, AP);
 
              //   Debug.Log("rool  " + roll + "   acc " + acc);
             }

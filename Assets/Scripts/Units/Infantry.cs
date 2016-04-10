@@ -119,8 +119,9 @@ public class Infantry : Unit_Kinematic {
 
         float spd =  Body.velocity.magnitude / MaxSpeed;
 
+        float effRof = RoF * Trgtn[0].U.Tm.Glob_DamageBoost_Eff_RoF;
         if(Trgtn[0].enabled) {
-            if(isServer && (Time.time - RofTimer) > RoF / 2) {
+            if(isServer && (Time.time - RofTimer) > effRof / 2) {
                 Unit nt = null;
                 if(Trgtn[0].TargetList.Count > 0) {
                     nt = Trgtn[0].TargetList.Values[0];
@@ -147,7 +148,7 @@ public class Infantry : Unit_Kinematic {
                 //vec = Trgtn.U.Trnsfrm.InverseTransformDirection(vec);
 
                 TargetAng = Mathf.Rad2Deg * Mathf.Atan2(-vec.x, vec.y);
-                if((Time.time - RofTimer) > RoF && (Trnsfrm.position - FireTarget.Trnsfrm.position).magnitude - FireTarget.RoughRadius < Range
+                if((Time.time - RofTimer) > effRof && (Trnsfrm.position - FireTarget.Trnsfrm.position).magnitude - FireTarget.RoughRadius < Range
                     && Vector2.Dot(Trnsfrm.up, vec.normalized) > 0.9f) {  //todo - neaten?
 
                     RofTimer = Time.time;
@@ -158,7 +159,7 @@ public class Infantry : Unit_Kinematic {
                         float acc = Accuracy - FireTarget.Dodge * InvTracking;  //todo - ensure doesn't go below 0... 
                         float roll = Random.Range(0.0f, 1.0f);
                         if(roll < acc)
-                            FireTarget.damage(Dmg, AP);
+                            FireTarget.damage(Dmg * Trgtn[0].U.Tm.Glob_DamageBoost_Eff_Dmg, AP);
                     }
                 }
 
@@ -192,6 +193,6 @@ public class Infantry : Unit_Kinematic {
         update(Trnsfrm, Body, this, ref SPi, ref PathActive );
 
 
-       // fUpdate_ReSync();
+        fUpdate_ReSync();
     }
 }

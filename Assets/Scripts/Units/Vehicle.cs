@@ -27,7 +27,7 @@ public class Vehicle : Unit_Kinematic {
         // Mv_Wheeled.update(Trnsfrm, Body, ref PathActive, this);
         //   Debug.Log(" SyncO.PathActive " + SyncO.PathActive);
 
-        
+      
 
         bool steerCheck = SyncO.PathActive && ((Time.time - SteerTimer) > SteerDelay) && (SteerUpdate || SyncO.Body.velocity.sqrMagnitude < 0.25f) && (MaxSpeed / _MaxSpeed  < 1.5f) ;
         MvmntController_SO.update(SyncO.Trnsfrm, SyncO.Body, steerCheck, this, ref SyncO.SPi, ref SyncO.PathActive, Steering_FB);
@@ -37,6 +37,9 @@ public class Vehicle : Unit_Kinematic {
             MvmntController.CMBias = MvmntController_SO.CMBias;
             MvmntController.CRBias = MvmntController_SO.CRBias;
         }
+
+        fUpdate_ReSync();
+
         MvmntController.update(Trnsfrm, Body, false, this, ref SPi, ref PathActive, null);
 
 

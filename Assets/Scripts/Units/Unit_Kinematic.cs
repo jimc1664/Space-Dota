@@ -52,21 +52,21 @@ public class Unit_Kinematic : Unit {
     }
     List<Buff> MaxSpeed_Buffs, Acceleration_Buffs;
 
-    delegate void Buff_Dlg(float baseVal, ref float cacheVal, ref List<Buff> buffs);
+    delegate void Buff_Dlg(float baseVal, ref float cacheVal, ref List<Buff> buffs, float globBuffTimer, float globBuffEff );
     void forEach_Buffable(Buff_Dlg act) {
-        act(_MaxSpeed, ref MaxSpeed_Cached, ref MaxSpeed_Buffs);
-        act(_Acceleration, ref Acceleration_Cached, ref Acceleration_Buffs);
+        act(_MaxSpeed, ref MaxSpeed_Cached, ref MaxSpeed_Buffs, Tm.Glob_SpeedBoost, Tm.Glob_SpeedBoost_Eff_MaxSpd );
+        act(_Acceleration, ref Acceleration_Cached, ref Acceleration_Buffs, Tm.Glob_SpeedBoost, Tm.Glob_SpeedBoost_Eff_Acc);
     }
 
     void buffable(Buffable e, Buff_Dlg act) {
         switch(e) {
-            case Buffable.MaxSpeed: act(_MaxSpeed, ref MaxSpeed_Cached, ref MaxSpeed_Buffs); break;
-            case Buffable.Acceleration: act(_Acceleration, ref Acceleration_Cached, ref Acceleration_Buffs); break;
+            case Buffable.MaxSpeed: act(_MaxSpeed, ref MaxSpeed_Cached, ref MaxSpeed_Buffs, Tm.Glob_SpeedBoost, Tm.Glob_SpeedBoost_Eff_MaxSpd); break;
+            case Buffable.Acceleration: act(_Acceleration, ref Acceleration_Cached, ref Acceleration_Buffs, Tm.Glob_SpeedBoost, Tm.Glob_SpeedBoost_Eff_MaxSpd); break;
         }
     }
     public void buff(Buffable e, float factor, float time) {
         float end = time + Time.time;
-        buffable(e, (float baseVal, ref float cacheVal, ref List<Buff> buffs) => {
+        buffable(e, (float baseVal, ref float cacheVal, ref List<Buff> buffs, float globBuffTimer, float globBuffEff) => {
             if(buffs == null) buffs = new List<Buff>();
 
             Buff b = new Buff();
@@ -84,8 +84,14 @@ public class Unit_Kinematic : Unit {
 
     void rebuff() {
         ReBuff = float.MaxValue;
-        forEach_Buffable((float baseVal, ref float cacheVal, ref List<Buff> buffs) => {
+
+        forEach_Buffable((float baseVal, ref float cacheVal, ref List<Buff> buffs, float globBuffTimer, float globBuffEff) => {
             cacheVal = baseVal;
+            if(globBuffTimer > Time.time) {
+                if(ReBuff > globBuffTimer -Time.time)
+                    ReBuff = globBuffTimer - Time.time;
+                cacheVal += baseVal * globBuffEff;
+            }
             if(buffs == null) return;
             for(int i = buffs.Count; i-- > 0; ) {
                 var b = buffs[i];
@@ -101,6 +107,7 @@ public class Unit_Kinematic : Unit {
                     ReBuff = b.TimeEnd;
                 cacheVal += baseVal * b.Factor;
             }
+            
         });
         BuffsDirty = false;
     }
@@ -129,6 +136,7 @@ public class Unit_Kinematic : Unit {
     public Unit_SyncHelper SyncO;  //todo client only
 
     virtual protected bool desPos(Vector2 dp) {
+        if(NavMsh == null) return false; //todo ??
         var n = NavMsh.findNode(dp, TargetNode); //err here 
         if(n == null) return false;
         TargetNode = n;
@@ -175,7 +183,7 @@ public class Unit_Kinematic : Unit {
         base.Awake();
         Body = GetComponent<Rigidbody2D>();
 
-        forEach_Buffable((float baseVal, ref float cacheVal, ref List<Buff> buffs) => {
+        forEach_Buffable((float baseVal, ref float cacheVal, ref List<Buff> buffs, float globBuffTimer, float globBuffEff) => {
             cacheVal = baseVal;
         });
     }
@@ -273,7 +281,7 @@ public class Unit_Kinematic : Unit {
     void FixedUpdate() {
         updatePath();
 
-        //fUpdate_ReSync();
+        fUpdate_ReSync();
     }
     protected void fUpdate_ReSync() {
 
@@ -308,31 +316,33 @@ public class Unit_Kinematic : Unit {
 
     new protected void Update() {
         base.Update();
-        if(BuffsDirty || ReBuff < Time.time)
+
+    }
+    void LateUpdate() {
+
+        if(Tm.Rebuff || BuffsDirty || ReBuff < Time.time)
             rebuff();
 
-
-        fUpdate_ReSync();
     }
 
-        /*
-    public bool RefreshLA = true;
-   
-    
-    void localAvoidance() {
+    /*
+public bool RefreshLA = true;
 
-        LocalAvoidance_FB.reset();
 
-        LocalAvoidance_FB.line( Trnsfrm.position, TargetP,  Color.red );
-        Vector2 cp = Trnsfrm.position;
-        var vec = TargetP - cp;
+void localAvoidance() {
 
-        LocalAvoidance_FB.sphere(cp + vec.normalized * 4, 1, Color.red);
+    LocalAvoidance_FB.reset();
 
-    }
-    GizmoFeedBack LocalAvoidance_FB = new GizmoFeedBack(); */
+    LocalAvoidance_FB.line( Trnsfrm.position, TargetP,  Color.red );
+    Vector2 cp = Trnsfrm.position;
+    var vec = TargetP - cp;
 
- 
+    LocalAvoidance_FB.sphere(cp + vec.normalized * 4, 1, Color.red);
+
+}
+GizmoFeedBack LocalAvoidance_FB = new GizmoFeedBack(); */
+
+
     protected void checkTarget() {
         if(Target != null) {
             Vector2 tp = Target.Trnsfrm.position;

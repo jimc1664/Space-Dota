@@ -23,16 +23,14 @@ public class Sys : MonoBehaviour
     //  public GameObject CommanderFab;
 
     static Sys Singleton;
-    public static Sys get()
-    {
+    public static Sys get() {
 #if UNITY_EDITOR
-        if (Singleton == null) Singleton = FindObjectOfType<Sys>();
+        if(Singleton == null) Singleton = FindObjectOfType<Sys>();
 #endif //UNITY_EDITOR
         return Singleton;
     }
-    void Awake()
-    {
-        if (Singleton != null && Singleton != this) Debug.LogError("Singleton violation");
+    void Awake() {
+        if(Singleton != null && Singleton != this) Debug.LogError("Singleton violation");
         Singleton = this;
         NetM = FindObjectOfType<NetMan>();
     }
@@ -42,7 +40,7 @@ public class Sys : MonoBehaviour
     GameObject minimap;
     //Reference to netmanager hud script
     [SerializeField]
-    GameObject netManager;
+    public GameObject netManager;
     NetworkManagerHUD netHUD;
     //Reference to UI HUD (Overlay)
     [SerializeField]
@@ -64,8 +62,7 @@ public class Sys : MonoBehaviour
 
 
     [System.Serializable]
-    public class BuildingSite_Dat
-    {
+    public class BuildingSite_Dat {
         public List<GameObject> Options;
         public GameObject Menu;
     }
@@ -78,37 +75,32 @@ public class Sys : MonoBehaviour
 
     NetMan NetM;
 
-    void Start()
-    {
+    void Start() {
 
-        for (int i = Teams.Count; i-- > 0;)
+        for(int i = Teams.Count; i-- > 0;)
             Teams[i].start(i);
 
         netHUD = netManager.GetComponent<NetworkManagerHUD>();
 
     }
-    public float TimeRem=300f;
+    public float TimeRem = 300f;
 
-    public string CalcTime(float TimeRemaining)
-    {
+    public string CalcTime(float TimeRemaining) {
         int minutes = Mathf.FloorToInt(TimeRemaining / 60F);
-        int seconds = Mathf.FloorToInt(TimeRemaining-minutes* 60);
+        int seconds = Mathf.FloorToInt(TimeRemaining - minutes * 60);
 
         string formatedTime = string.Format("{0:0}:{1:00}", minutes, seconds);
 
         return formatedTime;
     }
 
-    void UpdateNoWaiting()
-    {
+    void UpdateNoWaiting() {
         var players = FindObjectsOfType<Player>();
         noWaits = players.Length;
 
-        for (int i = 0; i < Teams.Count; i++)
-        {
-            foreach (Player p in Teams[i].Members)
-            {
-                if (p.readyUp)
+        for(int i = 0; i < Teams.Count; i++) {
+            foreach(Player p in Teams[i].Members) {
+                if(p.readyUp)
                     noWaits--;
 
                 ReadyFeedback.text = "Waiting on: " + noWaits + " players.";
@@ -116,14 +108,12 @@ public class Sys : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (!Started)
-            
+    void Update() {
+        if(!Started)
+
             UpdateNoWaiting();
 
-        if (Started)
-        {
+        if(Started) {
             int s1 = Mathf.FloorToInt(Teams[0].Score);
             int s2 = Mathf.FloorToInt(Teams[1].Score);
             TimeRem -= Time.deltaTime;
@@ -137,35 +127,30 @@ public class Sys : MonoBehaviour
             UI.text = "Blue: " + s2 + "      Red: " + s1 + "      Time Remaining: " + CalcTime(TimeRem);
 
             int max = 5000;
-            if (s1 > max || s2 > max || TimeRem < 0)
-            {
+            if(s1 > max || s2 > max || TimeRem < 0) {
                 Time.timeScale = 0;
-                if (s1 > s2)
+                if(s1 > s2)
                     UI.text = "Red Wins (woo)";
                 else
                     UI.text = "Blue Wins (woo)";
             }
+            foreach(var t in Teams)
+                t.update();
+        } else UI.text = ""; // Unit Count : " + NetMan.UnitCount;
 
-        }
-        else UI.text = ""; // Unit Count : " + NetMan.UnitCount;
-
-        if (NetM.WeIsHosting)
-        {
+        if(NetM.WeIsHosting) {
             netHUD.enabled = false;
-            if (!Started)
-            {
+            if(!Started) {
                 var players = FindObjectsOfType<Player>();
-                foreach (var p in players)
-                    if ((uint)p.CarrierSelection > (uint)Carriers.Count) return;
+                foreach(var p in players)
+                    if((uint)p.CarrierSelection > (uint)Carriers.Count) return;
 
 
-                foreach (var p in players)
+                foreach(var p in players)
                     p.spawn();
 
-                foreach (var t in FindObjectsOfType<BuildingSite>())
-                {
-                    if (t.InitSel != -1)
-                    {
+                foreach(var t in FindObjectsOfType<BuildingSite>()) {
+                    if(t.InitSel != -1) {
                         t.create(t.InitSel, t.Ti, 0, 1);
                     }
                 }
@@ -174,12 +159,14 @@ public class Sys : MonoBehaviour
         }
     }
 
-    public void startGame()
-    {
-        if (Started)
+    [System.NonSerialized]
+    public Team LocalTeam;
+    public void startGame() {
+        if(Started)
             return;
 
-        Started = true;
+     	Started = true;
+
         GameUI.SetActive(true);
         StartUI.SetActive(false);
         minimap.SetActive(true);
@@ -193,8 +180,7 @@ public class Sys : MonoBehaviour
 
 #if UNITY_EDITOR
 
-    void OnDrawGizmos()
-    {
+    void OnDrawGizmos() {
 
     }
 

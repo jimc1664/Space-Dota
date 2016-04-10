@@ -32,8 +32,6 @@ public class Player : NetBehaviour {
 
     [ServerCallback]
     void Start() {
-
-
         Sys s = Sys.get();
 
         int ti = Random.Range(0, s.Teams.Count );
@@ -92,6 +90,7 @@ public class Player : NetBehaviour {
 
         if(isLocalPlayer) {
             Tm.IsLocalTeam = true;
+            Sys.get().LocalTeam = Tm;
             var sui = Sys.get().StartUI;
             sui.SetActive(true);
             //sui.GetComponentInChildren<UnityEngine.UI.Image>().color = Col;
