@@ -149,7 +149,7 @@ public class Carrier : Vehicle {
 
 
     void ManageInput() {
-        for(int i = SpawnDat.Count; i-- > 0; ) {
+        for(int i = SpawnDat.Count; i-- > 0;) {
             SpawnData sd = SpawnDat[i];
             if(Input.GetKeyUp(sd.Key)) {  //todo getkeyup should be reference to real ui
                 spawnUnit(i);
@@ -158,14 +158,12 @@ public class Carrier : Vehicle {
         }
     }
 
-    void ManageUIInput()
-    {
+    void ManageUIInput() {
         int specificUnit = 0;
         Debug.Log("Buttons Assigned");
         Debug.Log("HUD Buttons: " + HUDButtons.Count.ToString());
 
-        for (int j = 0; j < HUDButtons.Count; j++)
-        {
+        for(int j = 0; j < HUDButtons.Count; j++) {
             SpawnData sd = SpawnDat[j];
             Debug.Log("Element " + j + ": " + SpawnDat[j].Fab.name);
             SpawnDat[j].unitButton = HUDButtons[j].GetComponent<Button>();
@@ -227,8 +225,18 @@ public class Carrier : Vehicle {
             res.Carriers--;
         }
     }
+    new void OnEnable() {
+        base.OnEnable();
+        foreach(var c in GetComponents<Ability>()) {
+            c.enabled = true;
+        }
+
+    }
     new void OnDisable() {
         base.OnDisable();
+        foreach(var c in GetComponents<Ability>()) {
+            c.enabled = false;
+        }
         foreach(var r in ResFields)
             if(r != null)
                 r.Carriers--;

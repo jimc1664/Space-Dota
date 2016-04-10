@@ -135,9 +135,7 @@ public class Unit : NetBehaviour {
 
         fowRegisterCheck();
         fixColliders();
-        foreach(var c in GetComponents<Ability>()) { 
-            c.enabled = true;
-        }
+
     
     }
 
