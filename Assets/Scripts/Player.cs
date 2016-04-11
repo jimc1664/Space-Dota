@@ -291,7 +291,7 @@ public class Player : NetBehaviour {
 
         bool sapper = false;
         foreach( var s in FindObjectsOfType<Sapper>() ) {///todo - i hate this...
-            if(s.Owner == this && s.GetComponent<Selectable>().selected) {
+            if(s.U.Owner == this && s.GetComponent<Selectable>().selected) {
                 sapper = true;
                 break;
             }
@@ -323,7 +323,7 @@ public class Player : NetBehaviour {
        // Debug.Log("1111111111");
         foreach(var s in FindObjectsOfType<Selectable>()) {
             if(!s.selected || s.getOwner() != this) continue;
-            var sap = s.U as Sapper;
+            var sap = s.GetComponent<Sapper>();
             if(sap == null) continue;
             sap.Task = task;
             Cmd_taskSapper( s.gameObject, ts.Index, bs );
@@ -332,7 +332,7 @@ public class Player : NetBehaviour {
     }
 
     void clearSapTask( Selectable s ) {
-        var sap = s.U as Sapper;
+        var sap = s.GetComponent<Sapper>();
         if( sap != null ) {
             sap.Task = null;
             sap.BuildSelection = -1;
@@ -357,7 +357,7 @@ public class Player : NetBehaviour {
 
         sap.BuildSelection = bs;
         sap.TargetSite = Sys.get().Site[tsi];
-        sap.Rpc_DesPos(sap.TargetSite.DropPoint.position);
+        sap.U.Rpc_DesPos(sap.TargetSite.DropPoint.position);
     }
 
     [Command]

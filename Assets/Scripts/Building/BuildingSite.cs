@@ -15,8 +15,8 @@ public class BuildingSite : MonoBehaviour {
 
         if(Application.isPlaying) return;
 
-      //  var p = DropPoint.position; p.Scale(DropPoint.forward);
-        //DropPoint.position -= p;
+        //var p = DropPoint.position; p.Scale(DropPoint.forward);
+     //   DropPoint.position -= p;
     }
 
     public int InitSel = -1, Ti =0;

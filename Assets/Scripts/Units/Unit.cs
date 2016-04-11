@@ -191,7 +191,10 @@ public class Unit : NetBehaviour {
 
 
     public Slider HealthBar;
-   // public Transform Canvas;
+
+    [HideInInspector]
+    public List<Weapon> WeaponMasterList;
+    // public Transform Canvas;
 
     public void updateFoW_Flag(bool f) {
         if(f == FoW_Flag) return;
@@ -258,7 +261,7 @@ public class Unit : NetBehaviour {
         
         
         foreach(var t1 in Trgtn) {
-            foreach(var t in t1.Turrets)
+            foreach(var t in t1.Weapons)
                 Destroy(t);
             //  if(isServer) 
             Destroy(t1);

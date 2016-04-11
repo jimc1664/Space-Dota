@@ -152,7 +152,19 @@ public class Infantry : Unit_Kinematic {
                     && Vector2.Dot(Trnsfrm.up, vec.normalized) > 0.9f) {  //todo - neaten?
 
                     RofTimer = Time.time;
-                    Instantiate(FireingAnim).GetComponent<CannonShell>().init(MuzzelPoint.position, tp);
+                    var go = Instantiate(FireingAnim);
+                    if(Dmg < 0) {
+                        var t = go.transform;
+                        t.parent = MuzzelPoint;
+                        t.localPosition = Vector3.zero;
+                        t.localRotation = Quaternion.identity;
+                        // t.localPosition = MuzzelPoint.position;
+                        // t.localRotation = MuzzelPoint.rotation;
+                        t.GetComponent<ParticleSystem>().startLifetime *= (Trnsfrm.position - FireTarget.Trnsfrm.position).magnitude / 4.0f;
+                    } else {
+                        var cs = go.GetComponent<CannonShell>();
+                        cs.init(MuzzelPoint.position, tp);
+                    }
                     JustFired = true;
                     FiredTimer = 0.2f + Time.deltaTime;
                     if(isServer) {

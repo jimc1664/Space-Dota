@@ -15,8 +15,8 @@ public class TurretCtorMenu : MonoBehaviour {
     }
     public void click( int i ) {
         foreach(var s in FindObjectsOfType<Sapper>())
-            if(s.Task == this && s.Owner.isLocalPlayer ) {
-                s.Owner.Cmd_taskSapper(s.gameObject, Spindle.Index, i);
+            if(s.Task == this && s.U.Owner.isLocalPlayer ) {
+                s.U.Owner.Cmd_taskSapper(s.gameObject, Spindle.Index, i);
                 s.Task = null;
             }
 

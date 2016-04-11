@@ -9,14 +9,14 @@ public class Targeting : NetBehaviour {
     public float Range = 4;
     public float Cycle = 0.5f;
     
-    public List<Turret> Turrets;
+    public List<Weapon> Weapons;
 
     [ClientRpc]
     public void Rpc_setTarget(GameObject tgo, byte ti ) {
    //     Debug.Log("_this " + this.GetInstanceID());
 
-        if( ti >= (byte)Turrets.Count ) return;
-        var trt = Turrets[ti];
+        if( ti >= (byte)U.WeaponMasterList.Count ) return;
+        var trt = U.WeaponMasterList[ti];
         if(tgo != null) {
             trt.Target = tgo.GetComponent<Unit>();
             if(trt.Target != null)
@@ -27,7 +27,7 @@ public class Targeting : NetBehaviour {
 
     public float calcEngageRange(Unit target) {
         float ret = float.MaxValue;
-        foreach(Turret t in Turrets) {
+        foreach(var t in Weapons) {
             ret = Mathf.Min( ret, t.EngageRange );
         }
         if(ret == float.MaxValue) ret = U.RoughRadius;
@@ -42,13 +42,14 @@ public class Targeting : NetBehaviour {
 
     public bool Friendly = false;
 
-    LayerMask TargetMask;
+    public LayerMask TargetMask;
 
     void OnEnable() {
-        for(int i = Turrets.Count; i-- > 0;) {
-            Turrets[i].MyInd = i;
-            Turrets[i].Trgtn = this;
-            Turrets[i].enabled = true;
+        for(int i = Weapons.Count; i-- > 0;) {
+            Weapons[i].MyInd = U.WeaponMasterList.Count;
+            U.WeaponMasterList.Add(Weapons[i]);
+            Weapons[i].Trgtn = this;
+            Weapons[i].enabled = true;
         }
 
         TargetMask = Friendly ? U.Tm.AllyMask : U.Tm.EnemyMask;

@@ -50,6 +50,7 @@ public class Carrier : Vehicle {
     float BuildTimer = 0.5f; //initial delay
     AnimFeedback Anim_FB;
 
+    public float RegenRate = 4.0f;
     public float MaxSquidCap = 300, SquidGenRate = 3, SquidRefineRate = 10, SquidRefineEff = 0.5f, SquidMineRate = 50;
 
     new void Start()
@@ -136,7 +137,7 @@ public class Carrier : Vehicle {
             if(Owner.Squids + Owner.UnrefSquids > MaxSquidCap) Owner.UnrefSquids = Owner.MaxSquids - Owner.Squids;
         }
         if(isServer) {
-            Health += 4.0f*Time.deltaTime / MaxHealth;
+            Health += RegenRate*Time.deltaTime / MaxHealth;
             if(Health > 1) Health = 1;
         }
 

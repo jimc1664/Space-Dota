@@ -3,29 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 //using UnityEngine.Networking;
 
-public class Turret : MonoBehaviour {
+public class Turret : Weapon {
 
     public Transform Barrel, MuzzelPoint;
-    public GameObject FireingAnim;
 
-    Transform Trnsfrm;
-    [HideInInspector] public Targeting Trgtn;
-
-    public float Range = 3, RoF = 1, Dmg = 500, AP = 0, Accuracy = 0.95f, InvTracking = 1;
+    public float Accuracy = 0.95f, InvTracking = 1;
     public float TurretSpeed = 10;
-    float RofTimer = -5;
 
-    public int MyInd = 255;
-    public Unit Target;
 
     Transform SubTarget;
-
     Vector3 TargetOff;
 
-   // [HideInInspector]
-    public float EngageRange;
-
-    public void getSubTarget() {
+    public override void getSubTarget() {
 
         SubTarget = Target.HitTargets[Random.Range(0, Target.HitTargets.Count)];
         TargetOff = Random.insideUnitSphere;
@@ -92,7 +81,19 @@ public class Turret : MonoBehaviour {
             && Util.pow2(Mathf.DeltaAngle(rz, dz)) < coneSqr && Util.pow2(Mathf.DeltaAngle(rx, dx)) < coneSqr) {  //todo - neaten?
             
             RofTimer = Time.time;
-            Instantiate(FireingAnim).GetComponent<CannonShell>().init(MuzzelPoint.position, tp );
+            var go = Instantiate(FireingAnim);
+            if(Dmg < 0) {
+                var t = go.transform;
+                t.parent = MuzzelPoint;
+                t.localPosition = Vector3.zero;
+                t.localRotation = Quaternion.identity;
+                // t.localPosition = MuzzelPoint.position;
+                // t.localRotation = MuzzelPoint.rotation;
+                t.GetComponent<ParticleSystem>().startLifetime *= (Trnsfrm.position - Target.Trnsfrm.position).magnitude / 4.0f;
+            } else {
+                var cs = go.GetComponent<CannonShell>();
+                cs.init(MuzzelPoint.position, tp);
+            }
             JustFired = true;
 
             if(Trgtn.isServer) {
@@ -106,22 +107,5 @@ public class Turret : MonoBehaviour {
         }
     }
 
-    void Awake() {
-        Trnsfrm = transform;
-       // Trgtn = GetComponentInParent<Targeting>();
-    }
-    void OnEnable() {
-        if(Trgtn == null) {
-            enabled = false;
-            return;
-        }
-        EngageRange = Range - ((Vector2)Trnsfrm.position - (Vector2)Trgtn.U.Trnsfrm.position).magnitude * 1.1f;  //world space cos lazy
-    }
-    void OnDrawGizmos() {
-        var t = transform;
 
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(t.position, Range);
-
-    }
 }

@@ -89,6 +89,7 @@
      <Compile Include="Assets\Scripts\Turret.cs" />
      <Compile Include="Assets\Scripts\TurretCtorMenu.cs" />
      <Compile Include="Assets\Scripts\UI\UiMain.cs" />
+     <Compile Include="Assets\Scripts\Units\ALLAHUAKBAR.cs" />
      <Compile Include="Assets\Scripts\Units\Carrier.cs" />
      <Compile Include="Assets\Scripts\Units\Death_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\Helio.cs" />
@@ -100,6 +101,7 @@
      <Compile Include="Assets\Scripts\Units\UnitSync_Hlpr.cs" />
      <Compile Include="Assets\Scripts\Units\Unit_Kinematic.cs" />
      <Compile Include="Assets\Scripts\Units\Vehicle.cs" />
+     <Compile Include="Assets\Scripts\Units\Weapon.cs" />
      <Compile Include="Assets\SimpleParticlePack\Scripts\ParticleTester.cs" />
      <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />

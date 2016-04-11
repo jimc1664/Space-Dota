@@ -268,6 +268,8 @@ public class Unit_Kinematic : Unit {
 
     new protected void OnDisable() {
         base.OnDisable();
+        var sap = GetComponent<Sapper>();
+        if(sap != null) sap.enabled = false;
 
         if(SyncO != null) Destroy(SyncO.gameObject);
 
