@@ -67,7 +67,6 @@ public class Carrier : Vehicle {
             }
 
 
-
     }
 
     new void Update() {
