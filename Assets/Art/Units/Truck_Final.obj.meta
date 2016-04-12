@@ -1,0 +1,178 @@
+fileFormatVersion: 2
+guid: a6d17ceac19d62043977de4ae3895c3d
+timeCreated: 1460468548
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: autoUnwrapFaces_Truck_Blockmesh:pCube1
+    100002: Truck_Blockmesh:pCube1
+    100004: Truck_Blockmesh:pCube1_pCube1
+    100006: Truck_Blockmesh:pCube1_pCube2
+    100008: Truck_Blockmesh:pCube1_pCube3
+    100010: Truck_Blockmesh:pCube1_pCube4
+    100012: Truck_Blockmesh:pCube1_pCube5
+    100014: Truck_Blockmesh:pCube1_pCube6
+    100016: Truck_Blockmesh:pCube1_pCube7
+    100018: Truck_Blockmesh:pCube1_pCube8
+    100020: Truck_Blockmesh:pCube1_pCylinder18
+    100022: Truck_Blockmesh:pCube1_pCylinder22
+    100024: Truck_Blockmesh:pCube1_pCylinder23
+    100026: Truck_Blockmesh:pCube1_pCylinder24
+    100028: Truck_Blockmesh:pCube1_pCylinder25
+    100030: Truck_Blockmesh:pCube1_pCylinder26
+    100032: Truck_Blockmesh:pCube1_pPlane3
+    100034: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane1
+    100036: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane2
+    100038: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane3
+    100040: Truck_Blockmesh:pCube1_Truck_Blockmesh:Truck_BlockmeshpCylinder1
+    100042: //RootNode
+    400000: autoUnwrapFaces_Truck_Blockmesh:pCube1
+    400002: Truck_Blockmesh:pCube1
+    400004: Truck_Blockmesh:pCube1_pCube1
+    400006: Truck_Blockmesh:pCube1_pCube2
+    400008: Truck_Blockmesh:pCube1_pCube3
+    400010: Truck_Blockmesh:pCube1_pCube4
+    400012: Truck_Blockmesh:pCube1_pCube5
+    400014: Truck_Blockmesh:pCube1_pCube6
+    400016: Truck_Blockmesh:pCube1_pCube7
+    400018: Truck_Blockmesh:pCube1_pCube8
+    400020: Truck_Blockmesh:pCube1_pCylinder18
+    400022: Truck_Blockmesh:pCube1_pCylinder22
+    400024: Truck_Blockmesh:pCube1_pCylinder23
+    400026: Truck_Blockmesh:pCube1_pCylinder24
+    400028: Truck_Blockmesh:pCube1_pCylinder25
+    400030: Truck_Blockmesh:pCube1_pCylinder26
+    400032: Truck_Blockmesh:pCube1_pPlane3
+    400034: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane1
+    400036: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane2
+    400038: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane3
+    400040: Truck_Blockmesh:pCube1_Truck_Blockmesh:Truck_BlockmeshpCylinder1
+    400042: //RootNode
+    2300000: autoUnwrapFaces_Truck_Blockmesh:pCube1
+    2300002: Truck_Blockmesh:pCube1
+    2300004: Truck_Blockmesh:pCube1_pCube1
+    2300006: Truck_Blockmesh:pCube1_pCube2
+    2300008: Truck_Blockmesh:pCube1_pCube3
+    2300010: Truck_Blockmesh:pCube1_pCube4
+    2300012: Truck_Blockmesh:pCube1_pCube5
+    2300014: Truck_Blockmesh:pCube1_pCube6
+    2300016: Truck_Blockmesh:pCube1_pCube7
+    2300018: Truck_Blockmesh:pCube1_pCube8
+    2300020: Truck_Blockmesh:pCube1_pCylinder18
+    2300022: Truck_Blockmesh:pCube1_pCylinder22
+    2300024: Truck_Blockmesh:pCube1_pCylinder23
+    2300026: Truck_Blockmesh:pCube1_pCylinder24
+    2300028: Truck_Blockmesh:pCube1_pCylinder25
+    2300030: Truck_Blockmesh:pCube1_pCylinder26
+    2300032: Truck_Blockmesh:pCube1_pPlane3
+    2300034: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane1
+    2300036: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane2
+    2300038: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane3
+    2300040: Truck_Blockmesh:pCube1_Truck_Blockmesh:Truck_BlockmeshpCylinder1
+    3300000: autoUnwrapFaces_Truck_Blockmesh:pCube1
+    3300002: Truck_Blockmesh:pCube1
+    3300004: Truck_Blockmesh:pCube1_pCube1
+    3300006: Truck_Blockmesh:pCube1_pCube2
+    3300008: Truck_Blockmesh:pCube1_pCube3
+    3300010: Truck_Blockmesh:pCube1_pCube4
+    3300012: Truck_Blockmesh:pCube1_pCube5
+    3300014: Truck_Blockmesh:pCube1_pCube6
+    3300016: Truck_Blockmesh:pCube1_pCube7
+    3300018: Truck_Blockmesh:pCube1_pCube8
+    3300020: Truck_Blockmesh:pCube1_pCylinder18
+    3300022: Truck_Blockmesh:pCube1_pCylinder22
+    3300024: Truck_Blockmesh:pCube1_pCylinder23
+    3300026: Truck_Blockmesh:pCube1_pCylinder24
+    3300028: Truck_Blockmesh:pCube1_pCylinder25
+    3300030: Truck_Blockmesh:pCube1_pCylinder26
+    3300032: Truck_Blockmesh:pCube1_pPlane3
+    3300034: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane1
+    3300036: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane2
+    3300038: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane3
+    3300040: Truck_Blockmesh:pCube1_Truck_Blockmesh:Truck_BlockmeshpCylinder1
+    4300000: autoUnwrapFaces_Truck_Blockmesh:pCube1
+    4300002: Truck_Blockmesh:pCube1
+    4300004: Truck_Blockmesh:pCube1_pCube1
+    4300006: Truck_Blockmesh:pCube1_pCube2
+    4300008: Truck_Blockmesh:pCube1_pCube3
+    4300010: Truck_Blockmesh:pCube1_pCube4
+    4300012: Truck_Blockmesh:pCube1_pCube5
+    4300014: Truck_Blockmesh:pCube1_pCube6
+    4300016: Truck_Blockmesh:pCube1_pCube7
+    4300018: Truck_Blockmesh:pCube1_pCube8
+    4300020: Truck_Blockmesh:pCube1_pCylinder18
+    4300022: Truck_Blockmesh:pCube1_pCylinder22
+    4300024: Truck_Blockmesh:pCube1_pCylinder23
+    4300026: Truck_Blockmesh:pCube1_pCylinder24
+    4300028: Truck_Blockmesh:pCube1_pCylinder25
+    4300030: Truck_Blockmesh:pCube1_pCylinder26
+    4300032: Truck_Blockmesh:pCube1_pPlane3
+    4300034: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane1
+    4300036: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane2
+    4300038: Truck_Blockmesh:pCube1_Truck_Blockmesh:pPlane3
+    4300040: Truck_Blockmesh:pCube1_Truck_Blockmesh:Truck_BlockmeshpCylinder1
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

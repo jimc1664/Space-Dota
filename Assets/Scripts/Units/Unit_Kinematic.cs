@@ -187,6 +187,25 @@ public class Unit_Kinematic : Unit {
             cacheVal = baseVal;
         });
     }
+
+    public enum UnitType {
+        None = 0,
+        Carrier,
+        Infantry, 
+        Tank,
+        RocketMan,
+        Chopper,
+        Sapper,
+        LaserTank,
+        FlyingEngineer,
+        EngineerMan,
+        Destroyer, 
+        Jeep,
+        Gunship,
+        FlameTank,
+    }
+    public UnitType Type;
+
     new protected void Start() {
         base.Start();
     //    DesPos = transform.position;
@@ -262,7 +281,8 @@ public class Unit_Kinematic : Unit {
         base.OnEnable();
         SmoothPath = new List<Vector2>();
         SmoothPath.Add(TargetP = Trnsfrm.position);
-
+        
+        
         if(SyncO == null) initSyncO();
     }
 

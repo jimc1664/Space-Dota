@@ -73,7 +73,7 @@ public class Sys : MonoBehaviour
 
     public bool Started = false;
 
-    NetMan NetM;
+    public NetMan NetM;
 
     void Start() {
 
@@ -130,9 +130,9 @@ public class Sys : MonoBehaviour
             if(s1 > max || s2 > max || TimeRem < 0) {
                 Time.timeScale = 0;
                 if(s1 > s2)
-                    UI.text = "Red Wins (woo)";
+                    UI.text = "Red Wins (woo!)";
                 else
-                    UI.text = "Blue Wins (woo)";
+                    UI.text = "Blue Wins (woo!)";
             }
             foreach(var t in Teams)
                 t.update();

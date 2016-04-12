@@ -78,8 +78,13 @@ public class Player : NetBehaviour {
     [SyncVar]  //fuck it
     public float Squids = 50, UnrefSquids = 0;
 
+    [System.Serializable]
+    public class ControlGroup {
+        public KeyCode Key;
+        public List<Selectable> Selection = new List<Selectable>();
+    };
+    public List<ControlGroup> ControlGroups;
 
-   
     public void init(byte teamI, byte colI) {
         Tm = Sys.get().Teams[teamI];
         Col = Tm.ColorPool[ColI=colI];
@@ -114,6 +119,8 @@ public class Player : NetBehaviour {
         this.readyUp = readyUp;
     }
 
+    Selectable LClicked;
+    float LClickedTimer = 0;
     Selectable Highlighted = null;
     void Update() {
 
@@ -133,15 +140,34 @@ public class Player : NetBehaviour {
         }
 
         if (!isLocalPlayer)  return;
-
-
-        Camera.main.GetComponent<BoxSelector>().CheckCamera(); //messy
-
+ 
         sys.SquidUI.text = "" + Mathf.FloorToInt(Squids);
         sys.Squid_Unref_UI.text = "" + Mathf.FloorToInt(UnrefSquids);
         sys.Squid_Cap_UI.text = "" + ( MaxSquids -Mathf.FloorToInt(UnrefSquids) - Mathf.FloorToInt(Squids));
 
         sys.PopUI.text = "" + Pop +" / "+MaxPop;
+
+        Camera.main.GetComponent<BoxSelector>().CheckCamera(); //messy
+
+        foreach(var cg in ControlGroups) {
+            if(Input.GetKeyUp(cg.Key)) {
+                if(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) ) {
+                    if(!(Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift))) cg.Selection.Clear();
+
+                    foreach(var s in FindObjectsOfType<Selectable>())
+                        if(s.selected)
+                            cg.Selection.Add(s);
+                } else if( cg.Selection.Count > 0 ) {
+                    if(!(Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift)))
+                        foreach(var s in FindObjectsOfType<Selectable>())
+                            s.selected = false;
+                    foreach(var s in cg.Selection)
+                        s.selected = true;
+                }
+            }
+        }
+
+
 
         RaycastHit hit;
         Selectable nHl = null;
@@ -156,29 +182,57 @@ public class Player : NetBehaviour {
             if(nHl != null) nHl.Highlighted = true;
             Highlighted = nHl;
         }
-
+       
         if(Input.GetMouseButtonUp(0)) {
             
             var shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool bs = Mathf.Abs(BoxSelector.selection.width * BoxSelector.selection.height) > 8;
+
+            Unit_Kinematic.UnitType doubleClickObjectType = Unit_Kinematic.UnitType.None;
+            if(!bs && LClickedTimer -Time.time > -0.5f && LClicked == Highlighted  && LClicked != null) {
+                var uk = LClicked.GetComponent<Unit_Kinematic>();
+                if(uk)
+                    doubleClickObjectType =  uk.Type;
+
+                Debug.Log("LCkicked  "+LClicked+"  uk   "+uk+"doubleClickObjectType  " + doubleClickObjectType);
+            }
+           
+            LClicked = null;
             foreach(var s in FindObjectsOfType<Selectable>()) {
                 if(s.selected && (!shift || s.getOwner() != this)) s.selected = false;
 
-                if(bs && s.getOwner() == this) {
-                    Vector3 camPos = Camera.main.WorldToScreenPoint(s.U.VisDat.transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
-                    camPos.y = BoxSelector.ScreenToRectSpace(camPos.y);  //more efficent to transform rect to screen space  (not that it makes any real difference) 
-                    s.selected |= BoxSelector.selection.Contains(camPos);  //todo radius
+                if(s.getOwner() == this) {
+                    if(bs) {
+                        Vector3 camPos = Camera.main.WorldToScreenPoint(s.U.VisDat.transform.position); //Transposes 3D Vector into 2D Screen Space (Unproject)
+                        camPos.y = BoxSelector.ScreenToRectSpace(camPos.y);  //more efficent to transform rect to screen space  (not that it makes any real difference) 
+                        s.selected |= BoxSelector.selection.Contains(camPos);  //todo radius
+                    } else if(doubleClickObjectType != Unit_Kinematic.UnitType.None ) {
+                        var uk = s.GetComponent<Unit_Kinematic>();
+                        if(uk && uk.Type == doubleClickObjectType)
+                            s.selected = true;
+
+                    }
                 }
+
+
             }
 
-            if(!bs && Highlighted != null) {
+            if(doubleClickObjectType == Unit_Kinematic.UnitType.None && !bs && Highlighted != null) {
+
                 if(Highlighted.getOwner() == this || !shift) //todo --- or have nothing selected
                     Highlighted.selected = !Highlighted.selected;
+
+                if(Highlighted.getOwner() == this ) {
+                    
+                    LClicked = Highlighted;
+                    LClickedTimer = Time.time;
+                }
             }
             BoxSelector.selection = new Rect(Input.mousePosition.x, BoxSelector.ScreenToRectSpace(Input.mousePosition.y), 0, 0);
         }
 
         //if(Selected == null) return;
+
         if(Input.GetMouseButtonUp(1)) {
             //RaycastHit hit;
             bool commanded = tryAttack_Command()
