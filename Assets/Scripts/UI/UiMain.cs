@@ -7,6 +7,9 @@ public class UiMain : MonoBehaviour {
     [SerializeField]
     private Slider HUDHealth;
 
+    [SerializeField]
+    private RawImage CarrierIcon;
+
     public List<Text> AbilityTxtFields;
     public List<string> AbilityTxt;
     int AbilityFlags = 1;
@@ -42,19 +45,18 @@ public class UiMain : MonoBehaviour {
                 AbilityTxtFields[i].text = (i == 0) ?  "<i>None</i>" : "";
         }
 
-        //for (int i = 0; i < Sys.get().LocalTeam.Members.Count; i++)
-        //{
-        //   if( Sys.get().LocalTeam.Members[i].isLocalPlayer)
-        //    {
-        //        HUDHealth.value = Sys.get().LocalTeam.Members[i].Car.Health;
-        //    }
-        //}
 
         foreach(Player p in Sys.get().LocalTeam.Members)
         {
             if (p.isLocalPlayer)
+            {
                 HUDHealth.value = p.Car.Health;
+                CarrierIcon.texture = p.Car.carrierIcon;
+            }
+               
+
         }
+
       
        
     }
