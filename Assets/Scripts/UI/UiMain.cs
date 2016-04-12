@@ -4,6 +4,11 @@ using UnityEngine.UI;
 
 public class UiMain : MonoBehaviour {
 
+    [SerializeField]
+    private Slider HUDHealth;
+
+    [SerializeField]
+    private RawImage CarrierIcon;
 
     public List<Text> AbilityTxtFields;
     public List<string> AbilityTxt;
@@ -39,5 +44,20 @@ public class UiMain : MonoBehaviour {
             else
                 AbilityTxtFields[i].text = (i == 0) ?  "<i>None</i>" : "";
         }
+
+
+        foreach(Player p in Sys.get().LocalTeam.Members)
+        {
+            if (p.isLocalPlayer)
+            {
+                HUDHealth.value = p.Car.Health;
+                CarrierIcon.texture = p.Car.carrierIcon;
+            }
+               
+
+        }
+
+      
+       
     }
 }

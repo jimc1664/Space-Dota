@@ -14,6 +14,8 @@ public class Carrier : Vehicle {
         get { return HUDButtons; }
     }
 
+    public Texture carrierIcon;
+
     [System.Serializable]
     public class SpawnData {
         public GameObject Fab;
@@ -65,7 +67,6 @@ public class Carrier : Vehicle {
                 if (col.isTrigger)
                     Destroy(col.gameObject);
             }
-
 
 
     }
