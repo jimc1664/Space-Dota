@@ -103,7 +103,12 @@ public class Sys : MonoBehaviour
                 if(p.readyUp)
                     noWaits--;
 
-                ReadyFeedback.text = "Waiting on: " + noWaits + " players.";
+                string playersRemaining = "Waiting on: " + noWaits + " player(s) out of " + players.Length + "\n";
+                //string waitingonyou = "please ready up!";
+                //string selectionconfirmed = "selection confirmed. ";
+
+                ReadyFeedback.text = playersRemaining;
+               
             }
         }
     }
@@ -124,7 +129,7 @@ public class Sys : MonoBehaviour
             Squid_Cap_UI.color = Color.white;
             PopUI.color = Color.white;
 
-            UI.text = "Blue: " + s2 + "      Red: " + s1 + "      Time Remaining: " + CalcTime(TimeRem);
+            UI.text = "Blue: " + s2 + "      Red: " + s1 + "\n <i>Time Remaining: " + CalcTime(TimeRem) +"</i>";
 
             int max = 5000;
             if(s1 > max || s2 > max || TimeRem < 0) {
