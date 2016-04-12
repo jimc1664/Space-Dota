@@ -103,7 +103,12 @@ public class Sys : MonoBehaviour
                 if(p.readyUp)
                     noWaits--;
 
-                ReadyFeedback.text = "Waiting on: " + noWaits + " players.";
+                string playersRemaining = "Waiting on: " + noWaits + " player(s) out of " + players.Length + "\n";
+                //string waitingonyou = "please ready up!";
+                //string selectionconfirmed = "selection confirmed. ";
+
+                ReadyFeedback.text = playersRemaining;
+               
             }
         }
     }
